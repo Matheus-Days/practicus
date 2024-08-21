@@ -140,7 +140,83 @@ export type ConfiguracoesDocument<Lang extends string = string> =
     Lang
   >;
 
-export type AllDocumentTypes = ConfiguracoesDocument;
+type InicioDocumentDataSlicesSlice = never;
+
+/**
+ * Content for Início documents
+ */
+interface InicioDocumentData {
+  /**
+   * Título field in *Início*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: inicio.titulo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo: prismic.KeyTextField;
+
+  /**
+   * Slice Zone field in *Início*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: inicio.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<InicioDocumentDataSlicesSlice> /**
+   * Meta Title field in *Início*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: inicio.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Início*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: inicio.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Início*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: inicio.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Início document from Prismic
+ *
+ * - **API ID**: `inicio`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type InicioDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<
+    Simplify<InicioDocumentData>,
+    "inicio",
+    Lang
+  >;
+
+export type AllDocumentTypes = ConfiguracoesDocument | InicioDocument;
 
 declare module "@prismicio/client" {
   interface CreateClient {
@@ -156,6 +232,9 @@ declare module "@prismicio/client" {
       ConfiguracoesDocumentData,
       ConfiguracoesDocumentDataNavegacaoItem,
       ConfiguracoesDocumentDataSlicesSlice,
+      InicioDocument,
+      InicioDocumentData,
+      InicioDocumentDataSlicesSlice,
       AllDocumentTypes,
     };
   }
