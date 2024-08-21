@@ -3,6 +3,8 @@ import { Montserrat, Poppins } from 'next/font/google';
 import './globals.css';
 import clsx from 'clsx';
 import { createClient } from '@/prismicio';
+import Header from './components/Header';
+import Footer from './components/Footer';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -40,9 +42,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={clsx(montserrat.variable, poppins.variable)}>
       <body>
-        <header>Header!</header>
+        <Header />
         {children}
-        <footer>Footer!</footer>
+        <Footer />
       </body>
     </html>
   );
