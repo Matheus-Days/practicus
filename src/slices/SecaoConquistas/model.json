@@ -1,0 +1,34 @@
+{
+  "id": "secao_conquistas",
+  "type": "SharedSlice",
+  "name": "SecaoConquistas",
+  "description": "SecaoConquistas",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "imagem_das_conquistas": {
+          "type": "Image",
+          "config": {
+            "label": "Imagem das conquistas",
+            "constraint": {},
+            "thumbnails": []
+          }
+        },
+        "titulo_da_secao": {
+          "type": "Text",
+          "config": {
+            "label": "Título da seção",
+            "placeholder": ""
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

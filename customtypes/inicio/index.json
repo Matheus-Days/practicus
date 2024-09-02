@@ -17,7 +17,26 @@
         "type": "Slices",
         "fieldset": "Slice Zone",
         "config": {
-          "choices": {}
+          "choices": {
+            "call_to_action": {
+              "type": "SharedSlice"
+            },
+            "secao_depoimentos": {
+              "type": "SharedSlice"
+            },
+            "secao_eventos": {
+              "type": "SharedSlice"
+            },
+            "secao_conquistas": {
+              "type": "SharedSlice"
+            },
+            "secao_cursos": {
+              "type": "SharedSlice"
+            },
+            "secao_de_destaque": {
+              "type": "SharedSlice"
+            }
+          }
         }
       }
     },

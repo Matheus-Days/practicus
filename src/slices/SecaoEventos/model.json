@@ -1,0 +1,42 @@
+{
+  "id": "secao_eventos",
+  "type": "SharedSlice",
+  "name": "SecaoEventos",
+  "description": "SecaoEventos",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "eventos": {
+          "type": "Group",
+          "config": {
+            "label": "Eventos",
+            "repeat": true,
+            "fields": {
+              "evento": {
+                "type": "Link",
+                "config": {
+                  "label": "Evento",
+                  "select": "document"
+                }
+              }
+            }
+          }
+        },
+        "titulo_da_secao": {
+          "type": "Text",
+          "config": {
+            "label": "Título da seção",
+            "placeholder": ""
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

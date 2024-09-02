@@ -1,0 +1,42 @@
+{
+  "id": "secao_depoimentos",
+  "type": "SharedSlice",
+  "name": "SecaoDepoimentos",
+  "description": "SecaoDepoimentos",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "depoimento": {
+          "type": "Group",
+          "config": {
+            "label": "Depoimentos",
+            "repeat": true,
+            "fields": {
+              "depoimento": {
+                "type": "Link",
+                "config": {
+                  "label": "Depoimento",
+                  "select": "document"
+                }
+              }
+            }
+          }
+        },
+        "titulo_da_secao": {
+          "type": "Text",
+          "config": {
+            "label": "Título da seção",
+            "placeholder": ""
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

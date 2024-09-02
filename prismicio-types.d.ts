@@ -82,6 +82,17 @@ interface ConfiguracoesDocumentData {
   >;
 
   /**
+   * Logo field in *Configurações*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: configuracoes.logo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  logo: prismic.ImageField<never>;
+
+  /**
    * Slice Zone field in *Configurações*
    *
    * - **Field Type**: Slice Zone
@@ -140,7 +151,271 @@ export type ConfiguracoesDocument<Lang extends string = string> =
     Lang
   >;
 
-type InicioDocumentDataSlicesSlice = never;
+/**
+ * Content for Depoimento documents
+ */
+interface DepoimentoDocumentData {
+  /**
+   * Texto field in *Depoimento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Texto completo do depoimento da pessoa
+   * - **API ID Path**: depoimento.texto
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto: prismic.RichTextField;
+
+  /**
+   * Curso field in *Depoimento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: ex: Plano de Contratações Anual - PCA: Da Implantação à Utilização
+   * - **API ID Path**: depoimento.curso
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  curso: prismic.RichTextField;
+
+  /**
+   * Identificação do depoente field in *Depoimento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Luciana Verde Sub-secretária de Finanças
+   * - **API ID Path**: depoimento.identificacao_do_depoente
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  identificacao_do_depoente: prismic.KeyTextField;
+
+  /**
+   * Local da organização field in *Depoimento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Município, estado, etc.
+   * - **API ID Path**: depoimento.local_da_organizacao
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  local_da_organizacao: prismic.KeyTextField;
+}
+
+/**
+ * Depoimento document from Prismic
+ *
+ * - **API ID**: `depoimento`
+ * - **Repeatable**: `true`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type DepoimentoDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithUID<
+    Simplify<DepoimentoDocumentData>,
+    "depoimento",
+    Lang
+  >;
+
+type EventoDocumentDataSlicesSlice = CallToActionSlice;
+
+/**
+ * Content for Evento documents
+ */
+interface EventoDocumentData {
+  /**
+   * Imagem ilustrativa field in *Evento*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: evento.imagem_ilustrativa
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  imagem_ilustrativa: prismic.ImageField<never>;
+
+  /**
+   * Nome do evento field in *Evento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: ex: Alta Administração e Governança das Contratações: Responsabilidade e Desafio dos Gestores
+   * - **API ID Path**: evento.nome_do_evento
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  nome_do_evento: prismic.RichTextField;
+
+  /**
+   * Valor do evento field in *Evento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: R$3.780,00
+   * - **API ID Path**: evento.valor_do_evento
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  valor_do_evento: prismic.KeyTextField;
+
+  /**
+   * Conteúdo field in *Evento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Descrição do conteúdo do curso
+   * - **API ID Path**: evento.conteudo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  conteudo: prismic.RichTextField;
+
+  /**
+   * Instrutor (curto) field in *Evento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Caso haja apenas um instrutor, preencher este campo
+   * - **API ID Path**: evento.instrutor_curto
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  instrutor_curto: prismic.KeyTextField;
+
+  /**
+   * Instrutores (longo) field in *Evento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Preencher com os instrutores e suas credenciais
+   * - **API ID Path**: evento.instrutores_longo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  instrutores_longo: prismic.RichTextField;
+
+  /**
+   * Local do evento field in *Evento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: ex: Fortaleza, CE
+   * - **API ID Path**: evento.local_do_evento
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  local_do_evento: prismic.RichTextField;
+
+  /**
+   * Público alvo field in *Evento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Descrição do público alvo do evento
+   * - **API ID Path**: evento.publico_alvo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  publico_alvo: prismic.RichTextField;
+
+  /**
+   * Carga horária field in *Evento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: 4h
+   * - **API ID Path**: evento.carga_horaria
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  carga_horaria: prismic.KeyTextField;
+
+  /**
+   * Horário field in *Evento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: 08h às 16h
+   * - **API ID Path**: evento.horario
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  horario: prismic.KeyTextField;
+
+  /**
+   * Data do evento field in *Evento*
+   *
+   * - **Field Type**: Date
+   * - **Placeholder**: ex: 08/06/24
+   * - **API ID Path**: evento.data_do_evento
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#date
+   */
+  data_do_evento: prismic.DateField;
+
+  /**
+   * Geolocalização field in *Evento*
+   *
+   * - **Field Type**: GeoPoint
+   * - **Placeholder**: *None*
+   * - **API ID Path**: evento.geolocalizacao
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#geopoint
+   */
+  geolocalizacao: prismic.GeoPointField;
+
+  /**
+   * Slice Zone field in *Evento*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: evento.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<EventoDocumentDataSlicesSlice> /**
+   * Meta Title field in *Evento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: evento.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Evento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: evento.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Evento*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: evento.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Evento document from Prismic
+ *
+ * - **API ID**: `evento`
+ * - **Repeatable**: `true`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type EventoDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithUID<Simplify<EventoDocumentData>, "evento", Lang>;
+
+type InicioDocumentDataSlicesSlice =
+  | CallToActionSlice
+  | SecaoDepoimentosSlice
+  | SecaoEventosSlice
+  | SecaoConquistasSlice
+  | SecaoCursosSlice
+  | SecaoDeDestaqueSlice;
 
 /**
  * Content for Início documents
@@ -216,7 +491,405 @@ export type InicioDocument<Lang extends string = string> =
     Lang
   >;
 
-export type AllDocumentTypes = ConfiguracoesDocument | InicioDocument;
+export type AllDocumentTypes =
+  | ConfiguracoesDocument
+  | DepoimentoDocument
+  | EventoDocument
+  | InicioDocument;
+
+/**
+ * Primary content in *CallToAction → Default → Primary*
+ */
+export interface CallToActionSliceDefaultPrimary {
+  /**
+   * Texto CTA field in *CallToAction → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Texto mais extenso da chamada à ação (call to action)
+   * - **API ID Path**: call_to_action.default.primary.texto_cta
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto_cta: prismic.RichTextField;
+
+  /**
+   * Texto do botão CTA field in *CallToAction → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: call_to_action.default.primary.texto_do_botao_cta
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  texto_do_botao_cta: prismic.KeyTextField;
+
+  /**
+   * Link do CTA field in *CallToAction → Default → Primary*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: call_to_action.default.primary.link_do_cta
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  link_do_cta: prismic.LinkField;
+}
+
+/**
+ * Default variation for CallToAction Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CallToActionSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<CallToActionSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *CallToAction*
+ */
+type CallToActionSliceVariation = CallToActionSliceDefault;
+
+/**
+ * CallToAction Shared Slice
+ *
+ * - **API ID**: `call_to_action`
+ * - **Description**: CallToAction
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CallToActionSlice = prismic.SharedSlice<
+  "call_to_action",
+  CallToActionSliceVariation
+>;
+
+/**
+ * Primary content in *SecaoConquistas → Default → Primary*
+ */
+export interface SecaoConquistasSliceDefaultPrimary {
+  /**
+   * Imagem das conquistas field in *SecaoConquistas → Default → Primary*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_conquistas.default.primary.imagem_das_conquistas
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  imagem_das_conquistas: prismic.ImageField<never>;
+
+  /**
+   * Título da seção field in *SecaoConquistas → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_conquistas.default.primary.titulo_da_secao
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_secao: prismic.KeyTextField;
+}
+
+/**
+ * Default variation for SecaoConquistas Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoConquistasSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<SecaoConquistasSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *SecaoConquistas*
+ */
+type SecaoConquistasSliceVariation = SecaoConquistasSliceDefault;
+
+/**
+ * SecaoConquistas Shared Slice
+ *
+ * - **API ID**: `secao_conquistas`
+ * - **Description**: SecaoConquistas
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoConquistasSlice = prismic.SharedSlice<
+  "secao_conquistas",
+  SecaoConquistasSliceVariation
+>;
+
+/**
+ * Primary content in *SecaoCursos → Default → Primary*
+ */
+export interface SecaoCursosSliceDefaultPrimary {
+  /**
+   * Imagem de fundo field in *SecaoCursos → Default → Primary*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_cursos.default.primary.imagem_de_fundo
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  imagem_de_fundo: prismic.ImageField<"Telas largas" | "Telas estreitas">;
+
+  /**
+   * Texto do botão field in *SecaoCursos → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_cursos.default.primary.texto_do_botao
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  texto_do_botao: prismic.KeyTextField;
+
+  /**
+   * Link do botão field in *SecaoCursos → Default → Primary*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_cursos.default.primary.link_do_botao
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  link_do_botao: prismic.LinkField;
+
+  /**
+   * Título da seção field in *SecaoCursos → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_cursos.default.primary.titulo_da_secao
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_secao: prismic.KeyTextField;
+
+  /**
+   * Texto sobre imagem field in *SecaoCursos → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Pode ser vazio
+   * - **API ID Path**: secao_cursos.default.primary.texto_sobre_imagem
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto_sobre_imagem: prismic.RichTextField;
+}
+
+/**
+ * Default variation for SecaoCursos Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoCursosSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<SecaoCursosSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *SecaoCursos*
+ */
+type SecaoCursosSliceVariation = SecaoCursosSliceDefault;
+
+/**
+ * SecaoCursos Shared Slice
+ *
+ * - **API ID**: `secao_cursos`
+ * - **Description**: SecaoCursos
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoCursosSlice = prismic.SharedSlice<
+  "secao_cursos",
+  SecaoCursosSliceVariation
+>;
+
+/**
+ * Primary content in *SecaoDeDestaque → Default → Primary*
+ */
+export interface SecaoDeDestaqueSliceDefaultPrimary {
+  /**
+   * Banner field in *SecaoDeDestaque → Default → Primary*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_de_destaque.default.primary.banner
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  banner: prismic.ImageField<never>;
+}
+
+/**
+ * Default variation for SecaoDeDestaque Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoDeDestaqueSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<SecaoDeDestaqueSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *SecaoDeDestaque*
+ */
+type SecaoDeDestaqueSliceVariation = SecaoDeDestaqueSliceDefault;
+
+/**
+ * SecaoDeDestaque Shared Slice
+ *
+ * - **API ID**: `secao_de_destaque`
+ * - **Description**: SecaoDeDestaque
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoDeDestaqueSlice = prismic.SharedSlice<
+  "secao_de_destaque",
+  SecaoDeDestaqueSliceVariation
+>;
+
+/**
+ * Item in *SecaoDepoimentos → Default → Primary → Depoimentos*
+ */
+export interface SecaoDepoimentosSliceDefaultPrimaryDepoimentoItem {
+  /**
+   * Depoimento field in *SecaoDepoimentos → Default → Primary → Depoimentos*
+   *
+   * - **Field Type**: Content Relationship
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_depoimentos.default.primary.depoimento[].depoimento
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  depoimento: prismic.ContentRelationshipField;
+}
+
+/**
+ * Primary content in *SecaoDepoimentos → Default → Primary*
+ */
+export interface SecaoDepoimentosSliceDefaultPrimary {
+  /**
+   * Depoimentos field in *SecaoDepoimentos → Default → Primary*
+   *
+   * - **Field Type**: Group
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_depoimentos.default.primary.depoimento[]
+   * - **Documentation**: https://prismic.io/docs/field#group
+   */
+  depoimento: prismic.GroupField<
+    Simplify<SecaoDepoimentosSliceDefaultPrimaryDepoimentoItem>
+  >;
+
+  /**
+   * Título da seção field in *SecaoDepoimentos → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_depoimentos.default.primary.titulo_da_secao
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_secao: prismic.KeyTextField;
+}
+
+/**
+ * Default variation for SecaoDepoimentos Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoDepoimentosSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<SecaoDepoimentosSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *SecaoDepoimentos*
+ */
+type SecaoDepoimentosSliceVariation = SecaoDepoimentosSliceDefault;
+
+/**
+ * SecaoDepoimentos Shared Slice
+ *
+ * - **API ID**: `secao_depoimentos`
+ * - **Description**: SecaoDepoimentos
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoDepoimentosSlice = prismic.SharedSlice<
+  "secao_depoimentos",
+  SecaoDepoimentosSliceVariation
+>;
+
+/**
+ * Item in *SecaoEventos → Default → Primary → Eventos*
+ */
+export interface SecaoEventosSliceDefaultPrimaryEventosItem {
+  /**
+   * Evento field in *SecaoEventos → Default → Primary → Eventos*
+   *
+   * - **Field Type**: Content Relationship
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_eventos.default.primary.eventos[].evento
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  evento: prismic.ContentRelationshipField;
+}
+
+/**
+ * Primary content in *SecaoEventos → Default → Primary*
+ */
+export interface SecaoEventosSliceDefaultPrimary {
+  /**
+   * Eventos field in *SecaoEventos → Default → Primary*
+   *
+   * - **Field Type**: Group
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_eventos.default.primary.eventos[]
+   * - **Documentation**: https://prismic.io/docs/field#group
+   */
+  eventos: prismic.GroupField<
+    Simplify<SecaoEventosSliceDefaultPrimaryEventosItem>
+  >;
+
+  /**
+   * Título da seção field in *SecaoEventos → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: secao_eventos.default.primary.titulo_da_secao
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_secao: prismic.KeyTextField;
+}
+
+/**
+ * Default variation for SecaoEventos Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoEventosSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<SecaoEventosSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *SecaoEventos*
+ */
+type SecaoEventosSliceVariation = SecaoEventosSliceDefault;
+
+/**
+ * SecaoEventos Shared Slice
+ *
+ * - **API ID**: `secao_eventos`
+ * - **Description**: SecaoEventos
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SecaoEventosSlice = prismic.SharedSlice<
+  "secao_eventos",
+  SecaoEventosSliceVariation
+>;
 
 declare module "@prismicio/client" {
   interface CreateClient {
@@ -232,10 +905,41 @@ declare module "@prismicio/client" {
       ConfiguracoesDocumentData,
       ConfiguracoesDocumentDataNavegacaoItem,
       ConfiguracoesDocumentDataSlicesSlice,
+      DepoimentoDocument,
+      DepoimentoDocumentData,
+      EventoDocument,
+      EventoDocumentData,
+      EventoDocumentDataSlicesSlice,
       InicioDocument,
       InicioDocumentData,
       InicioDocumentDataSlicesSlice,
       AllDocumentTypes,
+      CallToActionSlice,
+      CallToActionSliceDefaultPrimary,
+      CallToActionSliceVariation,
+      CallToActionSliceDefault,
+      SecaoConquistasSlice,
+      SecaoConquistasSliceDefaultPrimary,
+      SecaoConquistasSliceVariation,
+      SecaoConquistasSliceDefault,
+      SecaoCursosSlice,
+      SecaoCursosSliceDefaultPrimary,
+      SecaoCursosSliceVariation,
+      SecaoCursosSliceDefault,
+      SecaoDeDestaqueSlice,
+      SecaoDeDestaqueSliceDefaultPrimary,
+      SecaoDeDestaqueSliceVariation,
+      SecaoDeDestaqueSliceDefault,
+      SecaoDepoimentosSlice,
+      SecaoDepoimentosSliceDefaultPrimaryDepoimentoItem,
+      SecaoDepoimentosSliceDefaultPrimary,
+      SecaoDepoimentosSliceVariation,
+      SecaoDepoimentosSliceDefault,
+      SecaoEventosSlice,
+      SecaoEventosSliceDefaultPrimaryEventosItem,
+      SecaoEventosSliceDefaultPrimary,
+      SecaoEventosSliceVariation,
+      SecaoEventosSliceDefault,
     };
   }
 }

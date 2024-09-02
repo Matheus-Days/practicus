@@ -1,0 +1,69 @@
+{
+  "id": "secao_cursos",
+  "type": "SharedSlice",
+  "name": "SecaoCursos",
+  "description": "SecaoCursos",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "imagem_de_fundo": {
+          "type": "Image",
+          "config": {
+            "label": "Imagem de fundo",
+            "constraint": {},
+            "thumbnails": [
+              {
+                "name": "Telas largas",
+                "width": 1128,
+                "height": 300
+              },
+              {
+                "name": "Telas estreitas",
+                "width": 328,
+                "height": 158
+              }
+            ]
+          }
+        },
+        "texto_do_botao": {
+          "type": "Text",
+          "config": {
+            "label": "Texto do botão",
+            "placeholder": ""
+          }
+        },
+        "link_do_botao": {
+          "type": "Link",
+          "config": {
+            "label": "Link do botão",
+            "placeholder": "",
+            "select": null
+          }
+        },
+        "titulo_da_secao": {
+          "type": "Text",
+          "config": {
+            "label": "Título da seção",
+            "placeholder": ""
+          }
+        },
+        "texto_sobre_imagem": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Texto sobre imagem",
+            "placeholder": "Pode ser vazio",
+            "allowTargetBlank": true,
+            "single": "strong,em"
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

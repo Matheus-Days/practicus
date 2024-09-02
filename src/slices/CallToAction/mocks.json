@@ -1,0 +1,32 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"texto_cta": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Adipisicing culpa cupidatat consequat pariatur eu enim non magna fugiat proident cupidatat qui. Aute minim quis ex mollit irure amet dolore ipsum irure amet consectetur."
+						}
+					}
+				]
+			},
+			"texto_do_botao_cta": {
+				"__TYPE__": "FieldContent",
+				"value": "underline",
+				"type": "Text"
+			},
+			"link_do_cta": {
+				"__TYPE__": "LinkContent",
+				"value": {
+					"__TYPE__": "ExternalLink",
+					"url": "http://google.com"
+				}
+			}
+		},
+		"items": []
+	}
+]

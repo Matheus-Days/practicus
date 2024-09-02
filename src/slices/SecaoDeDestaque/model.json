@@ -1,0 +1,27 @@
+{
+  "id": "secao_de_destaque",
+  "type": "SharedSlice",
+  "name": "SecaoDeDestaque",
+  "description": "SecaoDeDestaque",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "banner": {
+          "type": "Image",
+          "config": {
+            "label": "Banner",
+            "constraint": {},
+            "thumbnails": []
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { createClient } from '@/prismicio';
-import { PrismicNextLink } from '@prismicio/next';
+import { PrismicNextImage, PrismicNextLink } from '@prismicio/next';
 import Link from 'next/link';
 
 export default async function Header() {
@@ -8,11 +8,11 @@ export default async function Header() {
   const page = await client.getSingle('configuracoes');
 
   return (
-    <header>
-      <Link href="/">{page.data.nome_do_website}</Link>
+    <header className="flex justify-between items-center py-2 px-6">
+      <Link href="/"><PrismicNextImage field={page.data.logo} /></Link>
       
-      <nav>
-        <ul>
+      <nav className="font-display">
+        <ul className="flex gap-6">
           {page.data.navegacao.map(({ link, rotulo }) => (
             <li key={rotulo}>
               <PrismicNextLink field={link}>{rotulo}</PrismicNextLink>

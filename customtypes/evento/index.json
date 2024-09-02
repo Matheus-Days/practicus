@@ -1,0 +1,146 @@
+{
+  "format": "page",
+  "id": "evento",
+  "label": "Evento",
+  "repeatable": true,
+  "status": true,
+  "json": {
+    "Main": {
+      "uid": {
+        "type": "UID",
+        "config": {
+          "label": "UID"
+        }
+      },
+      "imagem_ilustrativa": {
+        "type": "Image",
+        "config": {
+          "label": "Imagem ilustrativa",
+          "constraint": {},
+          "thumbnails": []
+        }
+      },
+      "nome_do_evento": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Nome do evento",
+          "placeholder": "ex: Alta Administração e Governança das Contratações: Responsabilidade e Desafio dos Gestores",
+          "allowTargetBlank": false,
+          "single": "strong,em"
+        }
+      },
+      "valor_do_evento": {
+        "type": "Text",
+        "config": {
+          "label": "Valor do evento",
+          "placeholder": "ex: R$3.780,00"
+        }
+      },
+      "conteudo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Conteúdo",
+          "placeholder": "Descrição do conteúdo do curso",
+          "allowTargetBlank": true,
+          "multi": "paragraph,preformatted,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl"
+        }
+      },
+      "instrutor_curto": {
+        "type": "Text",
+        "config": {
+          "label": "Instrutor (curto)",
+          "placeholder": "Caso haja apenas um instrutor, preencher este campo"
+        }
+      },
+      "instrutores_longo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Instrutores (longo)",
+          "placeholder": "Preencher com os instrutores e suas credenciais",
+          "allowTargetBlank": true,
+          "multi": "paragraph,strong,em,hyperlink"
+        }
+      },
+      "local_do_evento": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Local do evento",
+          "placeholder": "ex: Fortaleza, CE",
+          "allowTargetBlank": false,
+          "single": "strong,em"
+        }
+      },
+      "publico_alvo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Público alvo",
+          "placeholder": "Descrição do público alvo do evento",
+          "allowTargetBlank": false,
+          "single": "strong,em"
+        }
+      },
+      "carga_horaria": {
+        "type": "Text",
+        "config": {
+          "label": "Carga horária",
+          "placeholder": "ex: 4h"
+        }
+      },
+      "horario": {
+        "type": "Text",
+        "config": {
+          "label": "Horário",
+          "placeholder": "ex: 08h às 16h"
+        }
+      },
+      "data_do_evento": {
+        "type": "Date",
+        "config": {
+          "label": "Data do evento",
+          "placeholder": "ex: 08/06/24"
+        }
+      },
+      "geolocalizacao": {
+        "type": "GeoPoint",
+        "config": {
+          "label": "Geolocalização"
+        }
+      },
+      "slices": {
+        "type": "Slices",
+        "fieldset": "Slice Zone",
+        "config": {
+          "choices": {
+            "call_to_action": {
+              "type": "SharedSlice"
+            }
+          }
+        }
+      }
+    },
+    "SEO & Metadata": {
+      "meta_title": {
+        "type": "Text",
+        "config": {
+          "label": "Meta Title",
+          "placeholder": ""
+        }
+      },
+      "meta_description": {
+        "type": "Text",
+        "config": {
+          "label": "Meta Description",
+          "placeholder": ""
+        }
+      },
+      "meta_image": {
+        "type": "Image",
+        "config": {
+          "label": "Meta Image",
+          "constraint": {},
+          "thumbnails": []
+        }
+      }
+    }
+  }
+}
