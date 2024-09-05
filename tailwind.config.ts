@@ -20,12 +20,48 @@ const config: Config = {
         contrast: '#163945'
       },
       fontSize: {
-        xs: '0.625rem',
-        sm: '0.75rem',
-        base: '0.875rem',
-        lg: '1rem',
-        xl: '1.25rem',
-        '2xl': '1.75rem'
+        xs: [
+          '0.625rem',
+          {
+            lineHeight: '0.7625rem',
+            letterSpacing: '0.025rem'
+          }
+        ],
+        sm: [
+          '0.75rem',
+          {
+            lineHeight: '0.9125rem',
+            letterSpacing: '0.0156rem'
+          }
+        ],
+        base: [
+          '0.875rem',
+          {
+            lineHeight: '1.0688rem',
+            letterSpacing: '0.0156rem'
+          }
+        ],
+        lg: [
+          '1rem',
+          {
+            lineHeight: '1.5rem',
+            letterSpacing: '0.0094rem'
+          }
+        ],
+        xl: [
+          '1.25rem',
+          {
+            lineHeight: '1.875rem',
+            letterSpacing: '0.0094rem'
+          }
+        ],
+        '2xl': [
+          '1.75rem',
+          {
+            lineHeight: '2.625rem',
+            letterSpacing: '0.0156rem'
+          }
+        ]
       },
       dropShadow: {
         md: '0px 4px 4px 0px #52818A40'

@@ -14,7 +14,7 @@ export type CallToActionProps = SliceComponentProps<Content.CallToActionSlice>;
 
 const components: JSXMapSerializer = {
   paragraph: ({ children }) => (
-    <p className="font-display text-lg leading-6 tracking-[0.0094rem] md:text-2xl md:leading-[2.625rem] md:tracking-[0.0156rem] text-contrast text-center">
+    <p className="font-display text-lg md:text-2xl text-contrast text-center">
       {children}
     </p>
   ),

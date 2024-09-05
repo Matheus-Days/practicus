@@ -1,7 +1,7 @@
 import { Content } from '@prismicio/client';
 import { SliceComponentProps } from '@prismicio/react';
 import SectionHeading from '../../app/components/SectionHeading';
-import { PrismicNextImage, PrismicNextLink } from '@prismicio/next';
+import { PrismicNextLink } from '@prismicio/next';
 import BoundedImage from '../../app/components/BoundedImage';
 import BoundedSection from '../../app/components/BoundedSection';
 import LinkButton from '../../app/components/LinkButton';
@@ -36,7 +36,7 @@ const SecaoCursos = ({ slice }: SecaoCursosProps): JSX.Element => {
           </PrismicNextLink>
 
           <div className="absolute bottom-3 left-3 flex flex-col gap-[0.625rem] w-fit">
-            <h2 className="text-xl md:text-2xl leading-[1.875rem] md:leading-[2.625rem] font-medium">
+            <h2 className="text-xl md:text-2xl font-medium">
               Cursos e Módulos
             </h2>
             <LinkButton
