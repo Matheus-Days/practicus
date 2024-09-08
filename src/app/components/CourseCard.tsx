@@ -82,7 +82,7 @@ export default async function CourseCard({ data }: { data: CourseCardData }) {
           <PrismicRichText field={data.title} components={components} />
         </div>
       </div>
-      <div className="flex flex-col gap-3 p-3 drop-shadow-md">
+      <div className="flex flex-col gap-3 p-3 shadow-md rounded-b-xl">
         <div className="flex flex-col gap-1">
           {data.__typename === 'evento' && (
             <CardParagraph>

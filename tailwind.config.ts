@@ -63,7 +63,7 @@ const config: Config = {
           }
         ]
       },
-      dropShadow: {
+      boxShadow: {
         md: '0px 4px 4px 0px #52818A40'
       }
     }

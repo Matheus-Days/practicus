@@ -18,7 +18,7 @@ const SecaoEventos = async ({
 }: SecaoEventosProps): Promise<JSX.Element> => {
   const client = createClient();
 
-  let eventos = (
+  const eventos = (
     await Promise.all(
       slice.primary.eventos.map((item) => {
         if (isFilled.contentRelationship(item.evento) && item.evento.uid)
@@ -44,8 +44,6 @@ const SecaoEventos = async ({
       return evento;
     });
 
-  eventos = [];
-
   return (
     <BoundedSection
       data-slice-type={slice.slice_type}
@@ -54,7 +52,7 @@ const SecaoEventos = async ({
       <SectionHeading>{slice.primary.titulo_da_secao}</SectionHeading>
 
       {eventos.length > 0 ? (
-        <div className="flex flex-col md:flex-row justify-center w-full gap-4 md:gap-6 md:overflow-x-scroll">
+        <div className="flex flex-col md:flex-row justify-center w-full gap-4 md:gap-6">
           {eventos.map((evento) => (
             <CourseCard key={evento.uid} data={evento} />
           ))}
