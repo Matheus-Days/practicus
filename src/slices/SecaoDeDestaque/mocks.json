@@ -4,15 +4,16 @@
 		"variation": "default",
 		"primary": {
 			"banner": {
+				"__TYPE__": "ImageContent",
 				"origin": {
 					"id": "main",
-					"url": "https://images.unsplash.com/photo-1547082299-de196ea013d6",
-					"width": 4272,
-					"height": 2848
+					"url": "https://images.unsplash.com/photo-1591012911207-0dbac31f37da",
+					"width": 4000,
+					"height": 4000
 				},
-				"url": "https://images.unsplash.com/photo-1547082299-de196ea013d6",
-				"width": 4272,
-				"height": 2848,
+				"url": "https://images.unsplash.com/photo-1591012911207-0dbac31f37da",
+				"width": 4000,
+				"height": 4000,
 				"edit": {
 					"zoom": 1,
 					"crop": {
@@ -21,10 +22,46 @@
 					},
 					"background": "transparent"
 				},
-				"credits": null,
-				"alt": null,
-				"__TYPE__": "ImageContent",
-				"thumbnails": {}
+				"thumbnails": {
+					"Tela larga": {
+						"origin": {
+							"id": "Tela larga",
+							"url": "https://images.unsplash.com/photo-1515378960530-7c0da6231fb1",
+							"width": 5616,
+							"height": 3744
+						},
+						"url": "https://images.unsplash.com/photo-1515378960530-7c0da6231fb1?rect=0%2C976%2C5616%2C1792&w=1128&h=360",
+						"width": 1128,
+						"height": 360,
+						"edit": {
+							"zoom": 1,
+							"crop": {
+								"x": 0,
+								"y": 976
+							},
+							"background": "transparent"
+						}
+					},
+					"Tela estreita": {
+						"origin": {
+							"id": "Tela estreita",
+							"url": "https://images.unsplash.com/photo-1587840171670-8b850147754e",
+							"width": 4480,
+							"height": 4480
+						},
+						"url": "https://images.unsplash.com/photo-1587840171670-8b850147754e?rect=0%2C942%2C4480%2C2595&w=328&h=190",
+						"width": 328,
+						"height": 190,
+						"edit": {
+							"zoom": 1,
+							"crop": {
+								"x": 0,
+								"y": 942
+							},
+							"background": "transparent"
+						}
+					}
+				}
 			}
 		},
 		"items": []

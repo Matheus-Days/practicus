@@ -23,8 +23,8 @@ const SecaoCursos = ({ slice }: SecaoCursosProps): JSX.Element => {
       <SectionHeading>{slice.primary.titulo_da_secao}</SectionHeading>
 
       <div className="flex justify-center w-full">
-        <div className="relative">
-          <PrismicNextLink field={slice.primary.link_do_botao}>
+        <div className="relative w-full max-w-[70.5rem]">
+          <PrismicNextLink field={slice.primary.link_do_botao} className="flex w-full">
             <BoundedImage
               field={slice.primary.imagem_de_fundo['Telas estreitas']}
               className="md:hidden"

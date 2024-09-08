@@ -8,7 +8,7 @@ export default async function Header() {
   const page = await client.getSingle('configuracoes');
 
   return (
-    <header className="flex justify-between items-center py-2 px-6">
+    <header className="hidden md:flex justify-between items-center py-2 px-6">
       <Link href="/"><PrismicNextImage field={page.data.logo} /></Link>
       
       <nav className="font-display">

@@ -231,7 +231,7 @@ interface EventoDocumentData {
    * - **Tab**: Main
    * - **Documentation**: https://prismic.io/docs/field#image
    */
-  imagem_ilustrativa: prismic.ImageField<never>;
+  imagem_ilustrativa: prismic.ImageField<"Tela larga" | "Tela estreita">;
 
   /**
    * Nome do evento field in *Evento*
@@ -353,6 +353,17 @@ interface EventoDocumentData {
    * - **Documentation**: https://prismic.io/docs/field#geopoint
    */
   geolocalizacao: prismic.GeoPointField;
+
+  /**
+   * Link do evento field in *Evento*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: evento.link_do_evento
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  link_do_evento: prismic.LinkField;
 
   /**
    * Slice Zone field in *Evento*
@@ -714,7 +725,7 @@ export interface SecaoDeDestaqueSliceDefaultPrimary {
    * - **API ID Path**: secao_de_destaque.default.primary.banner
    * - **Documentation**: https://prismic.io/docs/field#image
    */
-  banner: prismic.ImageField<never>;
+  banner: prismic.ImageField<"Tela larga" | "Tela estreita">;
 }
 
 /**

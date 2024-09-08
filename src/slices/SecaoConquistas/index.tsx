@@ -22,7 +22,7 @@ const SecaoConquistas = ({ slice }: SecaoConquistasProps): JSX.Element => {
       <SectionHeading>{slice.primary.titulo_da_secao}</SectionHeading>
       <PrismicNextImage
         field={slice.primary.imagem_das_conquistas}
-        className="rounded-xl max-w-[70.5rem]"
+        className="rounded-xl w-full max-w-[25rem]"
       />
     </BoundedSection>
   );

@@ -6,7 +6,7 @@ const BoundedImage = (props: PrismicNextImageProps): JSX.Element => {
     <PrismicNextImage
       {...props}
       className={clsx(
-        'w-full rounded-xl md:rounded-[1.75rem] shadow-md max-w-[1128px]',
+        'w-full rounded-xl md:rounded-[1.75rem] shadow-md max-w-[70.5rem]',
         props.className
       )}
     />

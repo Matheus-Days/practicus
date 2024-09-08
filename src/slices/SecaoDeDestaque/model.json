@@ -17,7 +17,18 @@
           "config": {
             "label": "Banner",
             "constraint": {},
-            "thumbnails": []
+            "thumbnails": [
+              {
+                "name": "Tela larga",
+                "width": 1128,
+                "height": 360
+              },
+              {
+                "name": "Tela estreita",
+                "width": 328,
+                "height": 190
+              }
+            ]
           }
         }
       },

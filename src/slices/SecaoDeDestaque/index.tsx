@@ -19,7 +19,14 @@ const SecaoDeDestaque = ({ slice }: SecaoDeDestaqueProps): JSX.Element => {
       data-slice-variation={slice.variation}
       className="flex justify-center pt-3 px-4 md:pt-8"
     >
-      <BoundedImage field={slice.primary.banner} />
+      <BoundedImage
+        field={slice.primary.banner['Tela estreita']}
+        className="md:hidden"
+      />
+      <BoundedImage
+        field={slice.primary.banner['Tela larga']}
+        className="hidden md:block"
+      />
     </section>
   );
 };

@@ -45,6 +45,7 @@ export default function RootLayout({
         <Header />
         {children}
         <Footer />
+        <div className="fixed bg-[#F1F1F1] z-[-1] inset-0"></div>
       </body>
     </html>
   );
