@@ -41,6 +41,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={clsx(montserrat.variable, poppins.variable)}>
+      <head>
+        <link rel="icon" href="/logo.svg" sizes="any" />
+      </head>
       <body>
         <Header />
         {children}
