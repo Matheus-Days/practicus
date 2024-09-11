@@ -18,7 +18,7 @@ const SecaoEventos = async ({
 }: SecaoEventosProps): Promise<JSX.Element> => {
   const client = createClient();
 
-  let eventos = (
+  const eventos = (
     await Promise.all(
       slice.primary.eventos.map((item) => {
         if (isFilled.contentRelationship(item.evento) && item.evento.uid)
@@ -43,8 +43,6 @@ const SecaoEventos = async ({
       };
       return evento;
     });
-
-    eventos = [...eventos, ...eventos/* , ...eventos */];
 
   return (
     <BoundedSection
