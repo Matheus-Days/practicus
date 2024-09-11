@@ -1,4 +1,4 @@
-function XIcon() {
+function CloseIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -15,4 +15,4 @@ function XIcon() {
   );
 }
 
-export default XIcon;
+export default CloseIcon;

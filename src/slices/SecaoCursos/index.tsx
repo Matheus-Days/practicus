@@ -1,6 +1,6 @@
 import { Content } from '@prismicio/client';
 import { SliceComponentProps } from '@prismicio/react';
-import SectionHeading from '../../app/components/SectionHeading';
+import HeadingBadge from '../../app/components/HeadingBadge';
 import { PrismicNextLink } from '@prismicio/next';
 import BoundedImage from '../../app/components/BoundedImage';
 import BoundedSection from '../../app/components/BoundedSection';
@@ -20,7 +20,7 @@ const SecaoCursos = ({ slice }: SecaoCursosProps): JSX.Element => {
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      <SectionHeading>{slice.primary.titulo_da_secao}</SectionHeading>
+      <HeadingBadge>{slice.primary.titulo_da_secao}</HeadingBadge>
 
       <div className="flex justify-center w-full">
         <div className="relative w-full max-w-[70.5rem]">

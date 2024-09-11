@@ -17,7 +17,6 @@ const config: Config = {
         primary: '#163945',
         surface: '#F1F1F1',
         accent: '#52818A',
-        contrast: '#163945'
       },
       fontSize: {
         xs: [

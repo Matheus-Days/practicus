@@ -231,7 +231,9 @@ interface EventoDocumentData {
    * - **Tab**: Main
    * - **Documentation**: https://prismic.io/docs/field#image
    */
-  imagem_ilustrativa: prismic.ImageField<"Tela larga" | "Tela estreita">;
+  imagem_ilustrativa: prismic.ImageField<
+    "Tela larga" | "Tela estreita" | "Banner"
+  >;
 
   /**
    * Nome do evento field in *Evento*
@@ -287,17 +289,6 @@ interface EventoDocumentData {
    * - **Documentation**: https://prismic.io/docs/field#rich-text-title
    */
   instrutores_longo: prismic.RichTextField;
-
-  /**
-   * Local do evento field in *Evento*
-   *
-   * - **Field Type**: Rich Text
-   * - **Placeholder**: ex: Fortaleza, CE
-   * - **API ID Path**: evento.local_do_evento
-   * - **Tab**: Main
-   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
-   */
-  local_do_evento: prismic.RichTextField;
 
   /**
    * Público alvo field in *Evento*
@@ -364,6 +355,17 @@ interface EventoDocumentData {
    * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
    */
   link_do_evento: prismic.LinkField;
+
+  /**
+   * Local do evento field in *Evento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Quixadá, CE
+   * - **API ID Path**: evento.local_do_evento
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  local_do_evento: prismic.KeyTextField;
 
   /**
    * Slice Zone field in *Evento*

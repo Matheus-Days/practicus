@@ -1,7 +1,7 @@
 'use client';
 
 import { PrismicNextLink } from '@prismicio/next';
-import XIcon from '../icons/x';
+import CloseIcon from '../icons/close';
 import { Fragment, useEffect, useState } from 'react';
 import { GroupField } from '@prismicio/client';
 import {
@@ -41,7 +41,7 @@ export default function MobileNav({ navegacao }: MobileNavProps): JSX.Element {
       )}
 
       <button className="p-3 md:hidden" onClick={() => setOpened(!opened)}>
-        {opened ? <XIcon /> : <MenuIcon />}
+        {opened ? <CloseIcon /> : <MenuIcon />}
       </button>
 
       {opened && (

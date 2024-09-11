@@ -29,7 +29,7 @@ type CommomCardData = {
 export type EventoCardData = CommomCardData & {
   __typename: 'evento';
   date: DateField;
-  location: RichTextField;
+  location: KeyTextField;
 };
 
 export type CursoCardData = CommomCardData & {
@@ -96,13 +96,10 @@ export default async function CourseCard({ data }: { data: CourseCardData }) {
               <CardValueSpan>{formatDate(data.date)}</CardValueSpan>
             </CardParagraph>
           )}
-          {data.__typename === 'evento' && data.location.length > 0 && (
+          {data.__typename === 'evento' && data.location && (
             <CardParagraph>
               <Strong>Local:</Strong>
-              <PrismicRichText
-                field={data.location}
-                components={cardComponents}
-              />
+              <CardValueSpan>{data.location}</CardValueSpan>
             </CardParagraph>
           )}
         </div>

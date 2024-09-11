@@ -27,6 +27,11 @@
               "name": "Tela estreita",
               "width": 328,
               "height": 100
+            },
+            {
+              "name": "Banner",
+              "width": 1128,
+              "height": 140
             }
           ]
         }
@@ -53,7 +58,7 @@
           "label": "Conteúdo",
           "placeholder": "Descrição do conteúdo do curso",
           "allowTargetBlank": true,
-          "multi": "paragraph,preformatted,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl"
+          "multi": "paragraph,heading3,heading4,strong,em,hyperlink,image,list-item,o-list-item"
         }
       },
       "instrutor_curto": {
@@ -70,15 +75,6 @@
           "placeholder": "Preencher com os instrutores e suas credenciais",
           "allowTargetBlank": true,
           "multi": "paragraph,strong,em,hyperlink"
-        }
-      },
-      "local_do_evento": {
-        "type": "StructuredText",
-        "config": {
-          "label": "Local do evento",
-          "placeholder": "ex: Fortaleza, CE",
-          "allowTargetBlank": false,
-          "single": "strong,em"
         }
       },
       "publico_alvo": {
@@ -123,6 +119,13 @@
           "label": "Link do evento",
           "placeholder": "",
           "select": null
+        }
+      },
+      "local_do_evento": {
+        "type": "Text",
+        "config": {
+          "label": "Local do evento",
+          "placeholder": "ex: Quixadá, CE"
         }
       },
       "slices": {

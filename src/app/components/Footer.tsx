@@ -1,6 +1,6 @@
 export default async function Footer() {
   return (
-    <footer className="font-display mt-6 border-t border-accent py-[0.375rem] md:py-3 px-[1.375rem] text-contrast text-center">
+    <footer className="font-display mt-6 border-t border-accent py-[0.375rem] md:py-3 px-[1.375rem] text-primary text-center">
       <p className="text-xs md:text-[0.8125rem] md:leading-[1.1875rem]">
         © Todos os direitos reservados.
       </p>

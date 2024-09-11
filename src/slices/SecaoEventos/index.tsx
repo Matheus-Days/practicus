@@ -1,6 +1,6 @@
 import { Content, isFilled } from '@prismicio/client';
 import { SliceComponentProps } from '@prismicio/react';
-import SectionHeading from '../../app/components/SectionHeading';
+import HeadingBadge from '../../app/components/HeadingBadge';
 import CourseCard, { EventoCardData } from '../../app/components/CourseCard';
 import { createClient } from '@/prismicio';
 import BoundedSection from '../../app/components/BoundedSection';
@@ -49,7 +49,7 @@ const SecaoEventos = async ({
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      <SectionHeading>{slice.primary.titulo_da_secao}</SectionHeading>
+      <HeadingBadge>{slice.primary.titulo_da_secao}</HeadingBadge>
 
       {eventos.length > 0 ? (
         <div className="flex flex-col md:flex-row justify-center w-full gap-4 md:gap-6">
