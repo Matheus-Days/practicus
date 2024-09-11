@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { Montserrat, Poppins } from 'next/font/google';
 import './globals.css';
 import clsx from 'clsx';
-import { createClient } from '@/prismicio';
+import { createClient, repositoryName } from '@/prismicio';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { PrismicPreview } from '@prismicio/next';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -49,6 +50,7 @@ export default function RootLayout({
         {children}
         <Footer />
         <div className="fixed bg-[#F1F1F1] z-[-1] inset-0"></div>
+        <PrismicPreview repositoryName={repositoryName} />
       </body>
     </html>
   );
