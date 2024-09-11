@@ -14,6 +14,7 @@ import {
 import LinkButton from './LinkButton';
 import { ReactNode } from 'react';
 import { formatDate } from '../utils';
+import clsx from 'clsx';
 
 type CommomCardData = {
   link: LinkField;
@@ -41,6 +42,11 @@ export type CursoCardData = CommomCardData & {
 
 export type CourseCardData = EventoCardData | CursoCardData;
 
+type CourseCardProps = {
+  className?: string;
+  data: CourseCardData;
+};
+
 const Strong = ({ children }: { children: ReactNode }) => (
   <b className="font-medium leading-[1]">{children}</b>
 );
@@ -65,20 +71,25 @@ const CardParagraph = ({ children }: { children: ReactNode }) => (
   </p>
 );
 
-export default async function CourseCard({ data }: { data: CourseCardData }) {
+export default async function CourseCard({ className, data }: CourseCardProps) {
   return (
-    <div className="flex-shrink-0 max-w-[34.5rem] h-[15.25rem] md:h-[18.375rem] rounded-xl bg-white">
+    <div
+      className={clsx(
+        'rounded-xl bg-white',
+        className
+      )}
+    >
       <div className="relative">
         <PrismicImage
           field={data.picture.small}
-          className="md:hidden rounded-t-xl w-[20.5rem] opacity-60"
+          className="md:hidden rounded-t-xl w-full opacity-60"
         />
         <PrismicImage
           field={data.picture.large}
-          className="hidden md:block rounded-t-xl w-[34.5rem] opacity-60"
+          className="hidden md:block rounded-t-xl w-full opacity-60"
         />
         <div className="absolute top-0 w-full h-full z-10 bg-[#1E1E1E] opacity-75 rounded-t-xl"></div>
-        <div className="absolute top-0 py-[0.875rem] px-[0.75rem] md:py-[1.875rem] md:px-3 w-full h-full z-20">
+        <div className="flex items-center absolute top-0 py-[0.875rem] px-[0.75rem] md:py-[1.875rem] md:px-3 w-full h-full z-20">
           <PrismicRichText field={data.title} components={components} />
         </div>
       </div>
