@@ -9,6 +9,7 @@ import {
   Simplify
 } from '../../../prismicio-types';
 import MenuIcon from '../icons/menu';
+import { usePathname } from 'next/navigation';
 
 type MobileNavProps = {
   navegacao: GroupField<Simplify<ConfiguracoesDocumentDataNavegacaoItem>>;
@@ -16,11 +17,16 @@ type MobileNavProps = {
 
 export default function MobileNav({ navegacao }: MobileNavProps): JSX.Element {
   const [opened, setOpened] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (opened) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'unset';
   }, [opened]);
+
+  useEffect(() => {
+    setOpened(false);
+  }, [pathname]);
 
   return (
     <Fragment>
