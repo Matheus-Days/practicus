@@ -75,14 +75,17 @@ export default async function Page({ params }: { params: Params }) {
         <FieldContainer>
           <PageField iconName="location_on">
             Local:
-            <span className="font-normal">{page.data.local_do_evento}</span>
           </PageField>
+          <PrismicRichText
+            field={page.data.local_do_evento_longo}
+            components={richTextComponents}
+          />
         </FieldContainer>
 
         <FieldContainer>
           <PageField iconName="person">
             Instrutor:
-            <span className="font-normal">{page.data.instrutor_curto}</span>
+            {page.data.instrutor_curto && <span className="font-normal">{page.data.instrutor_curto}</span>} 
           </PageField>
           <PrismicRichText
             field={page.data.instrutores_longo}

@@ -48,7 +48,7 @@
       "valor_do_evento": {
         "type": "Text",
         "config": {
-          "label": "Valor do evento",
+          "label": "Valor do evento (curto)",
           "placeholder": "ex: R$3.780,00"
         }
       },
@@ -121,11 +121,29 @@
           "select": null
         }
       },
-      "local_do_evento": {
+      "local_do_evento_curto": {
         "type": "Text",
         "config": {
-          "label": "Local do evento",
+          "label": "Local do evento (curto)",
           "placeholder": "ex: Quixadá, CE"
+        }
+      },
+      "local_do_evento_longo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Local do evento (longo)",
+          "placeholder": "",
+          "allowTargetBlank": true,
+          "multi": "paragraph,strong,em"
+        }
+      },
+      "valor_do_evento_longo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Valor do evento (longo)",
+          "placeholder": "ex: até 2 pessoas R$500. 3 a 5 pessoas...",
+          "allowTargetBlank": true,
+          "multi": "paragraph,strong,em"
         }
       },
       "slices": {

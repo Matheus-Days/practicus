@@ -32,7 +32,7 @@ const SecaoEventos = async ({
         __typename: 'evento',
         date: e.data.data_do_evento,
         link: e.data.link_do_evento,
-        location: e.data.local_do_evento,
+        location: e.data.local_do_evento_curto,
         picture: {
           small: e.data.imagem_ilustrativa['Tela estreita'],
           large: e.data.imagem_ilustrativa['Tela larga']

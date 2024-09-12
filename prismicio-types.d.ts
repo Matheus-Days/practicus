@@ -247,7 +247,7 @@ interface EventoDocumentData {
   nome_do_evento: prismic.RichTextField;
 
   /**
-   * Valor do evento field in *Evento*
+   * Valor do evento (curto) field in *Evento*
    *
    * - **Field Type**: Text
    * - **Placeholder**: ex: R$3.780,00
@@ -357,15 +357,37 @@ interface EventoDocumentData {
   link_do_evento: prismic.LinkField;
 
   /**
-   * Local do evento field in *Evento*
+   * Local do evento (curto) field in *Evento*
    *
    * - **Field Type**: Text
    * - **Placeholder**: ex: Quixadá, CE
-   * - **API ID Path**: evento.local_do_evento
+   * - **API ID Path**: evento.local_do_evento_curto
    * - **Tab**: Main
    * - **Documentation**: https://prismic.io/docs/field#key-text
    */
-  local_do_evento: prismic.KeyTextField;
+  local_do_evento_curto: prismic.KeyTextField;
+
+  /**
+   * Local do evento (longo) field in *Evento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: evento.local_do_evento_longo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  local_do_evento_longo: prismic.RichTextField;
+
+  /**
+   * Valor do evento (longo) field in *Evento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: ex: até 2 pessoas R$500. 3 a 5 pessoas...
+   * - **API ID Path**: evento.valor_do_evento_longo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  valor_do_evento_longo: prismic.RichTextField;
 
   /**
    * Slice Zone field in *Evento*
