@@ -45,8 +45,11 @@ export default async function Page({ params }: { params: Params }) {
         <FieldContainer>
           <PageField iconName="attach_money">
             Investimento:
-            <span className="font-normal">{page.data.valor_do_evento}</span>
           </PageField>
+          <PrismicRichText
+            field={page.data.valor_do_evento_longo}
+            components={richTextComponents}
+          />
         </FieldContainer>
 
         <FieldContainer>
