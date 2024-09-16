@@ -5,6 +5,158 @@ import type * as prismic from "@prismicio/client";
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] };
 
 /**
+ * Content for Colaborador documents
+ */
+interface ColaboradorDocumentData {
+  /**
+   * Foto field in *Colaborador*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: colaborador.foto
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  foto: prismic.ImageField<never>;
+
+  /**
+   * Nome field in *Colaborador*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Nome e sobrenome (preferencialmente apenas 2)
+   * - **API ID Path**: colaborador.nome
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  nome: prismic.KeyTextField;
+
+  /**
+   * Apresentação curta field in *Colaborador*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: colaborador.apresentacao_curta
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  apresentacao_curta: prismic.RichTextField;
+
+  /**
+   * Apresentação longa field in *Colaborador*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: colaborador.apresentacao_longa
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  apresentacao_longa: prismic.RichTextField;
+
+  /**
+   * Ordem field in *Colaborador*
+   *
+   * - **Field Type**: Number
+   * - **Placeholder**: Valor maior ou igual a 1
+   * - **API ID Path**: colaborador.ordem
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#number
+   */
+  ordem: prismic.NumberField;
+}
+
+/**
+ * Colaborador document from Prismic
+ *
+ * - **API ID**: `colaborador`
+ * - **Repeatable**: `true`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type ColaboradorDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithUID<
+    Simplify<ColaboradorDocumentData>,
+    "colaborador",
+    Lang
+  >;
+
+type ColaboradoresDocumentDataSlicesSlice = never;
+
+/**
+ * Content for Colaboradores documents
+ */
+interface ColaboradoresDocumentData {
+  /**
+   * Título field in *Colaboradores*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Colaboradores
+   * - **API ID Path**: colaboradores.titulo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo: prismic.KeyTextField;
+
+  /**
+   * Slice Zone field in *Colaboradores*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: colaboradores.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<ColaboradoresDocumentDataSlicesSlice> /**
+   * Meta Title field in *Colaboradores*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: colaboradores.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Colaboradores*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: colaboradores.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Colaboradores*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: colaboradores.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Colaboradores document from Prismic
+ *
+ * - **API ID**: `colaboradores`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type ColaboradoresDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<
+    Simplify<ColaboradoresDocumentData>,
+    "colaboradores",
+    Lang
+  >;
+
+/**
  * Item in *Configurações → Navegação*
  */
 export interface ConfiguracoesDocumentDataNavegacaoItem {
@@ -658,6 +810,8 @@ export type QuemSomosDocument<Lang extends string = string> =
   >;
 
 export type AllDocumentTypes =
+  | ColaboradorDocument
+  | ColaboradoresDocument
   | ConfiguracoesDocument
   | DepoimentoDocument
   | EventoDocument
@@ -1068,6 +1222,11 @@ declare module "@prismicio/client" {
 
   namespace Content {
     export type {
+      ColaboradorDocument,
+      ColaboradorDocumentData,
+      ColaboradoresDocument,
+      ColaboradoresDocumentData,
+      ColaboradoresDocumentDataSlicesSlice,
       ConfiguracoesDocument,
       ConfiguracoesDocumentData,
       ConfiguracoesDocumentDataNavegacaoItem,
