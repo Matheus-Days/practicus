@@ -26,18 +26,18 @@ export default function PageBanner({
     <div className="relative rounded-xl">
       <PrismicNextImage
         field={smImageField}
-        className="md:hidden rounded-xl opacity-60 w-full"
+        className="md:hidden rounded-xl w-full"
       />
       <PrismicNextImage
         field={lgImageField}
-        className="hidden md:block rounded-xl opacity-60 w-full"
+        className="hidden md:block rounded-xl w-full"
       />
       <div className="absolute inset-0 z-20 px-3">
         <div className="flex h-full items-center">
           <PrismicRichText field={titleField} components={components} />
         </div>
       </div>
-      <div className="absolute inset-0 bg-[#1E1E1E] opacity-75 rounded-xl z-10"></div>
+      <div className="absolute inset-0 bg-[#1E1E1E] opacity-30 rounded-xl z-10"></div>
     </div>
   );
 }

@@ -17,7 +17,18 @@
           "config": {
             "label": "Imagem das conquistas",
             "constraint": {},
-            "thumbnails": []
+            "thumbnails": [
+              {
+                "name": "Tela estreita",
+                "width": 400,
+                "height": 402
+              },
+              {
+                "name": "Tela larga",
+                "width": 1128,
+                "height": 402
+              }
+            ]
           }
         },
         "titulo_da_secao": {

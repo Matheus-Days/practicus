@@ -4,15 +4,16 @@
 		"variation": "default",
 		"primary": {
 			"imagem_das_conquistas": {
+				"__TYPE__": "ImageContent",
 				"origin": {
 					"id": "main",
-					"url": "https://images.unsplash.com/photo-1589321578146-4c1ba445cc88",
-					"width": 3168,
-					"height": 4752
+					"url": "https://images.unsplash.com/photo-1606248897732-2c5ffe759c04",
+					"width": 4000,
+					"height": 4000
 				},
-				"url": "https://images.unsplash.com/photo-1589321578146-4c1ba445cc88",
-				"width": 3168,
-				"height": 4752,
+				"url": "https://images.unsplash.com/photo-1606248897732-2c5ffe759c04",
+				"width": 4000,
+				"height": 4000,
 				"edit": {
 					"zoom": 1,
 					"crop": {
@@ -21,10 +22,46 @@
 					},
 					"background": "transparent"
 				},
-				"credits": null,
-				"alt": null,
-				"__TYPE__": "ImageContent",
-				"thumbnails": {}
+				"thumbnails": {
+					"Tela estreita": {
+						"origin": {
+							"id": "Tela estreita",
+							"url": "https://images.unsplash.com/photo-1491975474562-1f4e30bc9468",
+							"width": 4000,
+							"height": 6000
+						},
+						"url": "https://images.unsplash.com/photo-1491975474562-1f4e30bc9468?rect=0%2C990%2C4000%2C4020&w=400&h=402",
+						"width": 400,
+						"height": 402,
+						"edit": {
+							"zoom": 1,
+							"crop": {
+								"x": 0,
+								"y": 990
+							},
+							"background": "transparent"
+						}
+					},
+					"Tela larga": {
+						"origin": {
+							"id": "Tela larga",
+							"url": "https://images.unsplash.com/photo-1607582278043-57198ac8da43",
+							"width": 4024,
+							"height": 4024
+						},
+						"url": "https://images.unsplash.com/photo-1607582278043-57198ac8da43?rect=0%2C1295%2C4024%2C1434&w=1128&h=402",
+						"width": 1128,
+						"height": 402,
+						"edit": {
+							"zoom": 1,
+							"crop": {
+								"x": 0,
+								"y": 1295
+							},
+							"background": "transparent"
+						}
+					}
+				}
 			},
 			"titulo_da_secao": {
 				"__TYPE__": "FieldContent",

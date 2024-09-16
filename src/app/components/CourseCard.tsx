@@ -82,13 +82,13 @@ export default async function CourseCard({ className, data }: CourseCardProps) {
       <div className="relative">
         <PrismicImage
           field={data.picture.small}
-          className="md:hidden rounded-t-xl w-full opacity-60"
+          className="md:hidden rounded-t-xl w-full"
         />
         <PrismicImage
           field={data.picture.large}
-          className="hidden md:block rounded-t-xl w-full opacity-60"
+          className="hidden md:block rounded-t-xl w-full"
         />
-        <div className="absolute top-0 w-full h-full z-10 bg-[#1E1E1E] opacity-75 rounded-t-xl"></div>
+        <div className="absolute top-0 w-full h-full z-10 bg-[#1E1E1E] opacity-60 rounded-t-xl"></div>
         <div className="flex items-center absolute top-0 py-[0.875rem] px-[0.75rem] md:py-[1.875rem] md:px-3 w-full h-full z-20">
           <PrismicRichText field={data.title} components={components} />
         </div>

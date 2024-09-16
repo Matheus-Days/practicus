@@ -609,7 +609,7 @@ export interface SecaoConquistasSliceDefaultPrimary {
    * - **API ID Path**: secao_conquistas.default.primary.imagem_das_conquistas
    * - **Documentation**: https://prismic.io/docs/field#image
    */
-  imagem_das_conquistas: prismic.ImageField<never>;
+  imagem_das_conquistas: prismic.ImageField<"Tela estreita" | "Tela larga">;
 
   /**
    * Título da seção field in *SecaoConquistas → Default → Primary*
