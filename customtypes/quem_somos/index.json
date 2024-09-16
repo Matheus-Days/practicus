@@ -1,0 +1,99 @@
+{
+  "format": "page",
+  "id": "quem_somos",
+  "label": "Quem somos",
+  "repeatable": false,
+  "status": true,
+  "json": {
+    "Main": {
+      "titulo": {
+        "type": "Text",
+        "config": {
+          "label": "Título",
+          "placeholder": "ex: Quem somos"
+        }
+      },
+      "foto_ilustrativa": {
+        "type": "Image",
+        "config": {
+          "label": "Foto ilustrativa",
+          "constraint": {
+            "height": 760,
+            "width": 1312
+          },
+          "thumbnails": []
+        }
+      },
+      "texto_de_apresentacao": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Texto de apresentação",
+          "placeholder": "Texto longo de apresentação da empresa",
+          "allowTargetBlank": true,
+          "multi": "paragraph,heading3,heading4,strong,em,image,list-item,o-list-item"
+        }
+      },
+      "proposito": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Propósito",
+          "placeholder": "Texto sobre o propósito",
+          "allowTargetBlank": true,
+          "multi": "paragraph,strong,em"
+        }
+      },
+      "missao": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Missão",
+          "placeholder": "Texto da missão da empresa",
+          "allowTargetBlank": true,
+          "multi": "paragraph,strong,em"
+        }
+      },
+      "visao": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Visão",
+          "placeholder": "Texto da visão da empresa",
+          "allowTargetBlank": true,
+          "multi": "paragraph,strong,em"
+        }
+      },
+      "slices": {
+        "type": "Slices",
+        "fieldset": "Slice Zone",
+        "config": {
+          "choices": {}
+        }
+      }
+    },
+    "SEO & Metadata": {
+      "meta_title": {
+        "config": {
+          "label": "Meta Title",
+          "placeholder": "A title of the page used for social media and search engines"
+        },
+        "type": "Text"
+      },
+      "meta_description": {
+        "config": {
+          "label": "Meta Description",
+          "placeholder": "A brief summary of the page"
+        },
+        "type": "Text"
+      },
+      "meta_image": {
+        "config": {
+          "constraint": {
+            "height": 1260,
+            "width": 2400
+          },
+          "label": "Meta Image",
+          "thumbnails": []
+        },
+        "type": "Image"
+      }
+    }
+  }
+}
