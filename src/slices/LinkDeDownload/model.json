@@ -1,0 +1,34 @@
+{
+  "id": "link_de_download",
+  "type": "SharedSlice",
+  "name": "LinkDeDownload",
+  "description": "LinkDeDownload",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "nome_do_arquivo": {
+          "type": "Text",
+          "config": {
+            "label": "Nome do arquivo",
+            "placeholder": ""
+          }
+        },
+        "arquivo": {
+          "type": "Link",
+          "config": {
+            "label": "Arquivo",
+            "placeholder": "",
+            "select": "media"
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

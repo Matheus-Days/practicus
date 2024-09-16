@@ -6,6 +6,7 @@ export const components = {
   call_to_action: dynamic(() => import("./CallToAction")),
   card_de_client: dynamic(() => import("./CardDeCliente")),
   forma_de_contato: dynamic(() => import("./FormaDeContato")),
+  link_de_download: dynamic(() => import("./LinkDeDownload")),
   secao_conquistas: dynamic(() => import("./SecaoConquistas")),
   secao_cursos: dynamic(() => import("./SecaoCursos")),
   secao_de_destaque: dynamic(() => import("./SecaoDeDestaque")),

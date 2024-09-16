@@ -1,6 +1,6 @@
-import * as prismic from "@prismicio/client";
-import * as prismicNext from "@prismicio/next";
-import config from "../slicemachine.config.json";
+import * as prismic from '@prismicio/client';
+import * as prismicNext from '@prismicio/next';
+import config from '../slicemachine.config.json';
 
 /**
  * The project's Prismic repository name.
@@ -13,30 +13,34 @@ export const repositoryName =
  *
  * {@link https://prismic.io/docs/route-resolver#route-resolver}
  */
-const routes: prismic.ClientConfig["routes"] = [
+const routes: prismic.ClientConfig['routes'] = [
   {
-  	type: "inicio",
-  	path: "/",
+    type: 'inicio',
+    path: '/'
   },
   {
-    type: "evento",
-    path: "/evento/:uid"
+    type: 'evento',
+    path: '/evento/:uid'
   },
   {
-    type: "quem_somos",
-    path: "/quem_somos"
+    type: 'quem_somos',
+    path: '/quem_somos'
   },
   {
-    type: "colaboradores",
-    path: "/colaboradores"
+    type: 'colaboradores',
+    path: '/colaboradores'
   },
   {
-    type: "contato",
-    path: "/contato"
+    type: 'contato',
+    path: '/contato'
   },
   {
-    type: "nossos_clientes",
-    path: "/nossos_clientes"
+    type: 'nossos_clientes',
+    path: '/nossos_clientes'
+  },
+  {
+    type: 'atestados_e_certidoes',
+    path: '/atestados_e_certidoes'
   }
 ];
 
@@ -50,16 +54,16 @@ export const createClient = (config: prismicNext.CreateClientConfig = {}) => {
   const client = prismic.createClient(repositoryName, {
     routes,
     fetchOptions:
-      process.env.NODE_ENV === "production"
-        ? { next: { tags: ["prismic"] }, cache: "force-cache" }
+      process.env.NODE_ENV === 'production'
+        ? { next: { tags: ['prismic'] }, cache: 'force-cache' }
         : { next: { revalidate: 5 } },
-    ...config,
+    ...config
   });
 
   prismicNext.enableAutoPreviews({
     client,
     previewData: config.previewData,
-    req: config.req,
+    req: config.req
   });
 
   return client;

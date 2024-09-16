@@ -1,0 +1,72 @@
+{
+  "format": "page",
+  "id": "atestados_e_certidoes",
+  "label": "Atestados e Certidões",
+  "repeatable": false,
+  "status": true,
+  "json": {
+    "Main": {
+      "titulo": {
+        "type": "Text",
+        "config": {
+          "label": "Título",
+          "placeholder": "ex: Atestados e Certidões"
+        }
+      },
+      "subtitulo": {
+        "type": "Text",
+        "config": {
+          "label": "Subtítulo",
+          "placeholder": ""
+        }
+      },
+      "texto_e_link_para_o_sicaf": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Texto e link para o SICAF",
+          "placeholder": "ex: Clique aqui para consultar o SICAF",
+          "allowTargetBlank": true,
+          "single": "hyperlink,paragraph"
+        }
+      },
+      "slices": {
+        "type": "Slices",
+        "fieldset": "Slice Zone",
+        "config": {
+          "choices": {
+            "link_de_download": {
+              "type": "SharedSlice"
+            }
+          }
+        }
+      }
+    },
+    "SEO & Metadata": {
+      "meta_title": {
+        "config": {
+          "label": "Meta Title",
+          "placeholder": "A title of the page used for social media and search engines"
+        },
+        "type": "Text"
+      },
+      "meta_description": {
+        "config": {
+          "label": "Meta Description",
+          "placeholder": "A brief summary of the page"
+        },
+        "type": "Text"
+      },
+      "meta_image": {
+        "config": {
+          "constraint": {
+            "height": 1260,
+            "width": 2400
+          },
+          "label": "Meta Image",
+          "thumbnails": []
+        },
+        "type": "Image"
+      }
+    }
+  }
+}

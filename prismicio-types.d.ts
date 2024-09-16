@@ -4,6 +4,104 @@ import type * as prismic from "@prismicio/client";
 
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] };
 
+type AtestadosECertidoesDocumentDataSlicesSlice = LinkDeDownloadSlice;
+
+/**
+ * Content for Atestados e Certidões documents
+ */
+interface AtestadosECertidoesDocumentData {
+  /**
+   * Título field in *Atestados e Certidões*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Atestados e Certidões
+   * - **API ID Path**: atestados_e_certidoes.titulo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo: prismic.KeyTextField;
+
+  /**
+   * Subtítulo field in *Atestados e Certidões*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: atestados_e_certidoes.subtitulo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  subtitulo: prismic.KeyTextField;
+
+  /**
+   * Texto e link para o SICAF field in *Atestados e Certidões*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: ex: Clique aqui para consultar o SICAF
+   * - **API ID Path**: atestados_e_certidoes.texto_e_link_para_o_sicaf
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto_e_link_para_o_sicaf: prismic.RichTextField;
+
+  /**
+   * Slice Zone field in *Atestados e Certidões*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: atestados_e_certidoes.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<AtestadosECertidoesDocumentDataSlicesSlice> /**
+   * Meta Title field in *Atestados e Certidões*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: atestados_e_certidoes.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Atestados e Certidões*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: atestados_e_certidoes.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Atestados e Certidões*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: atestados_e_certidoes.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Atestados e Certidões document from Prismic
+ *
+ * - **API ID**: `atestados_e_certidoes`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type AtestadosECertidoesDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<
+    Simplify<AtestadosECertidoesDocumentData>,
+    "atestados_e_certidoes",
+    Lang
+  >;
+
 /**
  * Content for Colaborador documents
  */
@@ -1017,6 +1115,7 @@ export type QuemSomosDocument<Lang extends string = string> =
   >;
 
 export type AllDocumentTypes =
+  | AtestadosECertidoesDocument
   | ColaboradorDocument
   | ColaboradoresDocument
   | ConfiguracoesDocument
@@ -1200,6 +1299,61 @@ type FormaDeContatoSliceVariation = FormaDeContatoSliceDefault;
 export type FormaDeContatoSlice = prismic.SharedSlice<
   "forma_de_contato",
   FormaDeContatoSliceVariation
+>;
+
+/**
+ * Primary content in *LinkDeDownload → Default → Primary*
+ */
+export interface LinkDeDownloadSliceDefaultPrimary {
+  /**
+   * Nome do arquivo field in *LinkDeDownload → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: link_de_download.default.primary.nome_do_arquivo
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  nome_do_arquivo: prismic.KeyTextField;
+
+  /**
+   * Arquivo field in *LinkDeDownload → Default → Primary*
+   *
+   * - **Field Type**: Link to Media
+   * - **Placeholder**: *None*
+   * - **API ID Path**: link_de_download.default.primary.arquivo
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  arquivo: prismic.LinkToMediaField;
+}
+
+/**
+ * Default variation for LinkDeDownload Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type LinkDeDownloadSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<LinkDeDownloadSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *LinkDeDownload*
+ */
+type LinkDeDownloadSliceVariation = LinkDeDownloadSliceDefault;
+
+/**
+ * LinkDeDownload Shared Slice
+ *
+ * - **API ID**: `link_de_download`
+ * - **Description**: LinkDeDownload
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type LinkDeDownloadSlice = prismic.SharedSlice<
+  "link_de_download",
+  LinkDeDownloadSliceVariation
 >;
 
 /**
@@ -1541,6 +1695,9 @@ declare module "@prismicio/client" {
 
   namespace Content {
     export type {
+      AtestadosECertidoesDocument,
+      AtestadosECertidoesDocumentData,
+      AtestadosECertidoesDocumentDataSlicesSlice,
       ColaboradorDocument,
       ColaboradorDocumentData,
       ColaboradoresDocument,
@@ -1580,6 +1737,10 @@ declare module "@prismicio/client" {
       FormaDeContatoSliceDefaultPrimary,
       FormaDeContatoSliceVariation,
       FormaDeContatoSliceDefault,
+      LinkDeDownloadSlice,
+      LinkDeDownloadSliceDefaultPrimary,
+      LinkDeDownloadSliceVariation,
+      LinkDeDownloadSliceDefault,
       SecaoConquistasSlice,
       SecaoConquistasSliceDefaultPrimary,
       SecaoConquistasSliceVariation,
