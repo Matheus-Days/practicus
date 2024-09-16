@@ -1,0 +1,90 @@
+{
+  "format": "page",
+  "id": "contato",
+  "label": "Contato",
+  "repeatable": false,
+  "status": true,
+  "json": {
+    "Main": {
+      "titulo": {
+        "type": "Text",
+        "config": {
+          "label": "Título",
+          "placeholder": "ex: Contato"
+        }
+      },
+      "mensagem_de_contato": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Mensagem de contato",
+          "placeholder": "",
+          "allowTargetBlank": true,
+          "multi": "paragraph,strong,em"
+        }
+      },
+      "foto_do_escritorio": {
+        "type": "Image",
+        "config": {
+          "label": "Foto do escritório",
+          "constraint": {},
+          "thumbnails": [
+            {
+              "name": "Tela larga",
+              "width": 1104,
+              "height": 1792
+            },
+            {
+              "name": "Tela estreita",
+              "width": 720,
+              "height": 800
+            }
+          ]
+        }
+      },
+      "coordenadas_do_escritorio": {
+        "type": "GeoPoint",
+        "config": {
+          "label": "Coordenadas do escritório"
+        }
+      },
+      "slices": {
+        "type": "Slices",
+        "fieldset": "Slice Zone",
+        "config": {
+          "choices": {
+            "forma_de_contato": {
+              "type": "SharedSlice"
+            }
+          }
+        }
+      }
+    },
+    "SEO & Metadata": {
+      "meta_title": {
+        "config": {
+          "label": "Meta Title",
+          "placeholder": "A title of the page used for social media and search engines"
+        },
+        "type": "Text"
+      },
+      "meta_description": {
+        "config": {
+          "label": "Meta Description",
+          "placeholder": "A brief summary of the page"
+        },
+        "type": "Text"
+      },
+      "meta_image": {
+        "config": {
+          "constraint": {
+            "height": 1260,
+            "width": 2400
+          },
+          "label": "Meta Image",
+          "thumbnails": []
+        },
+        "type": "Image"
+      }
+    }
+  }
+}

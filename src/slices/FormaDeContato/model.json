@@ -1,0 +1,41 @@
+{
+  "id": "forma_de_contato",
+  "type": "SharedSlice",
+  "name": "FormaDeContato",
+  "description": "FormaDeContato",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "icone": {
+          "type": "Select",
+          "config": {
+            "label": "Ícone",
+            "placeholder": "",
+            "options": [
+              "Instagram",
+              "WhatsApp",
+              "E-mail",
+              "Endereço"
+            ]
+          }
+        },
+        "texto": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Texto",
+            "placeholder": "ex: @practicustc",
+            "allowTargetBlank": false,
+            "multi": "paragraph,strong,em,hyperlink"
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

@@ -303,6 +303,115 @@ export type ConfiguracoesDocument<Lang extends string = string> =
     Lang
   >;
 
+type ContatoDocumentDataSlicesSlice = FormaDeContatoSlice;
+
+/**
+ * Content for Contato documents
+ */
+interface ContatoDocumentData {
+  /**
+   * Título field in *Contato*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Contato
+   * - **API ID Path**: contato.titulo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo: prismic.KeyTextField;
+
+  /**
+   * Mensagem de contato field in *Contato*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contato.mensagem_de_contato
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  mensagem_de_contato: prismic.RichTextField;
+
+  /**
+   * Foto do escritório field in *Contato*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contato.foto_do_escritorio
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  foto_do_escritorio: prismic.ImageField<"Tela larga" | "Tela estreita">;
+
+  /**
+   * Coordenadas do escritório field in *Contato*
+   *
+   * - **Field Type**: GeoPoint
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contato.coordenadas_do_escritorio
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#geopoint
+   */
+  coordenadas_do_escritorio: prismic.GeoPointField;
+
+  /**
+   * Slice Zone field in *Contato*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contato.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<ContatoDocumentDataSlicesSlice> /**
+   * Meta Title field in *Contato*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: contato.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Contato*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: contato.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Contato*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contato.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Contato document from Prismic
+ *
+ * - **API ID**: `contato`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type ContatoDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<
+    Simplify<ContatoDocumentData>,
+    "contato",
+    Lang
+  >;
+
 /**
  * Content for Depoimento documents
  */
@@ -813,6 +922,7 @@ export type AllDocumentTypes =
   | ColaboradorDocument
   | ColaboradoresDocument
   | ConfiguracoesDocument
+  | ContatoDocument
   | DepoimentoDocument
   | EventoDocument
   | InicioDocument
@@ -881,6 +991,61 @@ type CallToActionSliceVariation = CallToActionSliceDefault;
 export type CallToActionSlice = prismic.SharedSlice<
   "call_to_action",
   CallToActionSliceVariation
+>;
+
+/**
+ * Primary content in *FormaDeContato → Default → Primary*
+ */
+export interface FormaDeContatoSliceDefaultPrimary {
+  /**
+   * Ícone field in *FormaDeContato → Default → Primary*
+   *
+   * - **Field Type**: Select
+   * - **Placeholder**: *None*
+   * - **API ID Path**: forma_de_contato.default.primary.icone
+   * - **Documentation**: https://prismic.io/docs/field#select
+   */
+  icone: prismic.SelectField<"Instagram" | "WhatsApp" | "E-mail" | "Endereço">;
+
+  /**
+   * Texto field in *FormaDeContato → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: ex: @practicustc
+   * - **API ID Path**: forma_de_contato.default.primary.texto
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto: prismic.RichTextField;
+}
+
+/**
+ * Default variation for FormaDeContato Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type FormaDeContatoSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<FormaDeContatoSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *FormaDeContato*
+ */
+type FormaDeContatoSliceVariation = FormaDeContatoSliceDefault;
+
+/**
+ * FormaDeContato Shared Slice
+ *
+ * - **API ID**: `forma_de_contato`
+ * - **Description**: FormaDeContato
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type FormaDeContatoSlice = prismic.SharedSlice<
+  "forma_de_contato",
+  FormaDeContatoSliceVariation
 >;
 
 /**
@@ -1231,6 +1396,9 @@ declare module "@prismicio/client" {
       ConfiguracoesDocumentData,
       ConfiguracoesDocumentDataNavegacaoItem,
       ConfiguracoesDocumentDataSlicesSlice,
+      ContatoDocument,
+      ContatoDocumentData,
+      ContatoDocumentDataSlicesSlice,
       DepoimentoDocument,
       DepoimentoDocumentData,
       EventoDocument,
@@ -1247,6 +1415,10 @@ declare module "@prismicio/client" {
       CallToActionSliceDefaultPrimary,
       CallToActionSliceVariation,
       CallToActionSliceDefault,
+      FormaDeContatoSlice,
+      FormaDeContatoSliceDefaultPrimary,
+      FormaDeContatoSliceVariation,
+      FormaDeContatoSliceDefault,
       SecaoConquistasSlice,
       SecaoConquistasSliceDefaultPrimary,
       SecaoConquistasSliceVariation,

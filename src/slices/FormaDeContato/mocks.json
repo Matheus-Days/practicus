@@ -1,0 +1,25 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"icone": {
+				"__TYPE__": "FieldContent",
+				"value": "WhatsApp",
+				"type": "Select"
+			},
+			"texto": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Aute amet consectetur velit sint ipsum voluptate. Reprehenderit exercitation quis amet. Sunt labore proident cillum irure nulla ipsum qui ipsum do veniam incididunt eiusmod."
+						}
+					}
+				]
+			}
+		},
+		"items": []
+	}
+]
