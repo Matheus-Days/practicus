@@ -787,6 +787,104 @@ export type InicioDocument<Lang extends string = string> =
     Lang
   >;
 
+type NossosClientesDocumentDataSlicesSlice = CardDeClientSlice;
+
+/**
+ * Content for Nossos clientes documents
+ */
+interface NossosClientesDocumentData {
+  /**
+   * Título field in *Nossos clientes*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Nossos clientes
+   * - **API ID Path**: nossos_clientes.titulo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo: prismic.KeyTextField;
+
+  /**
+   * Descrição da página field in *Nossos clientes*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: nossos_clientes.descricao_da_pagina
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  descricao_da_pagina: prismic.RichTextField;
+
+  /**
+   * Imagem ilustrativa field in *Nossos clientes*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: nossos_clientes.imagem_ilustrativa
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  imagem_ilustrativa: prismic.ImageField<never>;
+
+  /**
+   * Slice Zone field in *Nossos clientes*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: nossos_clientes.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<NossosClientesDocumentDataSlicesSlice> /**
+   * Meta Title field in *Nossos clientes*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: nossos_clientes.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Nossos clientes*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: nossos_clientes.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Nossos clientes*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: nossos_clientes.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Nossos clientes document from Prismic
+ *
+ * - **API ID**: `nossos_clientes`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type NossosClientesDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<
+    Simplify<NossosClientesDocumentData>,
+    "nossos_clientes",
+    Lang
+  >;
+
 type QuemSomosDocumentDataSlicesSlice = never;
 
 /**
@@ -926,6 +1024,7 @@ export type AllDocumentTypes =
   | DepoimentoDocument
   | EventoDocument
   | InicioDocument
+  | NossosClientesDocument
   | QuemSomosDocument;
 
 /**
@@ -991,6 +1090,61 @@ type CallToActionSliceVariation = CallToActionSliceDefault;
 export type CallToActionSlice = prismic.SharedSlice<
   "call_to_action",
   CallToActionSliceVariation
+>;
+
+/**
+ * Primary content in *CardDeCliente → Default → Primary*
+ */
+export interface CardDeClientSliceDefaultPrimary {
+  /**
+   * Logo do cliente field in *CardDeCliente → Default → Primary*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: card_de_client.default.primary.logo_do_cliente
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  logo_do_cliente: prismic.ImageField<"Tela estreita" | "Tela larga">;
+
+  /**
+   * Nome do cliente field in *CardDeCliente → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Prefeitura de Varjota
+   * - **API ID Path**: card_de_client.default.primary.nome_do_cliente
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  nome_do_cliente: prismic.KeyTextField;
+}
+
+/**
+ * Default variation for CardDeCliente Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CardDeClientSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<CardDeClientSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *CardDeCliente*
+ */
+type CardDeClientSliceVariation = CardDeClientSliceDefault;
+
+/**
+ * CardDeCliente Shared Slice
+ *
+ * - **API ID**: `card_de_client`
+ * - **Description**: CardDeClient
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CardDeClientSlice = prismic.SharedSlice<
+  "card_de_client",
+  CardDeClientSliceVariation
 >;
 
 /**
@@ -1407,6 +1561,9 @@ declare module "@prismicio/client" {
       InicioDocument,
       InicioDocumentData,
       InicioDocumentDataSlicesSlice,
+      NossosClientesDocument,
+      NossosClientesDocumentData,
+      NossosClientesDocumentDataSlicesSlice,
       QuemSomosDocument,
       QuemSomosDocumentData,
       QuemSomosDocumentDataSlicesSlice,
@@ -1415,6 +1572,10 @@ declare module "@prismicio/client" {
       CallToActionSliceDefaultPrimary,
       CallToActionSliceVariation,
       CallToActionSliceDefault,
+      CardDeClientSlice,
+      CardDeClientSliceDefaultPrimary,
+      CardDeClientSliceVariation,
+      CardDeClientSliceDefault,
       FormaDeContatoSlice,
       FormaDeContatoSliceDefaultPrimary,
       FormaDeContatoSliceVariation,

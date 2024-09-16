@@ -1,0 +1,45 @@
+{
+  "id": "card_de_client",
+  "type": "SharedSlice",
+  "name": "CardDeCliente",
+  "description": "CardDeClient",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "logo_do_cliente": {
+          "type": "Image",
+          "config": {
+            "label": "Logo do cliente",
+            "constraint": {},
+            "thumbnails": [
+              {
+                "name": "Tela estreita",
+                "width": 156,
+                "height": 112
+              },
+              {
+                "name": "Tela larga",
+                "width": 264,
+                "height": 264
+              }
+            ]
+          }
+        },
+        "nome_do_cliente": {
+          "type": "Text",
+          "config": {
+            "label": "Nome do cliente",
+            "placeholder": "ex: Prefeitura de Varjota"
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}
