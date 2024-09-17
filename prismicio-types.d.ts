@@ -749,6 +749,17 @@ interface EventoDocumentData {
   valor_do_evento_longo: prismic.RichTextField;
 
   /**
+   * Subtítulo do evento field in *Evento*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Parágrafo único
+   * - **API ID Path**: evento.subtitulo_do_evento
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  subtitulo_do_evento: prismic.RichTextField;
+
+  /**
    * Slice Zone field in *Evento*
    *
    * - **Field Type**: Slice Zone
@@ -882,6 +893,336 @@ export type InicioDocument<Lang extends string = string> =
   prismic.PrismicDocumentWithoutUID<
     Simplify<InicioDocumentData>,
     "inicio",
+    Lang
+  >;
+
+type ModuloOuCursoDocumentDataSlicesSlice = CallToActionSlice;
+
+/**
+ * Content for Módulo ou Curso documents
+ */
+interface ModuloOuCursoDocumentData {
+  /**
+   * Título da página field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Select
+   * - **Placeholder**: Também indica o tipo de página: "Módulo" ou "Curso"
+   * - **API ID Path**: modulo_ou_curso.titulo_da_pagina
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#select
+   */
+  titulo_da_pagina: prismic.SelectField<"Módulo" | "Curso">;
+
+  /**
+   * Título do curso ou módulo field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: modulo_ou_curso.titulo_do_curso_ou_modulo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  titulo_do_curso_ou_modulo: prismic.RichTextField;
+
+  /**
+   * Imagem ilustrativa field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: modulo_ou_curso.imagem_ilustrativa
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  imagem_ilustrativa: prismic.ImageField<
+    "Tela larga" | "Tela estreita" | "Banner"
+  >;
+
+  /**
+   * Público-alvo field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Um ou mais parágrafos
+   * - **API ID Path**: modulo_ou_curso.publico_alvo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  publico_alvo: prismic.RichTextField;
+
+  /**
+   * Investimento (curto) field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: a partir de R$3.780,00
+   * - **API ID Path**: modulo_ou_curso.investimento_curto
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  investimento_curto: prismic.KeyTextField;
+
+  /**
+   * Investimento (longo) field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Um ou mais parágrafos
+   * - **API ID Path**: modulo_ou_curso.investimento_longo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  investimento_longo: prismic.RichTextField;
+
+  /**
+   * Carga horária field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: 4h
+   * - **API ID Path**: modulo_ou_curso.carga_horaria
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  carga_horaria: prismic.KeyTextField;
+
+  /**
+   * Instrutor (curto) field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Me. Ricardo Dias
+   * - **API ID Path**: modulo_ou_curso.instrutor_curto
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  instrutor_curto: prismic.KeyTextField;
+
+  /**
+   * Instrutores (longo) field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Listagem dos instrutores e suas credenciais
+   * - **API ID Path**: modulo_ou_curso.instrutores_longo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  instrutores_longo: prismic.RichTextField;
+
+  /**
+   * Conteúdo field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Um ou mais parágrafos
+   * - **API ID Path**: modulo_ou_curso.conteudo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  conteudo: prismic.RichTextField;
+
+  /**
+   * Subtítulo do módulo ou curso field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Parágrafo único
+   * - **API ID Path**: modulo_ou_curso.subtitulo_do_modulo_ou_curso
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  subtitulo_do_modulo_ou_curso: prismic.RichTextField;
+
+  /**
+   * Link para o módulo ou curso field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: Redireciona do Card para a página do módulo ou curso
+   * - **API ID Path**: modulo_ou_curso.link_para_o_modulo_ou_curso
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  link_para_o_modulo_ou_curso: prismic.LinkField;
+
+  /**
+   * Slice Zone field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: modulo_ou_curso.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<ModuloOuCursoDocumentDataSlicesSlice> /**
+   * Meta Title field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: modulo_ou_curso.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: modulo_ou_curso.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Módulo ou Curso*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: modulo_ou_curso.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Módulo ou Curso document from Prismic
+ *
+ * - **API ID**: `modulo_ou_curso`
+ * - **Repeatable**: `true`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type ModuloOuCursoDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithUID<
+    Simplify<ModuloOuCursoDocumentData>,
+    "modulo_ou_curso",
+    Lang
+  >;
+
+type ModulosECursosDocumentDataSlicesSlice = CallToActionSlice;
+
+/**
+ * Content for Módulos e Cursos documents
+ */
+interface ModulosECursosDocumentData {
+  /**
+   * Título da página field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Cursos e Módulos
+   * - **API ID Path**: modulos_e_cursos.titulo_da_pagina
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_pagina: prismic.KeyTextField;
+
+  /**
+   * Texto-descrição da página field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Um ou mais parágrafos
+   * - **API ID Path**: modulos_e_cursos.texto_descricao_da_pagina
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto_descricao_da_pagina: prismic.RichTextField;
+
+  /**
+   * Título da seção "Cursos" field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Cursos
+   * - **API ID Path**: modulos_e_cursos.titulo_da_secao_cursos
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_secao_cursos: prismic.KeyTextField;
+
+  /**
+   * Texto da seção "Cursos" field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Um ou mais parágrafos
+   * - **API ID Path**: modulos_e_cursos.texto_da_secao_cursos
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto_da_secao_cursos: prismic.RichTextField;
+
+  /**
+   * Título da seção "Módulos" field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: "Módulos"
+   * - **API ID Path**: modulos_e_cursos.titulo_da_secao_modulos
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_secao_modulos: prismic.KeyTextField;
+
+  /**
+   * Texto da seção "Módulos" field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Um ou mais parágrafos
+   * - **API ID Path**: modulos_e_cursos.texto_da_secao_modulos
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto_da_secao_modulos: prismic.RichTextField;
+
+  /**
+   * Slice Zone field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: modulos_e_cursos.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<ModulosECursosDocumentDataSlicesSlice> /**
+   * Meta Title field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: modulos_e_cursos.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: modulos_e_cursos.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Módulos e Cursos*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: modulos_e_cursos.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Módulos e Cursos document from Prismic
+ *
+ * - **API ID**: `modulos_e_cursos`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type ModulosECursosDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<
+    Simplify<ModulosECursosDocumentData>,
+    "modulos_e_cursos",
     Lang
   >;
 
@@ -1123,6 +1464,8 @@ export type AllDocumentTypes =
   | DepoimentoDocument
   | EventoDocument
   | InicioDocument
+  | ModuloOuCursoDocument
+  | ModulosECursosDocument
   | NossosClientesDocument
   | QuemSomosDocument;
 
@@ -1718,6 +2061,12 @@ declare module "@prismicio/client" {
       InicioDocument,
       InicioDocumentData,
       InicioDocumentDataSlicesSlice,
+      ModuloOuCursoDocument,
+      ModuloOuCursoDocumentData,
+      ModuloOuCursoDocumentDataSlicesSlice,
+      ModulosECursosDocument,
+      ModulosECursosDocumentData,
+      ModulosECursosDocumentDataSlicesSlice,
       NossosClientesDocument,
       NossosClientesDocumentData,
       NossosClientesDocumentDataSlicesSlice,

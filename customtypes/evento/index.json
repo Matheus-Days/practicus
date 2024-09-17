@@ -146,6 +146,15 @@
           "multi": "paragraph,strong,em"
         }
       },
+      "subtitulo_do_evento": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Subtítulo do evento",
+          "placeholder": "Parágrafo único",
+          "allowTargetBlank": false,
+          "single": "paragraph,strong,em"
+        }
+      },
       "slices": {
         "type": "Slices",
         "fieldset": "Slice Zone",

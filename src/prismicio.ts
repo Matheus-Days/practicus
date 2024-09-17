@@ -41,6 +41,14 @@ const routes: prismic.ClientConfig['routes'] = [
   {
     type: 'atestados_e_certidoes',
     path: '/atestados_e_certidoes'
+  },
+  {
+    type: 'modulo_ou_curso',
+    path: '/modulo_ou_curso/:uid'
+  },
+  {
+    type: 'modulos_e_cursos',
+    path: '/modulos_e_cursos'
   }
 ];
 

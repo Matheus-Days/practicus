@@ -1,0 +1,171 @@
+{
+  "format": "page",
+  "id": "modulo_ou_curso",
+  "label": "Módulo ou Curso",
+  "repeatable": true,
+  "status": true,
+  "json": {
+    "Main": {
+      "uid": {
+        "type": "UID",
+        "config": {
+          "label": "UID"
+        }
+      },
+      "titulo_da_pagina": {
+        "type": "Select",
+        "config": {
+          "label": "Título da página",
+          "placeholder": "Também indica o tipo de página: \"Módulo\" ou \"Curso\"",
+          "options": ["Módulo", "Curso"]
+        }
+      },
+      "titulo_do_curso_ou_modulo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Título do curso ou módulo",
+          "placeholder": "",
+          "allowTargetBlank": false,
+          "multi": "paragraph,strong,em"
+        }
+      },
+      "imagem_ilustrativa": {
+        "type": "Image",
+        "config": {
+          "label": "Imagem ilustrativa",
+          "constraint": {},
+          "thumbnails": [
+            {
+              "name": "Tela larga",
+              "width": 1104,
+              "height": 300
+            },
+            {
+              "name": "Tela estreita",
+              "width": 328,
+              "height": 100
+            },
+            {
+              "name": "Banner",
+              "width": 1128,
+              "height": 140
+            }
+          ]
+        }
+      },
+      "publico_alvo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Público-alvo",
+          "placeholder": "Um ou mais parágrafos",
+          "allowTargetBlank": false,
+          "multi": "paragraph,strong,em,o-list-item,list-item,heading3,heading4"
+        }
+      },
+      "investimento_curto": {
+        "type": "Text",
+        "config": {
+          "label": "Investimento (curto)",
+          "placeholder": "ex: a partir de R$3.780,00"
+        }
+      },
+      "investimento_longo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Investimento (longo)",
+          "placeholder": "Um ou mais parágrafos",
+          "allowTargetBlank": false,
+          "multi": "paragraph,strong,em"
+        }
+      },
+      "carga_horaria": {
+        "type": "Text",
+        "config": {
+          "label": "Carga horária",
+          "placeholder": "ex: 4h"
+        }
+      },
+      "instrutor_curto": {
+        "type": "Text",
+        "config": {
+          "label": "Instrutor (curto)",
+          "placeholder": "ex: Me. Ricardo Dias"
+        }
+      },
+      "instrutores_longo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Instrutores (longo)",
+          "placeholder": "Listagem dos instrutores e suas credenciais",
+          "allowTargetBlank": true,
+          "multi": "paragraph,heading3,heading4,strong,em,hyperlink,image,list-item,o-list-item"
+        }
+      },
+      "conteudo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Conteúdo",
+          "placeholder": "Um ou mais parágrafos",
+          "allowTargetBlank": true,
+          "multi": "paragraph,heading3,heading4,strong,em,hyperlink,image,list-item,o-list-item"
+        }
+      },
+      "subtitulo_do_modulo_ou_curso": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Subtítulo do módulo ou curso",
+          "placeholder": "Parágrafo único",
+          "allowTargetBlank": false,
+          "single": "paragraph,strong,em"
+        }
+      },
+      "link_para_o_modulo_ou_curso": {
+        "type": "Link",
+        "config": {
+          "label": "Link para o módulo ou curso",
+          "placeholder": "Redireciona do Card para a página do módulo ou curso",
+          "allowTargetBlank": false,
+          "select": null
+        }
+      },
+      "slices": {
+        "type": "Slices",
+        "fieldset": "Slice Zone",
+        "config": {
+          "choices": {
+            "call_to_action": {
+              "type": "SharedSlice"
+            }
+          }
+        }
+      }
+    },
+    "SEO & Metadata": {
+      "meta_title": {
+        "config": {
+          "label": "Meta Title",
+          "placeholder": "A title of the page used for social media and search engines"
+        },
+        "type": "Text"
+      },
+      "meta_description": {
+        "config": {
+          "label": "Meta Description",
+          "placeholder": "A brief summary of the page"
+        },
+        "type": "Text"
+      },
+      "meta_image": {
+        "config": {
+          "constraint": {
+            "height": 1260,
+            "width": 2400
+          },
+          "label": "Meta Image",
+          "thumbnails": []
+        },
+        "type": "Image"
+      }
+    }
+  }
+}

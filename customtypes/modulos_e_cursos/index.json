@@ -1,0 +1,97 @@
+{
+  "format": "page",
+  "id": "modulos_e_cursos",
+  "label": "Módulos e Cursos",
+  "repeatable": false,
+  "status": true,
+  "json": {
+    "Main": {
+      "titulo_da_pagina": {
+        "type": "Text",
+        "config": {
+          "label": "Título da página",
+          "placeholder": "ex: Cursos e Módulos"
+        }
+      },
+      "texto_descricao_da_pagina": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Texto-descrição da página",
+          "placeholder": "Um ou mais parágrafos",
+          "allowTargetBlank": true,
+          "multi": "paragraph,heading3,heading4,strong,em,list-item,o-list-item,hyperlink"
+        }
+      },
+      "titulo_da_secao_cursos": {
+        "type": "Text",
+        "config": {
+          "label": "Título da seção \"Cursos\"",
+          "placeholder": "ex: Cursos"
+        }
+      },
+      "texto_da_secao_cursos": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Texto da seção \"Cursos\"",
+          "placeholder": "Um ou mais parágrafos",
+          "allowTargetBlank": true,
+          "multi": "paragraph,heading3,heading4,strong,em,hyperlink,image,list-item,o-list-item"
+        }
+      },
+      "titulo_da_secao_modulos": {
+        "type": "Text",
+        "config": {
+          "label": "Título da seção \"Módulos\"",
+          "placeholder": "ex: \"Módulos\""
+        }
+      },
+      "texto_da_secao_modulos": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Texto da seção \"Módulos\"",
+          "placeholder": "Um ou mais parágrafos",
+          "allowTargetBlank": true,
+          "multi": "paragraph,heading3,heading4,strong,em,hyperlink,image,list-item,o-list-item"
+        }
+      },
+      "slices": {
+        "type": "Slices",
+        "fieldset": "Slice Zone",
+        "config": {
+          "choices": {
+            "call_to_action": {
+              "type": "SharedSlice"
+            }
+          }
+        }
+      }
+    },
+    "SEO & Metadata": {
+      "meta_title": {
+        "config": {
+          "label": "Meta Title",
+          "placeholder": "A title of the page used for social media and search engines"
+        },
+        "type": "Text"
+      },
+      "meta_description": {
+        "config": {
+          "label": "Meta Description",
+          "placeholder": "A brief summary of the page"
+        },
+        "type": "Text"
+      },
+      "meta_image": {
+        "config": {
+          "constraint": {
+            "height": 1260,
+            "width": 2400
+          },
+          "label": "Meta Image",
+          "thumbnails": []
+        },
+        "type": "Image"
+      }
+    }
+  }
+}
