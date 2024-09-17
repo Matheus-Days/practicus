@@ -49,6 +49,10 @@ const routes: prismic.ClientConfig['routes'] = [
   {
     type: 'modulos_e_cursos',
     path: '/modulos_e_cursos'
+  },
+  {
+    type: 'proximos_eventos',
+    path: '/proximos_eventos'
   }
 ];
 

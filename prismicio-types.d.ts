@@ -1324,6 +1324,121 @@ export type NossosClientesDocument<Lang extends string = string> =
     Lang
   >;
 
+/**
+ * Item in *Próximos Eventos → Eventos abertos*
+ */
+export interface ProximosEventosDocumentDataEventosAbertosItem {
+  /**
+   * Evento field in *Próximos Eventos → Eventos abertos*
+   *
+   * - **Field Type**: Content Relationship
+   * - **Placeholder**: *None*
+   * - **API ID Path**: proximos_eventos.eventos_abertos[].evento
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  evento: prismic.ContentRelationshipField<"evento">;
+}
+
+type ProximosEventosDocumentDataSlicesSlice = CallToActionSlice;
+
+/**
+ * Content for Próximos Eventos documents
+ */
+interface ProximosEventosDocumentData {
+  /**
+   * Título da página field in *Próximos Eventos*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Próximos eventos
+   * - **API ID Path**: proximos_eventos.titulo_da_pagina
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_pagina: prismic.KeyTextField;
+
+  /**
+   * Texto da página field in *Próximos Eventos*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Um ou mais parágrafos
+   * - **API ID Path**: proximos_eventos.texto_da_pagina
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  texto_da_pagina: prismic.RichTextField;
+
+  /**
+   * Eventos abertos field in *Próximos Eventos*
+   *
+   * - **Field Type**: Group
+   * - **Placeholder**: *None*
+   * - **API ID Path**: proximos_eventos.eventos_abertos[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#group
+   */
+  eventos_abertos: prismic.GroupField<
+    Simplify<ProximosEventosDocumentDataEventosAbertosItem>
+  >;
+
+  /**
+   * Slice Zone field in *Próximos Eventos*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: proximos_eventos.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<ProximosEventosDocumentDataSlicesSlice> /**
+   * Meta Title field in *Próximos Eventos*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: proximos_eventos.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Próximos Eventos*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: proximos_eventos.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Próximos Eventos*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: proximos_eventos.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Próximos Eventos document from Prismic
+ *
+ * - **API ID**: `proximos_eventos`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type ProximosEventosDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<
+    Simplify<ProximosEventosDocumentData>,
+    "proximos_eventos",
+    Lang
+  >;
+
 type QuemSomosDocumentDataSlicesSlice = never;
 
 /**
@@ -1467,6 +1582,7 @@ export type AllDocumentTypes =
   | ModuloOuCursoDocument
   | ModulosECursosDocument
   | NossosClientesDocument
+  | ProximosEventosDocument
   | QuemSomosDocument;
 
 /**
@@ -2070,6 +2186,10 @@ declare module "@prismicio/client" {
       NossosClientesDocument,
       NossosClientesDocumentData,
       NossosClientesDocumentDataSlicesSlice,
+      ProximosEventosDocument,
+      ProximosEventosDocumentData,
+      ProximosEventosDocumentDataEventosAbertosItem,
+      ProximosEventosDocumentDataSlicesSlice,
       QuemSomosDocument,
       QuemSomosDocumentData,
       QuemSomosDocumentDataSlicesSlice,
