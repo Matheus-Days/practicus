@@ -20,7 +20,7 @@ const SecaoCursos = ({ slice }: SecaoCursosProps): JSX.Element => {
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      <HeadingBadge>{slice.primary.titulo_da_secao}</HeadingBadge>
+      <HeadingBadge as="h2">{slice.primary.titulo_da_secao}</HeadingBadge>
 
       <div className="flex justify-center w-full">
         <div className="relative w-full max-w-[70.5rem]">

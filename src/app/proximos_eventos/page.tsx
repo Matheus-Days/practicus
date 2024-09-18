@@ -12,7 +12,7 @@ export default async function Page() {
 
   return (
     <BoundedMain>
-      <HeadingBadge>{page.data.titulo_da_pagina}</HeadingBadge>
+      <HeadingBadge as="h1">{page.data.titulo_da_pagina}</HeadingBadge>
       <SliceZone slices={page.data.slices} components={components} />;
     </BoundedMain>
   );

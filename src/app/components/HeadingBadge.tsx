@@ -1,12 +1,22 @@
 import clsx from 'clsx';
-import { ReactNode } from 'react';
+
+type HeadingBadgeProps = React.HTMLProps<HTMLElement> & {
+  as: 'h1' | 'h2';
+};
+
+function HeadingWrapper({ as, className, children }: HeadingBadgeProps) {
+  if (as === 'h1') return <h1 className={className}>{children}</h1>;
+  else return <h2 className={className}>{children}</h2>;
+}
 
 export default async function HeadingBadge({
+  as,
   children,
   className
-}: React.HTMLProps<HTMLElement>) {
+}: HeadingBadgeProps) {
   return (
-    <h2
+    <HeadingWrapper
+      as={as}
       className={clsx(
         'flex font-display text-lg md:text-2xl text-primary justify-center md:justify-start',
         className
@@ -15,6 +25,6 @@ export default async function HeadingBadge({
       <span className="rounded-lg border-primary border md:border-2 py-[6px] px-4 leading-5 md:leading-[2.625rem] font-medium">
         {children}
       </span>
-    </h2>
+    </HeadingWrapper>
   );
 }

@@ -11,7 +11,7 @@ export default async function Page() {
 
   return (
     <main>
-      <HeadingBadge>{page.data.titulo}</HeadingBadge>
+      <HeadingBadge as="h1">{page.data.titulo}</HeadingBadge>
       <SliceZone slices={page.data.slices} components={components} />
     </main>
   );

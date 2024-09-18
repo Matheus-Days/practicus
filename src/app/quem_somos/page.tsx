@@ -57,7 +57,7 @@ export default async function Page() {
 
   return (
     <BoundedMain>
-      <HeadingBadge>{page.data.titulo}</HeadingBadge>
+      <HeadingBadge as="h1">{page.data.titulo}</HeadingBadge>
       <div className="flex justify-center mt-3 md:mt-6">
         <iframe
           width="100%"

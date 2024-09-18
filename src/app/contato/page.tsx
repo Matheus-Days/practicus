@@ -17,7 +17,7 @@ export default async function Page() {
   return (
     <BoundedMain className="md:grid grid-cols-2 gap-6 px-0">
       <div>
-        <HeadingBadge className="px-4">{page.data.titulo}</HeadingBadge>
+        <HeadingBadge as="h1" className="px-4">{page.data.titulo}</HeadingBadge>
         <div className="mt-6 px-4">
           <PrismicRichText
             field={page.data.mensagem_de_contato}

@@ -19,7 +19,7 @@ const SecaoConquistas = ({ slice }: SecaoConquistasProps): JSX.Element => {
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      <HeadingBadge>{slice.primary.titulo_da_secao}</HeadingBadge>
+      <HeadingBadge as="h2">{slice.primary.titulo_da_secao}</HeadingBadge>
       <PrismicNextImage
         field={slice.primary.imagem_das_conquistas}
         className="rounded-xl w-full max-w-[25rem]"

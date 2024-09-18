@@ -49,7 +49,7 @@ const SecaoEventos = async ({
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      <HeadingBadge>{slice.primary.titulo_da_secao}</HeadingBadge>
+      <HeadingBadge as="h2">{slice.primary.titulo_da_secao}</HeadingBadge>
 
       {eventos.length > 0 ? (
         <div className="flex flex-col max-w-[70.5rem] md:flex-row justify-center w-full gap-4 md:gap-6">

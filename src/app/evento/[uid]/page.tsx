@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: Params }) {
     .catch(() => notFound());
   return (
     <BoundedMain>
-      <HeadingBadge className="mb-3">Evento</HeadingBadge>
+      <HeadingBadge as="h1" className="mb-3">Evento</HeadingBadge>
 
       <PageBanner
         smImageField={page.data.imagem_ilustrativa['Tela estreita']}

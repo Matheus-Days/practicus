@@ -18,7 +18,7 @@ export default async function Page({ params }: { params: Params }) {
 
   return (
     <BoundedMain>
-      <HeadingBadge>{page.data.titulo_da_pagina}</HeadingBadge>
+      <HeadingBadge as="h1">{page.data.titulo_da_pagina}</HeadingBadge>
       <PrismicRichText
         field={page.data.titulo_do_curso_ou_modulo}
         components={richTextComponents}

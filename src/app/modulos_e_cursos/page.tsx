@@ -5,7 +5,6 @@ import { components } from '@/slices';
 import HeadingBadge from '@/app/components/HeadingBadge';
 import { richTextComponents } from '@/app/components/sharedRichTextComponents';
 import BoundedMain from '@/app/components/BoundedMain';
-import LinkButton from '../components/LinkButton';
 import { PrismicNextLink } from '@prismicio/next';
 
 export default async function Page() {
@@ -20,11 +19,10 @@ export default async function Page() {
   const cursos = modulosECursos.filter(
     (mc) => mc.data.titulo_da_pagina === 'Curso'
   );
-  console.log(modulos[0].data)
 
   return (
     <BoundedMain>
-      <HeadingBadge>{page.data.titulo_da_pagina}</HeadingBadge>
+      <HeadingBadge as="h1">{page.data.titulo_da_pagina}</HeadingBadge>
 
       <h2>{page.data.titulo_da_secao_cursos}</h2>
       {cursos.map((curso) => (

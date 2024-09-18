@@ -16,7 +16,7 @@ export default async function Page() {
 
   return (
     <main>
-      <HeadingBadge>{page.data.titulo}</HeadingBadge>
+      <HeadingBadge as="h1">{page.data.titulo}</HeadingBadge>
       {colaboradores.map((colaborador) => (
         <div key={colaborador.uid}>{colaborador.data.nome}</div>
       ))}
