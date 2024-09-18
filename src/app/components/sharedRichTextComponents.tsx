@@ -8,7 +8,9 @@ export const commonComponents: JSXMapSerializer = {
 export const richTextComponents: JSXMapSerializer = {
   ...commonComponents,
   paragraph: ({ children }) => (
-    <p className="font-body text-base md:text-lg text-primary">{children}</p>
+    <p className="font-body text-base md:text-lg text-primary min-h-[14px] md:min-h-4">
+      {children}
+    </p>
   ),
   heading3: ({ children }) => (
     <h3 className="font-body text-[1.25rem] md:text-[1.375rem] text-primary">

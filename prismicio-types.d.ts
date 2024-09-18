@@ -1457,17 +1457,6 @@ interface QuemSomosDocumentData {
   titulo: prismic.KeyTextField;
 
   /**
-   * Foto ilustrativa field in *Quem somos*
-   *
-   * - **Field Type**: Image
-   * - **Placeholder**: *None*
-   * - **API ID Path**: quem_somos.foto_ilustrativa
-   * - **Tab**: Main
-   * - **Documentation**: https://prismic.io/docs/field#image
-   */
-  foto_ilustrativa: prismic.ImageField<never>;
-
-  /**
    * Texto de apresentação field in *Quem somos*
    *
    * - **Field Type**: Rich Text
@@ -1510,6 +1499,17 @@ interface QuemSomosDocumentData {
    * - **Documentation**: https://prismic.io/docs/field#rich-text-title
    */
   visao: prismic.RichTextField;
+
+  /**
+   * Vídeo field in *Quem somos*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: URL de incorporação do Youtube
+   * - **API ID Path**: quem_somos.video
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  video: prismic.LinkField;
 
   /**
    * Slice Zone field in *Quem somos*
