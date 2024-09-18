@@ -45,7 +45,7 @@ export default async function Page() {
       </div>
       <PrismicNextImage
         field={page.data.foto_do_escritorio['Tela larga']}
-        className="hidden md:block rounded-xl"
+        className="hidden md:block rounded-xl max-w-[34.5rem]"
       />
     </BoundedMain>
   );
