@@ -31,7 +31,7 @@ const SecaoCursos = ({ slice }: SecaoCursosProps): JSX.Element => {
             />
             <BoundedImage
               field={slice.primary.imagem_de_fundo['Telas largas']}
-              className="hidden md:block"
+              className="hidden md:block rounded-[1.75rem]"
             />
           </PrismicNextLink>
 

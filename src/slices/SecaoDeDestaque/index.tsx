@@ -25,7 +25,7 @@ const SecaoDeDestaque = ({ slice }: SecaoDeDestaqueProps): JSX.Element => {
       />
       <BoundedImage
         field={slice.primary.banner['Tela larga']}
-        className="hidden md:block"
+        className="hidden md:block rounded-[1.75rem]"
       />
     </section>
   );
