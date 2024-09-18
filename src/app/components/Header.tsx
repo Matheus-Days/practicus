@@ -9,7 +9,7 @@ export default async function Header() {
   const page = await client.getSingle('configuracoes');
 
   return (
-    <header className="flex justify-between items-center py-2 px-6 relative border-b border-accent md:border-0">
+    <header className="flex justify-between items-center py-2 px-6 relative border-b border-accent">
       <Link href="/"><PrismicNextImage field={page.data.logo} /></Link>
       
       <MobileNav navegacao={page.data.navegacao} />

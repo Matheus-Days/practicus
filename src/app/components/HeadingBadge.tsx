@@ -8,7 +8,7 @@ export default async function HeadingBadge({
   return (
     <h2
       className={clsx(
-        'flex font-display text-lg md:text-2xl text-primary',
+        'flex font-display text-lg md:text-2xl text-primary justify-center md:justify-start',
         className
       )}
     >

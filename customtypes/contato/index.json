@@ -41,10 +41,13 @@
           ]
         }
       },
-      "coordenadas_do_escritorio": {
-        "type": "GeoPoint",
+      "link_do_google_maps_do_escritorio": {
+        "type": "Link",
         "config": {
-          "label": "Coordenadas do escritório"
+          "label": "Link do Google Maps do escritório",
+          "placeholder": "",
+          "allowTargetBlank": false,
+          "select": null
         }
       },
       "slices": {

@@ -1,11 +1,15 @@
 import { JSXMapSerializer } from '@prismicio/react';
 
+export const commonComponents: JSXMapSerializer = {
+  em: ({ children }) => <em className="italic">{children}</em>,
+  strong: ({ children }) => <b className="font-medium">{children}</b>
+};
+
 export const richTextComponents: JSXMapSerializer = {
+  ...commonComponents,
   paragraph: ({ children }) => (
     <p className="font-body text-base md:text-lg text-primary">{children}</p>
   ),
-  em: ({ children }) => <em className="italic">{children}</em>,
-  strong: ({ children }) => <b className="font-medium">{children}</b>,
   heading3: ({ children }) => (
     <h3 className="font-body text-[1.25rem] md:text-[1.375rem] text-primary">
       {children}
@@ -23,5 +27,14 @@ export const richTextComponents: JSXMapSerializer = {
   ),
   oListItem: ({ children }) => (
     <li className="font-body text-base md:text-lg text-primary">{children}</li>
+  )
+};
+
+export const subtitleComponent: JSXMapSerializer = {
+  ...commonComponents,
+  paragraph: ({ children }) => (
+    <p className="font-body text-base md:text-xl text-primary text-center md:text-left">
+      {children}
+    </p>
   )
 };

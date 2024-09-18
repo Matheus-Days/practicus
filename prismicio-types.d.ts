@@ -441,15 +441,15 @@ interface ContatoDocumentData {
   foto_do_escritorio: prismic.ImageField<"Tela larga" | "Tela estreita">;
 
   /**
-   * Coordenadas do escritório field in *Contato*
+   * Link do Google Maps do escritório field in *Contato*
    *
-   * - **Field Type**: GeoPoint
+   * - **Field Type**: Link
    * - **Placeholder**: *None*
-   * - **API ID Path**: contato.coordenadas_do_escritorio
+   * - **API ID Path**: contato.link_do_google_maps_do_escritorio
    * - **Tab**: Main
-   * - **Documentation**: https://prismic.io/docs/field#geopoint
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
    */
-  coordenadas_do_escritorio: prismic.GeoPointField;
+  link_do_google_maps_do_escritorio: prismic.LinkField;
 
   /**
    * Slice Zone field in *Contato*
