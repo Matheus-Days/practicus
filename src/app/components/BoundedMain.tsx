@@ -5,7 +5,7 @@ const BoundedMain = (props: React.HTMLProps<HTMLElement>): JSX.Element => {
     <main
       {...props}
       className={twMerge(
-        'px-4 pt-6 md:pt-8 md:px-[9.75rem] text-primary',
+        'flex-grow px-4 pt-6 md:pt-8 md:px-[9.75rem] text-primary',
         props.className
       )}
     >

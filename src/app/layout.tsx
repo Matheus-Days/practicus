@@ -45,7 +45,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/logo.svg" sizes="any" />
       </head>
-      <body>
+      <body className="flex flex-col min-h-[100vh]">
         <Header />
         {children}
         <Footer />
