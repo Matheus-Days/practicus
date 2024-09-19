@@ -1,4 +1,5 @@
 import {
+  Content,
   DateField,
   EmptyImageFieldImage,
   FilledImageFieldImage,
@@ -125,3 +126,23 @@ export default async function CourseCard({ className, data }: CourseCardProps) {
     </div>
   );
 }
+
+export const mapEventoToCourseCard = ({
+  data,
+  uid
+}: Content.EventoDocument<string>) => {
+  const evento: EventoCardData = {
+    __typename: 'evento',
+    date: data.data_do_evento,
+    link: data.link_do_evento,
+    location: data.local_do_evento_curto,
+    picture: {
+      small: data.imagem_ilustrativa['Tela estreita'],
+      large: data.imagem_ilustrativa['Tela larga']
+    },
+    price: data.valor_do_evento,
+    title: data.nome_do_evento,
+    uid
+  };
+  return evento;
+};

@@ -1,10 +1,9 @@
 import { Content, isFilled } from '@prismicio/client';
 import { SliceComponentProps } from '@prismicio/react';
-import HeadingBadge from '../../app/components/HeadingBadge';
-import CourseCard from '../../app/components/CourseCard';
+import HeadingBadge from '@/app/components/HeadingBadge';
+import CourseCard, { mapEventoToCourseCard } from '@/app/components/CourseCard';
 import { createClient } from '@/prismicio';
-import BoundedSection from '../../app/components/BoundedSection';
-import { mapEventoToCourseCard } from '../../app/proximos_eventos/page';
+import BoundedSection from '@/app/components/BoundedSection';
 
 /**
  * Props for `SecaoEventos`.

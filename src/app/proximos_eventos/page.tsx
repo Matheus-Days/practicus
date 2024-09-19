@@ -6,8 +6,8 @@ import { components } from '@/slices';
 import BoundedMain from '../components/BoundedMain';
 import HeadingBadge from '../components/HeadingBadge';
 import { subtitleComponent } from '../components/sharedRichTextComponents';
-import { Content, isFilled } from '@prismicio/client';
-import CourseCard, { EventoCardData } from '../components/CourseCard';
+import { isFilled } from '@prismicio/client';
+import CourseCard, { EventoCardData, mapEventoToCourseCard } from '@/app/components/CourseCard';
 import { Fragment } from 'react';
 import { twJoin } from 'tailwind-merge';
 
@@ -57,26 +57,6 @@ export default async function Page() {
     </BoundedMain>
   );
 }
-
-export const mapEventoToCourseCard = ({
-  data,
-  uid
-}: Content.EventoDocument<string>) => {
-  const evento: EventoCardData = {
-    __typename: 'evento',
-    date: data.data_do_evento,
-    link: data.link_do_evento,
-    location: data.local_do_evento_curto,
-    picture: {
-      small: data.imagem_ilustrativa['Tela estreita'],
-      large: data.imagem_ilustrativa['Tela larga']
-    },
-    price: data.valor_do_evento,
-    title: data.nome_do_evento,
-    uid
-  };
-  return evento;
-};
 
 export async function generateMetadata(): Promise<Metadata> {
   const client = createClient();
