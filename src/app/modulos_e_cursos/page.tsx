@@ -47,7 +47,7 @@ export default async function Page() {
         />
       </div>
 
-      <div className="flex flex-col gap-4 mt-3">
+      <div className="flex flex-col gap-4 mt-3 md:grid grid-cols-2 md:gap-x-6">
         {cursos.map((data) => (
           <CourseCard key={data.uid} data={data} />
         ))}
@@ -67,9 +67,9 @@ export default async function Page() {
         />
       </div>
 
-      <div className="flex flex-col gap-4 mt-3 md:flex-row md:gap-x-6 md:flex-wrap">
+      <div className="flex flex-col gap-4 mt-3 md:grid grid-cols-2 md:gap-x-6">
         {modulos.map((data) => (
-          <CourseCard key={data.uid} data={data} className="max-w-[34.125rem]" />
+          <CourseCard key={data.uid} data={data} />
         ))}
       </div>
 
