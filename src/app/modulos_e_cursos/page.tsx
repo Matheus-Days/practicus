@@ -6,6 +6,8 @@ import HeadingBadge from '@/app/components/HeadingBadge';
 import { richTextComponents } from '@/app/components/sharedRichTextComponents';
 import BoundedMain from '@/app/components/BoundedMain';
 import { PrismicNextLink } from '@prismicio/next';
+import { ModuloOuCursoDocument } from '../../../prismicio-types';
+import CourseCard, { CursoCardData } from '../components/CourseCard';
 
 export default async function Page() {
   const client = createClient();
@@ -13,46 +15,86 @@ export default async function Page() {
 
   const modulosECursos = await client.getAllByType('modulo_ou_curso');
 
-  const modulos = modulosECursos.filter(
-    (mc) => mc.data.titulo_da_pagina === 'Módulo'
-  );
-  const cursos = modulosECursos.filter(
-    (mc) => mc.data.titulo_da_pagina === 'Curso'
-  );
+  const modulos = modulosECursos
+    .filter((mc) => mc.data.titulo_da_pagina === 'Módulo')
+    .map(mapToCursoCardData);
+  const cursos = modulosECursos
+    .filter((mc) => mc.data.titulo_da_pagina === 'Curso')
+    .map(mapToCursoCardData);
 
   return (
     <BoundedMain>
       <HeadingBadge as="h1">{page.data.titulo_da_pagina}</HeadingBadge>
 
-      <h2>{page.data.titulo_da_secao_cursos}</h2>
-      {cursos.map((curso) => (
-        <PrismicNextLink
-          key={curso.uid}
-          field={curso.data.link_para_o_modulo_ou_curso}
-        >
-          <PrismicRichText
-            field={curso.data.titulo_do_curso_ou_modulo}
-            components={richTextComponents}
-          />
-        </PrismicNextLink>
-      ))}
+      <div className="mt-3 md:mt-6">
+        <PrismicRichText
+          field={page.data.texto_descricao_da_pagina}
+          components={richTextComponents}
+        />
+      </div>
 
-      <h2>{page.data.titulo_da_secao_modulos}</h2>
-      {modulos.map((modulo) => (
-        <PrismicNextLink
-          key={modulo.uid}
-          field={modulo.data.link_para_o_modulo_ou_curso}
-        >
-          <PrismicRichText
-            field={modulo.data.titulo_do_curso_ou_modulo}
-            components={richTextComponents}
-          />
-        </PrismicNextLink>
-      ))}
+      <HeadingBadge
+        as="h2"
+        className="justify-start mt-[0.875rem] md:mt-[1.625rem]"
+      >
+        {page.data.titulo_da_secao_cursos}
+      </HeadingBadge>
+
+      <div className="mt-2">
+        <PrismicRichText
+          field={page.data.texto_da_secao_cursos}
+          components={richTextComponents}
+        />
+      </div>
+
+      <div className="flex flex-col gap-4 mt-3">
+        {cursos.map((data) => (
+          <CourseCard key={data.uid} data={data} />
+        ))}
+      </div>
+
+      <HeadingBadge
+        as="h2"
+        className="justify-start mt-[0.875rem] md:mt-[1.625rem]"
+      >
+        {page.data.titulo_da_secao_modulos}
+      </HeadingBadge>
+
+      <div className="mt-2">
+        <PrismicRichText
+          field={page.data.texto_da_secao_modulos}
+          components={richTextComponents}
+        />
+      </div>
+
+      <div className="flex flex-col gap-4 mt-3 md:flex-row md:gap-x-6 md:flex-wrap">
+        {modulos.map((data) => (
+          <CourseCard key={data.uid} data={data} className="max-w-[34.125rem]" />
+        ))}
+      </div>
 
       <SliceZone slices={page.data.slices} components={components} />
     </BoundedMain>
   );
+}
+
+function mapToCursoCardData({
+  data,
+  uid
+}: ModuloOuCursoDocument<string>): CursoCardData {
+  return {
+    __typename: 'curso',
+    instructor: data.instrutor_curto,
+    link: data.link_para_o_modulo_ou_curso,
+    picture: {
+      large: data.imagem_ilustrativa['Tela larga'],
+      small: data.imagem_ilustrativa['Tela estreita']
+    },
+    price: data.investimento_curto,
+    title: data.titulo_do_curso_ou_modulo,
+    uid,
+    workload: data.carga_horaria
+  };
 }
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -7,6 +7,9 @@ import { components } from '@/slices';
 import BoundedMain from '@/app/components/BoundedMain';
 import HeadingBadge from '@/app/components/HeadingBadge';
 import { richTextComponents } from '../../components/sharedRichTextComponents';
+import PageBanner from '@/app/components/PageBanner';
+import { FieldContainer } from '@/app/components/FieldContainer';
+import PageField from '@/app/components/PageField';
 
 type Params = { uid: string };
 
@@ -18,12 +21,66 @@ export default async function Page({ params }: { params: Params }) {
 
   return (
     <BoundedMain>
-      <HeadingBadge as="h1">{page.data.titulo_da_pagina}</HeadingBadge>
-      <PrismicRichText
-        field={page.data.titulo_do_curso_ou_modulo}
-        components={richTextComponents}
+      <div className="flex justify-between items-center mb-3">
+        <HeadingBadge as="h1">{page.data.titulo_da_pagina}</HeadingBadge>
+        {/* <CopyButton onClick={handleCopy} /> */}
+      </div>
+      <PageBanner
+        smImageField={page.data.imagem_ilustrativa['Tela estreita']}
+        lgImageField={page.data.imagem_ilustrativa.Banner}
+        titleField={page.data.titulo_do_curso_ou_modulo}
       />
-      <SliceZone slices={page.data.slices} components={components} />;
+      <div className="flex flex-col gap-4 mt-6">
+        <FieldContainer>
+          <PageField iconName="groups">Público-alvo</PageField>
+          <PrismicRichText
+            field={page.data.publico_alvo}
+            components={richTextComponents}
+          />
+        </FieldContainer>
+
+        <FieldContainer>
+          <PageField iconName="attach_money">
+            Investimento:
+            <span className="font-normal">{page.data.investimento_curto}</span>
+          </PageField>
+          <PrismicRichText
+            field={page.data.investimento_longo}
+            components={richTextComponents}
+          />
+        </FieldContainer>
+
+        <FieldContainer>
+          <PageField iconName="timer">
+            Carga horária:
+            <span className="font-normal">{page.data.carga_horaria}</span>
+          </PageField>
+        </FieldContainer>
+
+        <FieldContainer>
+          <PageField iconName="person">
+            Instrutor:
+            {page.data.instrutor_curto && (
+              <span className="font-normal">{page.data.instrutor_curto}</span>
+            )}
+          </PageField>
+          <PrismicRichText
+            field={page.data.instrutores_longo}
+            components={richTextComponents}
+          />
+        </FieldContainer>
+
+        <FieldContainer>
+          <PageField iconName="description">Conteúdo:</PageField>
+          <div className="pb-[1.375rem] border-b border-primary">
+            <PrismicRichText
+              field={page.data.conteudo}
+              components={richTextComponents}
+            />
+          </div>
+        </FieldContainer>
+      </div>
+      <SliceZone slices={page.data.slices} components={components} />
     </BoundedMain>
   );
 }
