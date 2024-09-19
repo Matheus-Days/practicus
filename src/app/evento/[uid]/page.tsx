@@ -1,22 +1,17 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PrismicRichText, SliceZone } from '@prismicio/react';
-import { ReactNode } from 'react';
 import { components } from '@/slices';
 import { createClient } from '@/prismicio';
 import HeadingBadge from '@/app/components/HeadingBadge';
-import { PrismicNextImage } from '@prismicio/next';
 import PageField from '@/app/components/PageField';
 import BoundedMain from '@/app/components/BoundedMain';
 import { richTextComponents } from '@/app/components/sharedRichTextComponents';
 import { formatDate } from '@/app/utils';
 import PageBanner from '@/app/components/PageBanner';
+import { FieldContainer } from '@/app/components/FieldContainer';
 
 type Params = { uid: string };
-
-function FieldContainer({ children }: { children: ReactNode }): JSX.Element {
-  return <div className="flex flex-col gap-2">{children}</div>;
-}
 
 export default async function Page({ params }: { params: Params }) {
   const client = createClient();
