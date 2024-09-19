@@ -22,8 +22,8 @@ export const richTextComponents: JSXMapSerializer = {
       {children}
     </h4>
   ),
-  list: ({ children }) => <ul className="pl-4 list-disc">{children}</ul>,
-  oList: ({ children }) => <ul className="pl-4 list-decimal">{children}</ul>,
+  list: ({ children }) => <ul className="mt-2 pl-4 list-disc">{children}</ul>,
+  oList: ({ children }) => <ul className="mt-2 pl-4 list-decimal">{children}</ul>,
   listItem: ({ children }) => (
     <li className="font-body text-base md:text-lg text-primary">{children}</li>
   ),
