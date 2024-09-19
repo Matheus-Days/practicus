@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Montserrat, Poppins } from 'next/font/google';
 import './globals.css';
-import clsx from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import { createClient, repositoryName } from '@/prismicio';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={clsx(montserrat.variable, poppins.variable)}>
+    <html lang="pt-BR" className={twMerge(montserrat.variable, poppins.variable)}>
       <head>
         <link rel="icon" href="/logo.svg" sizes="any" />
       </head>

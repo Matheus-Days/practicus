@@ -1,11 +1,11 @@
 import { PrismicNextImage, PrismicNextImageProps } from '@prismicio/next';
-import clsx from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 const BoundedImage = (props: PrismicNextImageProps): JSX.Element => {
   return (
     <PrismicNextImage
       {...props}
-      className={clsx(
+      className={twMerge(
         'w-full rounded-xl shadow-md max-w-[70.5rem]',
         props.className
       )}

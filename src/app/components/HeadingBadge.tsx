@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 type HeadingBadgeProps = React.HTMLProps<HTMLElement> & {
   as: 'h1' | 'h2';
@@ -17,7 +17,7 @@ export default async function HeadingBadge({
   return (
     <HeadingWrapper
       as={as}
-      className={clsx(
+      className={twMerge(
         'flex font-display text-lg md:text-2xl text-primary justify-center md:justify-start',
         className
       )}

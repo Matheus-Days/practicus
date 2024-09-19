@@ -14,7 +14,7 @@ import {
 import LinkButton from './LinkButton';
 import { ReactNode } from 'react';
 import { formatDate } from '../utils';
-import clsx from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 type CommomCardData = {
   link: LinkField;
@@ -74,7 +74,7 @@ const CardParagraph = ({ children }: { children: ReactNode }) => (
 export default async function CourseCard({ className, data }: CourseCardProps) {
   return (
     <div
-      className={clsx(
+      className={twMerge(
         'rounded-xl bg-white',
         className
       )}
