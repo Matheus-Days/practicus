@@ -1,4 +1,4 @@
-import { Content } from '@prismicio/client';
+import { Content, isFilled } from '@prismicio/client';
 import {
   JSXMapSerializer,
   PrismicRichText,
@@ -14,7 +14,7 @@ export type CallToActionProps = SliceComponentProps<Content.CallToActionSlice>;
 
 const components: JSXMapSerializer = {
   paragraph: ({ children }) => (
-    <p className="font-display text-lg md:text-2xl text-primary text-center">
+    <p className="font-display text-lg md:text-2xl text-primary text-center md:text-left">
       {children}
     </p>
   ),
@@ -30,7 +30,7 @@ const CallToAction = ({ slice }: CallToActionProps): JSX.Element => {
     <BoundedSection
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
-      className="gap-3 md:gap-3 md:px-[9.75rem]"
+      className="gap-3 md:gap-3"
     >
       <div>
         <PrismicRichText
@@ -38,12 +38,15 @@ const CallToAction = ({ slice }: CallToActionProps): JSX.Element => {
           components={components}
         />
       </div>
-      <LinkButton
-        field={slice.primary.link_do_cta}
-        className="w-[16.125rem] text-lg"
-      >
-        {slice.primary.texto_do_botao_cta}
-      </LinkButton>
+      {slice.primary.texto_do_botao_cta &&
+        isFilled.link(slice.primary.link_do_cta) && (
+          <LinkButton
+            field={slice.primary.link_do_cta}
+            className="w-[16.125rem] text-lg"
+          >
+            {slice.primary.texto_do_botao_cta}
+          </LinkButton>
+        )}
     </BoundedSection>
   );
 };
