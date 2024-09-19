@@ -1,9 +1,10 @@
 import { Content, isFilled } from '@prismicio/client';
 import { SliceComponentProps } from '@prismicio/react';
 import HeadingBadge from '../../app/components/HeadingBadge';
-import CourseCard, { EventoCardData } from '../../app/components/CourseCard';
+import CourseCard from '../../app/components/CourseCard';
 import { createClient } from '@/prismicio';
 import BoundedSection from '../../app/components/BoundedSection';
+import { mapEventoToCourseCard } from '../../app/proximos_eventos/page';
 
 /**
  * Props for `SecaoEventos`.
@@ -27,22 +28,7 @@ const SecaoEventos = async ({
     )
   )
     .filter((e) => !!e)
-    .map((e) => {
-      const evento: EventoCardData = {
-        __typename: 'evento',
-        date: e.data.data_do_evento,
-        link: e.data.link_do_evento,
-        location: e.data.local_do_evento_curto,
-        picture: {
-          small: e.data.imagem_ilustrativa['Tela estreita'],
-          large: e.data.imagem_ilustrativa['Tela larga']
-        },
-        price: e.data.valor_do_evento,
-        title: e.data.nome_do_evento,
-        uid: e.uid
-      };
-      return evento;
-    });
+    .map(mapEventoToCourseCard);
 
   return (
     <BoundedSection
