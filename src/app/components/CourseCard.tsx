@@ -36,7 +36,6 @@ export type EventoCardData = CommomCardData & {
 export type CursoCardData = CommomCardData & {
   __typename: 'curso';
   instructor: KeyTextField;
-  subtitle: RichTextField;
   workload: KeyTextField;
 };
 
@@ -63,8 +62,6 @@ const CardValueSpan = ({ children }: { children: ReactNode }) => (
   <span className="font-display text-sm leading-[1]">{children}</span>
 );
 
-const cardComponents: JSXMapSerializer = { paragraph: CardValueSpan };
-
 const CardParagraph = ({ children }: { children: ReactNode }) => (
   <p className="flex items-end gap-1 text-[0.8125rem] h-[1.25rem] tracking-[0.0094rem]">
     {children}
@@ -73,12 +70,7 @@ const CardParagraph = ({ children }: { children: ReactNode }) => (
 
 export default async function CourseCard({ className, data }: CourseCardProps) {
   return (
-    <div
-      className={twMerge(
-        'rounded-xl bg-white',
-        className
-      )}
-    >
+    <div className={twMerge('rounded-xl bg-white', className)}>
       <div className="relative">
         <PrismicImage
           field={data.picture.small}
@@ -95,18 +87,32 @@ export default async function CourseCard({ className, data }: CourseCardProps) {
       </div>
       <div className="flex flex-col gap-3 p-3 shadow-md rounded-b-xl">
         <div className="flex flex-col gap-1">
-          {data.__typename === 'evento' && (
+          {data.__typename === 'curso' && (
             <CardParagraph>
-              <Strong>Investimento:</Strong>
-              <CardValueSpan>{data.price}</CardValueSpan>
+              <Strong>Carga horária:</Strong>
+              <CardValueSpan>{data.workload}</CardValueSpan>
             </CardParagraph>
           )}
+
+          <CardParagraph>
+            <Strong>Investimento:</Strong>
+            <CardValueSpan>{data.price}</CardValueSpan>
+          </CardParagraph>
+
+          {data.__typename === 'curso' && (
+            <CardParagraph>
+              <Strong>Instrutor:</Strong>
+              <CardValueSpan>{data.instructor}</CardValueSpan>
+            </CardParagraph>
+          )}
+
           {data.__typename === 'evento' && data.date && (
             <CardParagraph>
               <Strong>Data:</Strong>
               <CardValueSpan>{formatDate(data.date)}</CardValueSpan>
             </CardParagraph>
           )}
+
           {data.__typename === 'evento' && data.location && (
             <CardParagraph>
               <Strong>Local:</Strong>
