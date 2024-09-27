@@ -115,7 +115,7 @@ interface ColaboradorDocumentData {
    * - **Tab**: Main
    * - **Documentation**: https://prismic.io/docs/field#image
    */
-  foto: prismic.ImageField<never>;
+  foto: prismic.ImageField<"Tela estreita">;
 
   /**
    * Nome field in *Colaborador*
@@ -132,7 +132,7 @@ interface ColaboradorDocumentData {
    * Apresentação curta field in *Colaborador*
    *
    * - **Field Type**: Rich Text
-   * - **Placeholder**: *None*
+   * - **Placeholder**: Parágrafo único
    * - **API ID Path**: colaborador.apresentacao_curta
    * - **Tab**: Main
    * - **Documentation**: https://prismic.io/docs/field#rich-text-title

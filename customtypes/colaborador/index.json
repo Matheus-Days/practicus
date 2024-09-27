@@ -20,7 +20,13 @@
             "width": 528,
             "height": 600
           },
-          "thumbnails": []
+          "thumbnails": [
+            {
+              "name": "Tela estreita",
+              "width": 312,
+              "height": 380
+            }
+          ]
         }
       },
       "nome": {
@@ -34,9 +40,9 @@
         "type": "StructuredText",
         "config": {
           "label": "Apresentação curta",
-          "placeholder": "",
+          "placeholder": "Parágrafo único",
           "allowTargetBlank": true,
-          "multi": "paragraph,strong,em"
+          "single": "paragraph,strong,em"
         }
       },
       "apresentacao_longa": {
