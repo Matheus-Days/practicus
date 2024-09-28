@@ -43,6 +43,13 @@
           "label": "Local da organização",
           "placeholder": "Município, estado, etc."
         }
+      },
+      "chamada": {
+        "type": "Text",
+        "config": {
+          "label": "Chamada",
+          "placeholder": "Texto curto destacado do depoimento, funciona como título"
+        }
       }
     }
   }

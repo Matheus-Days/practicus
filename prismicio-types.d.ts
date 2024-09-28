@@ -557,6 +557,17 @@ interface DepoimentoDocumentData {
    * - **Documentation**: https://prismic.io/docs/field#key-text
    */
   local_da_organizacao: prismic.KeyTextField;
+
+  /**
+   * Chamada field in *Depoimento*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Texto curto destacado do depoimento, funciona como título
+   * - **API ID Path**: depoimento.chamada
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  chamada: prismic.KeyTextField;
 }
 
 /**
