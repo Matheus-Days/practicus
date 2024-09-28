@@ -46,7 +46,7 @@ export default async function Page() {
         />
       </div>
 
-      <div className="mb-3">
+      <div className="mb-6">
         <PrismicRichText
           field={page.data.texto_e_link_para_o_sicaf}
           components={sicafParagraph}
