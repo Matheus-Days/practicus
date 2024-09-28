@@ -1,4 +1,4 @@
-import { twMerge } from 'tailwind-merge';
+import { twJoin, twMerge } from 'tailwind-merge';
 
 type HeadingBadgeProps = React.HTMLProps<HTMLElement> & {
   as: 'h1' | 'h2';
@@ -22,7 +22,12 @@ export default async function HeadingBadge({
         className
       )}
     >
-      <span className="rounded-lg border-primary border md:border-2 py-[6px] px-4 leading-5 md:leading-[2.625rem] font-medium">
+      <span
+        className={twJoin(
+          'text-center rounded-lg border-primary border md:border-2 py-[6px] px-4 leading-5 md:leading-[2.625rem] font-medium',
+          as === 'h2' ? 'md:w-[46.5rem]' : ''
+        )}
+      >
         {children}
       </span>
     </HeadingWrapper>
