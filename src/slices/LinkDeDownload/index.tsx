@@ -1,5 +1,7 @@
-import { Content } from "@prismicio/client";
-import { SliceComponentProps } from "@prismicio/react";
+import { Content } from '@prismicio/client';
+import { PrismicNextLink } from '@prismicio/next';
+import { SliceComponentProps } from '@prismicio/react';
+import { MdOutlineFileDownload } from 'react-icons/md';
 
 /**
  * Props for `LinkDeDownload`.
@@ -12,13 +14,22 @@ export type LinkDeDownloadProps =
  */
 const LinkDeDownload = ({ slice }: LinkDeDownloadProps): JSX.Element => {
   return (
-    <section
+    <span
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      Placeholder component for link_de_download (variation: {slice.variation})
-      Slices
-    </section>
+      <PrismicNextLink
+        field={slice.primary.arquivo}
+        className="flex gap-2 items-center max-w-[28.5rem] border-b border-b-accent"
+      >
+        <div className="p-3">
+          <MdOutlineFileDownload className="size-6" />
+        </div>
+        <span className="font-body font-medium text-sm md:text-lg">
+          {slice.primary.nome_do_arquivo}
+        </span>
+      </PrismicNextLink>
+    </span>
   );
 };
 

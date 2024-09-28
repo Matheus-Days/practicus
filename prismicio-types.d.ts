@@ -24,13 +24,13 @@ interface AtestadosECertidoesDocumentData {
   /**
    * Subtítulo field in *Atestados e Certidões*
    *
-   * - **Field Type**: Text
-   * - **Placeholder**: *None*
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Múltiplos parágrafos e marcações básicas
    * - **API ID Path**: atestados_e_certidoes.subtitulo
    * - **Tab**: Main
-   * - **Documentation**: https://prismic.io/docs/field#key-text
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
    */
-  subtitulo: prismic.KeyTextField;
+  subtitulo: prismic.RichTextField;
 
   /**
    * Texto e link para o SICAF field in *Atestados e Certidões*

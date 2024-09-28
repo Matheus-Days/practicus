@@ -14,10 +14,12 @@
         }
       },
       "subtitulo": {
-        "type": "Text",
+        "type": "StructuredText",
         "config": {
           "label": "Subtítulo",
-          "placeholder": ""
+          "placeholder": "Múltiplos parágrafos e marcações básicas",
+          "allowTargetBlank": true,
+          "multi": "paragraph,strong,em"
         }
       },
       "texto_e_link_para_o_sicaf": {
