@@ -22,7 +22,7 @@ export default function ReadMore({ buttonLabel, children }: ReadMoreProps) {
       <BasicButton onClick={() => setShow(!show)}>{buttonLabel}</BasicButton>
       {show && (
         // Dialog
-        <div
+        <span
           className="fixed inset-0 bg-surface bg-opacity-80 flex items-center justify-center"
           onClick={() => setShow(false)}
         >
@@ -33,7 +33,7 @@ export default function ReadMore({ buttonLabel, children }: ReadMoreProps) {
           >
             {children}
           </MaterialCard>
-        </div>
+        </span>
       )}
     </span>
   );
