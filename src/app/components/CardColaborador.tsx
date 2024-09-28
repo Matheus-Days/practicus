@@ -1,7 +1,10 @@
 import { PrismicNextImage } from '@prismicio/next';
 import { ColaboradorDocument } from '../../../prismicio-types';
 import { JSXMapSerializer, PrismicRichText } from '@prismicio/react';
-import { richTextComponents } from './sharedRichTextComponents';
+import {
+  richTextComponents,
+  SharedParagraph
+} from './sharedRichTextComponents';
 import ReadMore from './ReadMore';
 
 type CardColaboradorProps = {
@@ -12,10 +15,9 @@ const cardRichTextComponents: JSXMapSerializer = {
   ...richTextComponents,
   paragraph: ({ children }) => {
     return (
-    <p className="font-body text-base md:text-lg text-primary">
-      {children}
-    </p>
-  )}
+      <p className="font-body text-base md:text-lg text-primary">{children}</p>
+    );
+  }
 };
 
 export default function CardColaborador({ doc }: CardColaboradorProps) {
@@ -35,8 +37,16 @@ export default function CardColaborador({ doc }: CardColaboradorProps) {
           field={doc.data.apresentacao_curta}
           components={cardRichTextComponents}
         />
-        <ReadMore name={doc.data.nome} text={doc.data.apresentacao_longa}>
-          Ver mais
+        <ReadMore buttonLabel="Ler mais">
+          <div className="my-2 px-4 pt-3 pb-4">
+            <SharedParagraph className="mb-2 font-display font-medium">
+              {doc.data.nome}
+            </SharedParagraph>
+            <PrismicRichText
+              field={doc.data.apresentacao_longa}
+              components={richTextComponents}
+            />
+          </div>
         </ReadMore>
       </div>
     </div>

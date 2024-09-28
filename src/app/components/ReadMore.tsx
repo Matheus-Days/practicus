@@ -2,7 +2,6 @@
 
 import { ReactNode, useState } from 'react';
 import BasicButton from './BasicButton';
-import { KeyTextField, RichTextField } from '@prismicio/client';
 import { PrismicRichText } from '@prismicio/react';
 import {
   richTextComponents,
@@ -12,25 +11,15 @@ import MaterialCard from './MaterialCard';
 
 type ReadMoreProps = {
   children: ReactNode;
-  text: RichTextField;
-  name: KeyTextField;
+  buttonLabel: string;
 };
 
-export default function ReadMore({ children, name, text }: ReadMoreProps) {
+export default function ReadMore({ buttonLabel, children }: ReadMoreProps) {
   const [show, setShow] = useState(false);
-
-  const contents = (
-    <div className="my-2 px-4 pt-3 pb-4">
-      <SharedParagraph className="mb-2 font-display font-medium">
-        {name}
-      </SharedParagraph>
-      <PrismicRichText field={text} components={richTextComponents} />
-    </div>
-  );
 
   return (
     <span>
-      <BasicButton onClick={() => setShow(!show)}>{children}</BasicButton>
+      <BasicButton onClick={() => setShow(!show)}>{buttonLabel}</BasicButton>
       {show && (
         // Dialog
         <div
@@ -39,11 +28,10 @@ export default function ReadMore({ children, name, text }: ReadMoreProps) {
         >
           {/* Card */}
           <MaterialCard
-            contents={contents}
             onClose={() => setShow(false)}
             onClick={(ev) => ev.stopPropagation()}
           >
-            {/* Card content */}
+            {children}
           </MaterialCard>
         </div>
       )}
