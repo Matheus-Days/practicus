@@ -46,7 +46,7 @@ export default function RootLayout({
         <link rel="icon" href="/logo.svg" sizes="any" />
       </head>
       <body className="flex flex-col min-h-[100vh]">
-        <div id="app">
+        <div id="app" className='flex flex-col flex-grow'>
         <Header />
         {children}
         <Footer />
