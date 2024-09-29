@@ -46,11 +46,13 @@ export default function RootLayout({
         <link rel="icon" href="/logo.svg" sizes="any" />
       </head>
       <body className="flex flex-col min-h-[100vh]">
+        <div id="app">
         <Header />
         {children}
         <Footer />
         <div className="fixed bg-[#F1F1F1] z-[-1] inset-0"></div>
         <PrismicPreview repositoryName={repositoryName} />
+        </div>
       </body>
     </html>
   );

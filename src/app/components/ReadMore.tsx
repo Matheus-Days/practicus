@@ -2,12 +2,27 @@
 
 import { ReactNode, useState } from 'react';
 import BasicButton from './BasicButton';
-import { PrismicRichText } from '@prismicio/react';
-import {
-  richTextComponents,
-  SharedParagraph
-} from './sharedRichTextComponents';
+import ReactModal from 'react-modal';
 import MaterialCard from './MaterialCard';
+
+const customStyles: ReactModal.Styles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    border: 'none',
+    padding: '0',
+    boxShadow: "0px 4px 4px 0px #52818A40"
+  },
+  overlay: {
+    zIndex: 20
+  }
+};
+
+ReactModal.setAppElement('#app');
 
 type ReadMoreProps = {
   children: ReactNode;
@@ -19,22 +34,19 @@ export default function ReadMore({ buttonLabel, children }: ReadMoreProps) {
 
   return (
     <span>
-      <BasicButton onClick={() => setShow(!show)}>{buttonLabel}</BasicButton>
-      {show && (
-        // Dialog
-        <span
-          className="fixed inset-0 bg-surface bg-opacity-80 flex items-center justify-center"
-          onClick={() => setShow(false)}
+      <BasicButton onClick={() => setShow(true)}>{buttonLabel}</BasicButton>
+      <ReactModal
+        isOpen={show}
+        onRequestClose={() => setShow(false)}
+        style={customStyles}
+      >
+        <MaterialCard
+          onClose={() => setShow(false)}
+          onClick={(ev) => ev.stopPropagation()}
         >
-          {/* Card */}
-          <MaterialCard
-            onClose={() => setShow(false)}
-            onClick={(ev) => ev.stopPropagation()}
-          >
-            {children}
-          </MaterialCard>
-        </span>
-      )}
+          {children}
+        </MaterialCard>
+      </ReactModal>
     </span>
   );
 }
