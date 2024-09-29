@@ -3,7 +3,7 @@ import { SliceComponentProps } from '@prismicio/react';
 import HeadingBadge from '@/app/components/HeadingBadge';
 import { createClient } from '@/prismicio';
 import BoundedSection from '@/app/components/BoundedSection';
-import DepoimentoCard from '../../app/components/DepoimentoCard';
+import SecaoDepoimentosContent from '../../app/components/SecaoDepoimentosContent';
 
 /**
  * Props for `SecaoDepoimentos`.
@@ -37,11 +37,7 @@ const SecaoDepoimentos = async ({
       data-slice-variation={slice.variation}
     >
       <HeadingBadge as="h2">{slice.primary.titulo_da_secao}</HeadingBadge>
-      <div className="flex flex-wrap gap-3 md:gap-6">
-        {depoimentos.map((dep) => (
-          <DepoimentoCard key={dep.uid} depoimento={dep} />
-        ))}
-      </div>
+      <SecaoDepoimentosContent depoimentos={depoimentos} />
     </BoundedSection>
   );
 };
