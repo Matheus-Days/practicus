@@ -53,6 +53,14 @@ const routes: prismic.ClientConfig['routes'] = [
   {
     type: 'proximos_eventos',
     path: '/proximos_eventos'
+  },
+  {
+    type: 'blog',
+    path: '/blog'
+  },
+  {
+    type: 'post',
+    path: '/post/:uid'
   }
 ];
 

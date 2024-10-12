@@ -1,0 +1,107 @@
+{
+  "format": "page",
+  "id": "post",
+  "label": "Post",
+  "repeatable": true,
+  "status": true,
+  "json": {
+    "Main": {
+      "uid": {
+        "type": "UID",
+        "config": {
+          "label": "UID"
+        }
+      },
+      "titulo_do_post": {
+        "type": "Text",
+        "config": {
+          "label": "Título do post",
+          "placeholder": "Parágrafo único e sem marcações"
+        }
+      },
+      "autor": {
+        "type": "Text",
+        "config": {
+          "label": "Autor",
+          "placeholder": "ex: Me. Ricardo Dias"
+        }
+      },
+      "imagem_ilustrativa": {
+        "type": "Image",
+        "config": {
+          "label": "Imagem ilustrativa",
+          "constraint": {},
+          "thumbnails": [
+            {
+              "name": "Card (tela larga)",
+              "width": 1104,
+              "height": 300
+            },
+            {
+              "name": "Card e banner (tela estreita)",
+              "width": 328,
+              "height": 100
+            },
+            {
+              "name": "Banner (tela larga)",
+              "width": 1128,
+              "height": 140
+            }
+          ]
+        }
+      },
+      "legenda_da_imagem": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Legenda da imagem",
+          "placeholder": "Usar para descrever a imagem ou dar os créditos, aceita link",
+          "allowTargetBlank": true,
+          "single": "paragraph,hyperlink"
+        }
+      },
+      "conteudo": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Conteúdo",
+          "placeholder": "",
+          "allowTargetBlank": true,
+          "multi": "paragraph,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,list-item,o-list-item"
+        }
+      },
+      "slices": {
+        "type": "Slices",
+        "fieldset": "Slice Zone",
+        "config": {
+          "choices": {}
+        }
+      }
+    },
+    "SEO & Metadata": {
+      "meta_title": {
+        "config": {
+          "label": "Meta Title",
+          "placeholder": "A title of the page used for social media and search engines"
+        },
+        "type": "Text"
+      },
+      "meta_description": {
+        "config": {
+          "label": "Meta Description",
+          "placeholder": "A brief summary of the page"
+        },
+        "type": "Text"
+      },
+      "meta_image": {
+        "config": {
+          "constraint": {
+            "height": 1260,
+            "width": 2400
+          },
+          "label": "Meta Image",
+          "thumbnails": []
+        },
+        "type": "Image"
+      }
+    }
+  }
+}

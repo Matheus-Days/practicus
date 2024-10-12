@@ -102,6 +102,89 @@ export type AtestadosECertidoesDocument<Lang extends string = string> =
     Lang
   >;
 
+type BlogDocumentDataSlicesSlice = never;
+
+/**
+ * Content for Blog documents
+ */
+interface BlogDocumentData {
+  /**
+   * Título da página field in *Blog*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Blog
+   * - **API ID Path**: blog.titulo_da_pagina
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_da_pagina: prismic.KeyTextField;
+
+  /**
+   * Subtítulo da página field in *Blog*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: ex: Leia na íntegra artigos escritos por nossos colaboradores
+   * - **API ID Path**: blog.subtitulo_da_pagina
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  subtitulo_da_pagina: prismic.RichTextField;
+
+  /**
+   * Slice Zone field in *Blog*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: blog.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<BlogDocumentDataSlicesSlice> /**
+   * Meta Title field in *Blog*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: blog.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Blog*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: blog.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Blog*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: blog.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Blog document from Prismic
+ *
+ * - **API ID**: `blog`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type BlogDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<Simplify<BlogDocumentData>, "blog", Lang>;
+
 /**
  * Content for Colaborador documents
  */
@@ -1335,6 +1418,126 @@ export type NossosClientesDocument<Lang extends string = string> =
     Lang
   >;
 
+type PostDocumentDataSlicesSlice = never;
+
+/**
+ * Content for Post documents
+ */
+interface PostDocumentData {
+  /**
+   * Título do post field in *Post*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Parágrafo único e sem marcações
+   * - **API ID Path**: post.titulo_do_post
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  titulo_do_post: prismic.KeyTextField;
+
+  /**
+   * Autor field in *Post*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: ex: Me. Ricardo Dias
+   * - **API ID Path**: post.autor
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  autor: prismic.KeyTextField;
+
+  /**
+   * Imagem ilustrativa field in *Post*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: post.imagem_ilustrativa
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  imagem_ilustrativa: prismic.ImageField<
+    | "Card (tela larga)"
+    | "Card e banner (tela estreita)"
+    | "Banner (tela larga)"
+  >;
+
+  /**
+   * Legenda da imagem field in *Post*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Usar para descrever a imagem ou dar os créditos, aceita link
+   * - **API ID Path**: post.legenda_da_imagem
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  legenda_da_imagem: prismic.RichTextField;
+
+  /**
+   * Conteúdo field in *Post*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: post.conteudo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  conteudo: prismic.RichTextField;
+
+  /**
+   * Slice Zone field in *Post*
+   *
+   * - **Field Type**: Slice Zone
+   * - **Placeholder**: *None*
+   * - **API ID Path**: post.slices[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#slices
+   */
+  slices: prismic.SliceZone<PostDocumentDataSlicesSlice> /**
+   * Meta Title field in *Post*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A title of the page used for social media and search engines
+   * - **API ID Path**: post.meta_title
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */;
+  meta_title: prismic.KeyTextField;
+
+  /**
+   * Meta Description field in *Post*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: A brief summary of the page
+   * - **API ID Path**: post.meta_description
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  meta_description: prismic.KeyTextField;
+
+  /**
+   * Meta Image field in *Post*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: post.meta_image
+   * - **Tab**: SEO & Metadata
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  meta_image: prismic.ImageField<never>;
+}
+
+/**
+ * Post document from Prismic
+ *
+ * - **API ID**: `post`
+ * - **Repeatable**: `true`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type PostDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithUID<Simplify<PostDocumentData>, "post", Lang>;
+
 /**
  * Item in *Próximos Eventos → Eventos abertos*
  */
@@ -1583,6 +1786,7 @@ export type QuemSomosDocument<Lang extends string = string> =
 
 export type AllDocumentTypes =
   | AtestadosECertidoesDocument
+  | BlogDocument
   | ColaboradorDocument
   | ColaboradoresDocument
   | ConfiguracoesDocument
@@ -1593,6 +1797,7 @@ export type AllDocumentTypes =
   | ModuloOuCursoDocument
   | ModulosECursosDocument
   | NossosClientesDocument
+  | PostDocument
   | ProximosEventosDocument
   | QuemSomosDocument;
 
@@ -2168,6 +2373,9 @@ declare module "@prismicio/client" {
       AtestadosECertidoesDocument,
       AtestadosECertidoesDocumentData,
       AtestadosECertidoesDocumentDataSlicesSlice,
+      BlogDocument,
+      BlogDocumentData,
+      BlogDocumentDataSlicesSlice,
       ColaboradorDocument,
       ColaboradorDocumentData,
       ColaboradoresDocument,
@@ -2197,6 +2405,9 @@ declare module "@prismicio/client" {
       NossosClientesDocument,
       NossosClientesDocumentData,
       NossosClientesDocumentDataSlicesSlice,
+      PostDocument,
+      PostDocumentData,
+      PostDocumentDataSlicesSlice,
       ProximosEventosDocument,
       ProximosEventosDocumentData,
       ProximosEventosDocumentDataEventosAbertosItem,
