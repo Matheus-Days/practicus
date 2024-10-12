@@ -10,9 +10,14 @@
     "slicemachine": "start-slicemachine"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^6.1.1",
+    "@mui/x-date-pickers": "^7.18.0",
     "@prismicio/client": "^7.8.0",
     "@prismicio/next": "^1.6.0",
     "@prismicio/react": "^2.8.0",
+    "dayjs": "^1.11.13",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
