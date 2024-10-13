@@ -19,7 +19,7 @@ export default async function Page({ searchParams }: PageProps) {
   const page = await client.getSingle('blog');
 
   const postsResponse = await client.getByType('post', {
-    pageSize: searchParams?.page ? Number(searchParams.page) * 10 : 4,
+    pageSize: searchParams?.pageSize ? Number(searchParams.pageSize) : 4,
     orderings: [
       {
         field: 'post.first_publication_date',
@@ -39,8 +39,6 @@ export default async function Page({ searchParams }: PageProps) {
         : ''
     ]
   });
-
-  // console.log(postsResponse);
 
   return (
     <BoundedMain>

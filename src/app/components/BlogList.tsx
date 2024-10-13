@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { PostDocument } from '../../../prismicio-types';
 import 'dayjs/locale/pt-br';
 import { MdOutlineFilterList } from 'react-icons/md';
@@ -15,9 +14,10 @@ import { muiTheme } from '../utils';
 import { twMerge } from 'tailwind-merge';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import dayjs from 'dayjs';
+import PostCard from './PostCard';
 
 export type PostsSearchParams = {
-  page?: string;
+  pageSize?: string;
   date?: string;
   searchTerms?: string;
   order?: OrderingValue;
@@ -34,6 +34,8 @@ export default function BlogList({ postsResponse }: BlogListProps) {
   const searchParams = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
 
+  const hasMore = postsResponse.total_results_size > postsResponse.results_size;
+
   const createQueryString = useCallback(
     (name: keyof PostsSearchParams, value: string): string => {
       const params = new URLSearchParams(searchParams.toString());
@@ -45,6 +47,12 @@ export default function BlogList({ postsResponse }: BlogListProps) {
 
   const updateQuery = (name: keyof PostsSearchParams, value: string): void => {
     router.push(pathname + '?' + createQueryString(name, value));
+  };
+
+  const showMore = () => {
+    const pageSize = searchParams.get('pageSize');
+    const newPageSize = pageSize ? Number(pageSize) + 20 : 20;
+    updateQuery('pageSize', String(newPageSize));
   };
 
   return (
@@ -61,6 +69,7 @@ export default function BlogList({ postsResponse }: BlogListProps) {
             onValue={(val) => updateQuery('searchTerms', val)}
           />
           <FiltersButton
+            className="flex-shrink-0"
             selected={showFilters}
             onClick={() => setShowFilters(!showFilters)}
           >
@@ -86,12 +95,22 @@ export default function BlogList({ postsResponse }: BlogListProps) {
         <div className="flex flex-wrap gap-y-4 md:gap-6">
           {postsResponse.results.map((post) => {
             return (
-              <Link key={post.id} href={`/post/${post.uid}`}>
-                {post.data.titulo_do_post}
-              </Link>
+              <PostCard
+                className="flex-shrink basis-[20.5rem] md:basis-[34.5rem]"
+                key={post.id}
+                post={post}
+              />
             );
           })}
         </div>
+
+        {(hasMore) && (
+          <div className="flex justify-center mt-6">
+            <button className="w-fit bg-primary rounded-full py-[0.625rem] px-6 font-body text-base font-medium leading-5 text-surface text-center" onClick={() => showMore()}>
+              Ver mais
+            </button>
+          </div>
+        )}
       </ThemeProvider>
     </div>
   );
