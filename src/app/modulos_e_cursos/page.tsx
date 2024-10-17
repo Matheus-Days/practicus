@@ -5,7 +5,6 @@ import { components } from '@/slices';
 import HeadingBadge from '@/app/components/HeadingBadge';
 import { richTextComponents } from '@/app/components/sharedRichTextComponents';
 import BoundedMain from '@/app/components/BoundedMain';
-import { PrismicNextLink } from '@prismicio/next';
 import { ModuloOuCursoDocument } from '../../../prismicio-types';
 import CourseCard, { CursoCardData } from '../components/CourseCard';
 
