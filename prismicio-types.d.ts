@@ -426,6 +426,17 @@ interface ConfiguracoesDocumentData {
   logo: prismic.ImageField<never>;
 
   /**
+   * Favicon field in *Configurações*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: configuracoes.favicon
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  favicon: prismic.ImageField<never>;
+
+  /**
    * Slice Zone field in *Configurações*
    *
    * - **Field Type**: Slice Zone

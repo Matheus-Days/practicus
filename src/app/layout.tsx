@@ -35,15 +35,19 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const client = createClient();
+
+  const page = await client.getSingle('configuracoes');
+
   return (
     <html lang="pt-BR" className={twMerge(montserrat.variable, poppins.variable)}>
       <head>
-        <link rel="icon" href="/logo.svg" sizes="any" />
+        <link rel="icon" href={page.data.favicon.url || ''} sizes="any" />
       </head>
       <body className="flex flex-col min-h-[100vh]">
         <div id="app" className='flex flex-col flex-grow'>
