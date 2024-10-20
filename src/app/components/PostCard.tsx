@@ -23,7 +23,7 @@ const conteudoComponents: JSXMapSerializer = {
   )
 };
 
-export default async function PostCard({ className, post }: PostCardProps) {
+export default function PostCard({ className, post }: PostCardProps) {
   const linkField: LinkField = {
     url: `/post/${post.uid}`,
     link_type: 'Document'

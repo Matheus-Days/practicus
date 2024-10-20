@@ -9,7 +9,7 @@ function HeadingWrapper({ as, className, children }: HeadingBadgeProps) {
   else return <h2 className={className}>{children}</h2>;
 }
 
-export default async function HeadingBadge({
+export default function HeadingBadge({
   as,
   children,
   className

@@ -69,7 +69,7 @@ const CardParagraph = ({ children }: { children: ReactNode }) => (
   </p>
 );
 
-export default async function CourseCard({ className, data }: CourseCardProps) {
+export default function CourseCard({ className, data }: CourseCardProps) {
   return (
     <div className={twMerge('rounded-xl bg-white', className)}>
       <div className="relative">

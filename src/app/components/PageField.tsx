@@ -26,7 +26,7 @@ type PageFieldProps = {
   iconName: keyof typeof icons;
 };
 
-export default async function PageField({
+export default function PageField({
   children,
   iconName
 }: PageFieldProps) {

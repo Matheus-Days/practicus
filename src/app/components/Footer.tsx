@@ -1,4 +1,4 @@
-export default async function Footer() {
+export default function Footer() {
   return (
     <footer className="font-display mt-6 border-t border-accent py-[0.375rem] md:py-3 px-[1.375rem] text-primary text-center">
       <p className="text-xs md:text-[0.8125rem] md:leading-[1.1875rem]">
