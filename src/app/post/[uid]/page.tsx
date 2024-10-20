@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import { richTextComponents } from '../../components/sharedRichTextComponents';
 
 const formatDate = (date: string): string => {
-  return dayjs(date).format('DD/MM/YYYY às HH:mm');
+  return dayjs(date).format('DD/MM/YYYY à[s] HH:mm');
 };
 
 const legendaComponents: JSXMapSerializer = {
