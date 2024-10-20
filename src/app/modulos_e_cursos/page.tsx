@@ -32,12 +32,9 @@ export default async function Page() {
         />
       </div>
 
-      <HeadingBadge
-        as="h2"
-        className="justify-start mt-[0.875rem] md:mt-[1.625rem]"
-      >
+      <h2 className="font-display font-medium text-2xl mt-4">
         {page.data.titulo_da_secao_cursos}
-      </HeadingBadge>
+      </h2>
 
       <div className="mt-2">
         <PrismicRichText
@@ -52,12 +49,9 @@ export default async function Page() {
         ))}
       </div>
 
-      <HeadingBadge
-        as="h2"
-        className="justify-start mt-[0.875rem] md:mt-[1.625rem]"
-      >
+      <h2 className="font-display font-medium text-2xl mt-4">
         {page.data.titulo_da_secao_modulos}
-      </HeadingBadge>
+      </h2>
 
       <div className="mt-2">
         <PrismicRichText
