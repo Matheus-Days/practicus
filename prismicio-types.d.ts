@@ -212,17 +212,6 @@ interface ColaboradorDocumentData {
   nome: prismic.KeyTextField;
 
   /**
-   * Apresentação curta field in *Colaborador*
-   *
-   * - **Field Type**: Rich Text
-   * - **Placeholder**: Parágrafo único
-   * - **API ID Path**: colaborador.apresentacao_curta
-   * - **Tab**: Main
-   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
-   */
-  apresentacao_curta: prismic.RichTextField;
-
-  /**
    * Apresentação longa field in *Colaborador*
    *
    * - **Field Type**: Rich Text

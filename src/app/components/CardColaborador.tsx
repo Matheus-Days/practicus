@@ -6,6 +6,7 @@ import {
   SharedParagraph
 } from './sharedRichTextComponents';
 import ReadMore from './ReadMore';
+import { RichTextField } from '@prismicio/client';
 
 type CardColaboradorProps = {
   doc: ColaboradorDocument<string>;
@@ -15,12 +16,21 @@ const cardRichTextComponents: JSXMapSerializer = {
   ...richTextComponents,
   paragraph: ({ children }) => {
     return (
-      <p className="font-body text-base md:text-lg text-primary">{children}</p>
+      <p className="font-body text-base md:text-lg text-primary line-clamp-[9]">
+        {children}
+      </p>
     );
   }
 };
 
 export default function CardColaborador({ doc }: CardColaboradorProps) {
+  const apresentacaoFirstParagraph = doc.data.apresentacao_longa.find(
+    (node) => node.type === 'paragraph'
+  );
+  const reducedApresentacao: RichTextField = [
+    apresentacaoFirstParagraph || { type: 'paragraph', text: '', spans: [] }
+  ];
+
   return (
     <div className="inline-flex flex-col gap-3 w-[9.75rem] md:w-[16.5rem]">
       <PrismicNextImage
@@ -34,7 +44,7 @@ export default function CardColaborador({ doc }: CardColaboradorProps) {
       <div className="flex flex-col gap-2">
         <p>{doc.data.nome}</p>
         <PrismicRichText
-          field={doc.data.apresentacao_curta}
+          field={reducedApresentacao}
           components={cardRichTextComponents}
         />
         <ReadMore buttonLabel="Ler mais">

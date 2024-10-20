@@ -36,15 +36,6 @@
           "placeholder": "Nome e sobrenome (preferencialmente apenas 2)"
         }
       },
-      "apresentacao_curta": {
-        "type": "StructuredText",
-        "config": {
-          "label": "Apresentação curta",
-          "placeholder": "Parágrafo único",
-          "allowTargetBlank": true,
-          "single": "paragraph,strong,em"
-        }
-      },
       "apresentacao_longa": {
         "type": "StructuredText",
         "config": {
