@@ -119,15 +119,6 @@
           "single": "paragraph,strong,em"
         }
       },
-      "link_para_o_modulo_ou_curso": {
-        "type": "Link",
-        "config": {
-          "label": "Link para o módulo ou curso",
-          "placeholder": "Redireciona do Card para a página do módulo ou curso",
-          "allowTargetBlank": false,
-          "select": null
-        }
-      },
       "slices": {
         "type": "Slices",
         "fieldset": "Slice Zone",

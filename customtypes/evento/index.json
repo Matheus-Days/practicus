@@ -107,20 +107,6 @@
           "placeholder": "ex: 08/06/24"
         }
       },
-      "geolocalizacao": {
-        "type": "GeoPoint",
-        "config": {
-          "label": "Geolocalização"
-        }
-      },
-      "link_do_evento": {
-        "type": "Link",
-        "config": {
-          "label": "Link do evento",
-          "placeholder": "",
-          "select": null
-        }
-      },
       "local_do_evento_curto": {
         "type": "Text",
         "config": {

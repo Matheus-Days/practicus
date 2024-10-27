@@ -788,28 +788,6 @@ interface EventoDocumentData {
   data_do_evento: prismic.DateField;
 
   /**
-   * Geolocalização field in *Evento*
-   *
-   * - **Field Type**: GeoPoint
-   * - **Placeholder**: *None*
-   * - **API ID Path**: evento.geolocalizacao
-   * - **Tab**: Main
-   * - **Documentation**: https://prismic.io/docs/field#geopoint
-   */
-  geolocalizacao: prismic.GeoPointField;
-
-  /**
-   * Link do evento field in *Evento*
-   *
-   * - **Field Type**: Link
-   * - **Placeholder**: *None*
-   * - **API ID Path**: evento.link_do_evento
-   * - **Tab**: Main
-   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
-   */
-  link_do_evento: prismic.LinkField;
-
-  /**
    * Local do evento (curto) field in *Evento*
    *
    * - **Field Type**: Text
@@ -1118,17 +1096,6 @@ interface ModuloOuCursoDocumentData {
    * - **Documentation**: https://prismic.io/docs/field#rich-text-title
    */
   subtitulo_do_modulo_ou_curso: prismic.RichTextField;
-
-  /**
-   * Link para o módulo ou curso field in *Módulo ou Curso*
-   *
-   * - **Field Type**: Link
-   * - **Placeholder**: Redireciona do Card para a página do módulo ou curso
-   * - **API ID Path**: modulo_ou_curso.link_para_o_modulo_ou_curso
-   * - **Tab**: Main
-   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
-   */
-  link_para_o_modulo_ou_curso: prismic.LinkField;
 
   /**
    * Slice Zone field in *Módulo ou Curso*

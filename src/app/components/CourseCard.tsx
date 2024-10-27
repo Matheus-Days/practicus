@@ -18,7 +18,6 @@ import { formatDate } from '../utils';
 import { twMerge } from 'tailwind-merge';
 
 type CommomCardData = {
-  link: LinkField;
   picture: {
     small: EmptyImageFieldImage | FilledImageFieldImage;
     large: EmptyImageFieldImage | FilledImageFieldImage;
@@ -70,6 +69,12 @@ const CardParagraph = ({ children }: { children: ReactNode }) => (
 );
 
 export default function CourseCard({ className, data }: CourseCardProps) {
+  const linkType = data.__typename === 'curso' ? 'modulo_ou_curso' : 'evento';
+  const linkField: LinkField = {
+    url: `/${linkType}/${data.uid}`,
+    link_type: 'Document'
+  };
+
   return (
     <div className={twMerge('rounded-xl bg-white', className)}>
       <div className="relative">
@@ -121,7 +126,7 @@ export default function CourseCard({ className, data }: CourseCardProps) {
             </CardParagraph>
           )}
         </div>
-        <LinkButton field={data.link}>Saiba mais</LinkButton>
+        <LinkButton field={linkField}>Saiba mais</LinkButton>
       </div>
     </div>
   );
@@ -134,7 +139,6 @@ export const mapEventoToCourseCard = ({
   const evento: EventoCardData = {
     __typename: 'evento',
     date: data.data_do_evento,
-    link: data.link_do_evento,
     location: data.local_do_evento_curto,
     picture: {
       small: data.imagem_ilustrativa['Tela estreita'],
