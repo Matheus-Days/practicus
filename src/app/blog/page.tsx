@@ -7,8 +7,9 @@ import BoundedMain from '@/app/components/BoundedMain';
 import HeadingBadge from '@/app/components/HeadingBadge';
 import { subtitleComponent } from '@/app/components/sharedRichTextComponents';
 import BlogList, { PostsSearchParams } from '@/app/components/BlogList';
-import { filter } from '@prismicio/client';
+import { filter, LinkField } from '@prismicio/client';
 import dayjs from 'dayjs';
+import LinkButton from '../components/LinkButton';
 
 type PageProps = {
   searchParams?: PostsSearchParams;
@@ -40,8 +41,13 @@ export default async function Page({ searchParams }: PageProps) {
     ]
   });
 
+  const linkForReset: LinkField = {
+    url: '/blog',
+    link_type: 'Document'
+  };
+
   return (
-    <BoundedMain>
+    <BoundedMain className='flex flex-col'>
       <HeadingBadge as="h1" className="mb-3">
         Blog
       </HeadingBadge>
@@ -52,6 +58,15 @@ export default async function Page({ searchParams }: PageProps) {
         />
       </div>
       <BlogList postsResponse={postsResponse} />
+      {postsResponse.results.length === 0 && (
+        <div className="flex flex-col gap-6 items-center justify-center flex-grow">
+          <p className="font-display font-medium text-lg md:text-2xl text-center">
+            Nenhum resultado correspondente a sua pesquisa foi encontrado.
+            Recomendamos refazer a pesquisa para encontrar algo correspondente.
+          </p>
+          <LinkButton field={linkForReset}>Refazer pesquisa</LinkButton>
+        </div>
+      )}
       <SliceZone slices={page.data.slices} components={components} />
     </BoundedMain>
   );
