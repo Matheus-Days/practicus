@@ -78,7 +78,6 @@ function mapToCursoCardData({
   return {
     __typename: 'curso',
     instructor: data.instrutor_curto,
-    link: data.link_para_o_modulo_ou_curso,
     picture: {
       large: data.imagem_ilustrativa['Tela larga'],
       small: data.imagem_ilustrativa['Tela estreita']
