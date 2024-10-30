@@ -6,10 +6,16 @@ import { components } from '@/slices';
 import BoundedMain from '@/app/components/BoundedMain';
 import { PrismicNextImage } from '@prismicio/next';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { richTextComponents } from '../../components/sharedRichTextComponents';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 const formatDate = (date: string): string => {
-  return dayjs(date).format('DD/MM/YYYY à[s] HH:mm');
+  if (!date) return '';
+  return dayjs(date).tz('America/Fortaleza').format('DD/MM/YYYY à[s] HH:mm');
 };
 
 const legendaComponents: JSXMapSerializer = {

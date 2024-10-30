@@ -5,11 +5,20 @@ import {
   PrismicRichText
 } from '@prismicio/react';
 import LinkButton from './LinkButton';
-import { ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { PostDocument } from '../../../prismicio-types';
 import { commonComponents } from './sharedRichTextComponents';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const formatDate = (date: string): string => {
+  if (!date) return '';
+  return dayjs(date).tz('America/Fortaleza').format('DD/MM/YYYY');
+};
 
 type PostCardProps = {
   className?: string;
@@ -67,7 +76,7 @@ export default function PostCard({ className, post }: PostCardProps) {
               <span className="flex w-full justify-between items-center text-sm leading-[1] mt-[0.1875rem]">
                 {post.data.autor}
                 <time dateTime={post.first_publication_date}>
-                  {dayjs(post.first_publication_date).format('DD/MM/YYYY')}
+                  {formatDate(post.first_publication_date)}
                 </time>
               </span>
             </p>
