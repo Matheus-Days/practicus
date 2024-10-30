@@ -45,7 +45,7 @@ export default async function Page() {
               <CourseCard
                 key={evento.uid}
                 data={evento}
-                className="w-full min-w-[20.5rem] min-h-[15.25rem] md:min-h-[18.375rem]"
+                className="w-full min-w-[20.5rem]"
               />
             ))}
           </div>
