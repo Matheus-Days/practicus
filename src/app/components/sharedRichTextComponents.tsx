@@ -48,6 +48,11 @@ export const richTextComponents: JSXMapSerializer = {
   ),
   oListItem: ({ children }) => (
     <li className="font-body text-base md:text-lg text-primary">{children}</li>
+  ),
+  hyperlink: ({ children, node }) => (
+    <a href={node.data.url} target="_blank" className="underline text-accent">
+      {children}
+    </a>
   )
 };
 
