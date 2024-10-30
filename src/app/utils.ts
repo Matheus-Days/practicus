@@ -1,14 +1,16 @@
 import { createTheme } from '@mui/material';
-import { DateField } from '@prismicio/client';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
-export function formatDate(date: DateField): string {
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+export const formatDate = (date: string): string => {
   if (!date) return '';
-  const jsDate = new Date(date.toString());
-  const day = jsDate.getDate();
-  const month = (jsDate.getMonth() + 1).toString().padStart(2, '0');
-  const year = jsDate.getFullYear();
-  return `${day}/${month}/${year}`;
-}
+  return dayjs(date).tz('America/Fortaleza').format('DD/MM/YYYY');
+};
+
 
 export const muiTheme = createTheme({
   typography: {

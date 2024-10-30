@@ -58,7 +58,7 @@ export default async function Page({ params }: { params: Params }) {
           <PageField iconName="event">
             Data:
             <span className="font-normal">
-              {formatDate(page.data.data_do_evento)}
+              {formatDate(page.data.data_do_evento || '')}
             </span>
           </PageField>
         </FieldContainer>

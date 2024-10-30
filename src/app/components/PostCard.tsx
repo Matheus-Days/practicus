@@ -8,17 +8,7 @@ import LinkButton from './LinkButton';
 import { twMerge } from 'tailwind-merge';
 import { PostDocument } from '../../../prismicio-types';
 import { commonComponents } from './sharedRichTextComponents';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
-const formatDate = (date: string): string => {
-  if (!date) return '';
-  return dayjs(date).tz('America/Fortaleza').format('DD/MM/YYYY');
-};
+import { formatDate } from '../utils';
 
 type PostCardProps = {
   className?: string;
