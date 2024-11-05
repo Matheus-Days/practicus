@@ -8,9 +8,13 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 
-export const formatDate = (date: string, format = 'DD/MM/YYYY'): string => {
+export const formatDate = (
+  date: string,
+  format = 'DD/MM/YYYY',
+  timeValue = 'YYYY-MM-DD'
+): string => {
   if (!date) return '';
-  const parsedDate = dayjs.tz(date, 'YYYY-MM-DD', 'America/Fortaleza');
+  const parsedDate = dayjs.tz(date, timeValue, 'America/Fortaleza');
   return parsedDate.format(format);
 };
 

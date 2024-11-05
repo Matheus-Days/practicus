@@ -56,11 +56,23 @@ export default async function Page({ params }: { params: Params }) {
       <div className="flex flex-col gap-1">
         <p className="text-base">
           <strong className="font-medium">Publicado em: </strong>
-          <span>{formatDate(page.first_publication_date, 'DD/MM/YYYY à[s] HH:mm')}</span>
+          <span>
+            {formatDate(
+              page.first_publication_date,
+              'DD/MM/YYYY à[s] HH:mm',
+              'YYYY-MM-DDThh:mm:ss'
+            )}
+          </span>
         </p>
         <p className="text-base">
           <strong className="font-medium">Atualizado em: </strong>
-          <span>{formatDate(page.last_publication_date, 'DD/MM/YYYY à[s] HH:mm')}</span>
+          <span>
+            {formatDate(
+              page.last_publication_date,
+              'DD/MM/YYYY à[s] HH:mm',
+              'YYYY-MM-DDThh:mm:ss'
+            )}
+          </span>
         </p>
       </div>
 
