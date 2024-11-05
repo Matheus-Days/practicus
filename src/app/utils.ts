@@ -2,15 +2,17 @@ import { createTheme } from '@mui/material';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 
-export const formatDate = (date: string): string => {
+export const formatDate = (date: string, format = 'DD/MM/YYYY'): string => {
   if (!date) return '';
-  return dayjs(date).tz('America/Fortaleza').format('DD/MM/YYYY');
+  const parsedDate = dayjs.tz(date, 'YYYY-MM-DD', 'America/Fortaleza');
+  return parsedDate.format(format);
 };
-
 
 export const muiTheme = createTheme({
   typography: {

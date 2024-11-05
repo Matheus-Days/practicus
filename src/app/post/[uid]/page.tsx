@@ -5,18 +5,8 @@ import { createClient } from '@/prismicio';
 import { components } from '@/slices';
 import BoundedMain from '@/app/components/BoundedMain';
 import { PrismicNextImage } from '@prismicio/next';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import { richTextComponents } from '../../components/sharedRichTextComponents';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
-const formatDate = (date: string): string => {
-  if (!date) return '';
-  return dayjs(date).tz('America/Fortaleza').format('DD/MM/YYYY à[s] HH:mm');
-};
+import { formatDate } from '../../utils';
 
 const legendaComponents: JSXMapSerializer = {
   paragraph: ({ children }) => (
@@ -66,11 +56,11 @@ export default async function Page({ params }: { params: Params }) {
       <div className="flex flex-col gap-1">
         <p className="text-base">
           <strong className="font-medium">Publicado em: </strong>
-          <span>{formatDate(page.first_publication_date)}</span>
+          <span>{formatDate(page.first_publication_date, 'DD/MM/YYYY à[s] HH:mm')}</span>
         </p>
         <p className="text-base">
           <strong className="font-medium">Atualizado em: </strong>
-          <span>{formatDate(page.last_publication_date)}</span>
+          <span>{formatDate(page.last_publication_date, 'DD/MM/YYYY à[s] HH:mm')}</span>
         </p>
       </div>
 
