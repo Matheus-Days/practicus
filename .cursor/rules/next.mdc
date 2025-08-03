@@ -1,0 +1,36 @@
+# Code Language and Comments
+- Write all code and comments in English, except for variables and names that come from external sources like Prismic or Firebase
+- Use English for all function names, component names, and documentation
+- Keep external data source names (from Prismic, Firebase, etc.) in their original language/format
+
+# Layout and Styling
+- Use Tailwind CSS and HTML elements to create component and page layouts
+- Avoid using MUI layout components like Box and Grid for layout purposes
+- Prefer semantic HTML elements with Tailwind classes for structure
+- Use flexbox and grid utilities from Tailwind for responsive layouts
+
+# MUI Component Usage
+- Use MUI components when appropriate for interactive elements like spinners, calendars, date pickers, etc.
+- Prefer MUI components for form elements, modals, and other complex UI interactions
+- Use MUI components that provide functionality not easily achievable with plain HTML + Tailwind
+
+# MUI Version Compatibility
+- This project uses MUI version 6
+- Avoid using components marked as deprecated in MUI v6
+- Check MUI v6 documentation for current component APIs and alternatives
+- Use modern MUI v6 patterns and avoid legacy APIs
+
+# Package Management
+- Use Yarn as the package manager, not NPM
+- Use `yarn add` instead of `npm install` for adding dependencies
+- Use `yarn remove` instead of `npm uninstall` for removing dependencies
+- Use `yarn` instead of `npm run` for running scripts
+- Always use `yarn.lock` for dependency locking
+
+# User Interface Text
+- Display all user-facing text in Brazilian Portuguese
+- Use Brazilian Portuguese for buttons, labels, headings, error messages, and any text visible to users
+- Keep UI text in Portuguese while maintaining English code structure
+- Ensure all form labels, placeholders, and validation messages are in Portuguese
+alwaysApply: true
+---
