@@ -1,7 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore, collection, addDoc, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, Firestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useMemo, useCallback } from 'react';
+import { EventData } from '../types/events';
 
 type FirebaseConfig = {
   apiKey: string;
@@ -67,6 +68,11 @@ export interface UserData {
   [key: string]: any;
 }
 
+// Função utilitária para gerar ID único do checkout
+const generateCheckoutId = (userId: string, eventId: string): string => {
+  return `${userId}_${eventId}`;
+};
+
 export const useFirebase = () => {
   const auth = useMemo(() => getAuth(app), []);
   const firestore = useMemo(() => getFirestore(app), []);
@@ -130,12 +136,92 @@ export const useFirebase = () => {
     }
   }, [firestore]);
 
+  const getEventData = useCallback(async (eventId: string): Promise<EventData | null> => {
+    try {
+      const eventDocRef = doc(firestore, 'events', eventId);
+      const eventDoc = await getDoc(eventDocRef);
+      
+      if (eventDoc.exists()) {
+        return {
+          id: eventDoc.id,
+          ...eventDoc.data()
+        } as EventData;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting event data:', error);
+      throw error;
+    }
+  }, [firestore]);
+
+  // Função para buscar checkout do usuário
+  const findUserCheckout = useCallback(async (userId: string, eventId: string): Promise<{id: string, data: any} | null> => {
+    try {
+      const checkoutId = generateCheckoutId(userId, eventId);
+      const checkoutRef = doc(firestore, 'checkouts', checkoutId);
+      const checkoutDoc = await getDoc(checkoutRef);
+      
+      if (checkoutDoc.exists()) {
+        return {
+          id: checkoutDoc.id,
+          data: checkoutDoc.data()
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error finding checkout:', error);
+      throw error;
+    }
+  }, [firestore]);
+
+  // Função para criar novo checkout
+  const createCheckout = useCallback(async (eventId: string, userId: string): Promise<string> => {
+    try {
+      const checkoutId = generateCheckoutId(userId, eventId);
+      const checkoutRef = doc(firestore, 'checkouts', checkoutId);
+      
+      const newCheckout = {
+        eventId,
+        userId,
+        createdAt: new Date(),
+        status: 'pending' as const
+      };
+
+      await setDoc(checkoutRef, newCheckout);
+      return checkoutId;
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      throw error;
+    }
+  }, [firestore]);
+
+  // Função para atualizar checkout
+  const updateCheckout = useCallback(async (checkoutId: string, updateData: Partial<any>): Promise<void> => {
+    try {
+      const checkoutRef = doc(firestore, 'checkouts', checkoutId);
+      
+      await updateDoc(checkoutRef, {
+        ...updateData,
+        updatedAt: new Date()
+      });
+    } catch (error) {
+      console.error('Error updating checkout:', error);
+      throw error;
+    }
+  }, [firestore]);
+
   return {
     auth,
     firestore,
     createRegistration,
     findUserRegistration,
     getUserData,
+    getEventData,
+    findUserCheckout,
+    createCheckout,
+    updateCheckout,
   };
 };
 
