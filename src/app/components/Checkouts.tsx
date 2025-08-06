@@ -7,12 +7,13 @@ import { User } from 'firebase/auth';
 import { EventData } from '../types/events';
 import { CheckoutProvider } from '../contexts/CheckoutContext';
 import CheckoutStatus from './CheckoutStatus';
+import BillingDetails from './checkout-steps/BillingDetails';
 
-interface MyRegistrationProps {
+interface CheckoutsProps {
   eventId: string;
 }
 
-export default function MyRegistration({ eventId }: MyRegistrationProps) {
+export default function Checkouts({ eventId }: CheckoutsProps) {
   const { auth, getEventData } = useFirebase();
   const [user, setUser] = useState<User | null>(null);
   const [eventData, setEventData] = useState<EventData | null>(null);
@@ -150,6 +151,10 @@ export default function MyRegistration({ eventId }: MyRegistrationProps) {
 
         <div className="mt-4">
           <CheckoutStatus eventId={eventId} />
+        </div>
+
+        <div className="mt-4">
+          <BillingDetails />
         </div>
       </CheckoutProvider>
     );

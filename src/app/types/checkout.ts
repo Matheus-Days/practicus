@@ -1,21 +1,87 @@
-export type CheckoutBase = {
-  eventId: string; // corresponde ao Document Id de um documento em events
-  userId: string; // corresponde ao user UID dos usuários autenticados via Firebase
+import { User } from "firebase/auth";
+import {
+  BillingDetailsPF,
+  BillingDetailsPJ,
+  CheckoutDocument,
+  CheckoutType,
+  LegalEntity,
+  UpdateCheckoutRequest,
+} from "../api/checkouts/checkout.types";
+
+export type RegistrationData = {
+  city?: string;
+  cpf: string;
+  credentialName?: string;
+  email: string;
+  employer?: string;
+  fullName: string;
+  howDidYouHearAboutUs?: string;
+  isPhoneWhatsapp: boolean;
+  occupation?: string;
+  phone: string;
+  useImage?: boolean;
 };
 
-export interface CheckoutDocument extends CheckoutBase {
+export type Registration = {
   id: string;
+  eventId: string;
+  userId: string;
+  checkoutId?: string;
   createdAt: Date;
   updatedAt?: Date;
-  status: 'pending' | 'completed' | 'cancelled';
-  // Campos adicionais podem ser adicionados conforme necessário
-}
+} & RegistrationData;
+
+export type CheckoutStep =
+  | "select-type" // Selecionar tipo de checkout (acquire ou voucher)
+  | "select-legal-entity" // Selecionar PF ou PJ
+  | "voucher-validation" // Para voucher: digitar código do voucher
+  | "billing-details" // Para PF ou PJ: preencher dados de faturamento, quantidade de inscrições e se é `registrateMyself`
+  | "registration-form" // Quando `registrateMyself` é true ou checkoutType é "voucher": preencher dados do participante
+  | "overview" // Visualizar dados do checkout (se checkoutType é "acquire") e dados de inscrição se `registrateMyself` é true ou checkoutType é "voucher", podendo voltar para editar
+  | "payment"; // Se checkoutType é "acquire": tela com vários estados de fluxo de pagamento, é chamada após o overview se o pagamento estiver pendente
+
+export type CheckoutData = CheckoutDocument & {
+  id: string;
+};
 
 export interface CheckoutContextType {
-  checkout: CheckoutDocument | null;
+  user: User | null;
+  checkout: CheckoutData | null;
+  registration: Registration | null;
   loading: boolean;
   error: string | null;
-  createCheckout: (eventId: string) => Promise<void>;
+  currentStep: CheckoutStep;
+  // Informações do checkout esmiuçadas
+  checkoutType: CheckoutType | null;
+  billingDetails: BillingDetailsPF | BillingDetailsPJ | null;
+  registrationsAmount: number;
+  registrateMyself: boolean;
+  legalEntity: LegalEntity | null;
+  voucher: string | null;
+  // Funções de preenchimento do checkout
+  setBillingDetails: (
+    billingDetails: BillingDetailsPF | BillingDetailsPJ | null
+  ) => void;
+  setRegistrationsAmount: (amount: number) => void;
+  setRegistrateMyself: (registrateMyself: boolean) => void;
+  setLegalEntity: (legalEntity: LegalEntity | null) => void;
+  setVoucher: (voucher: string | null) => void;
+  setCheckoutType: (checkoutType: CheckoutType | null) => void;
+  // Funções de checkout
+  createCheckout: () => Promise<void>;
   refreshCheckout: () => Promise<void>;
-  updateCheckout: (updateData: Partial<CheckoutDocument>) => Promise<void>;
-} 
+  updateCheckout: (updateData: UpdateCheckoutRequest) => Promise<void>;
+  // Funções de registration
+  createRegistration: (
+    registrationData: RegistrationData,
+    voucherId?: string
+  ) => Promise<void>;
+  updateRegistration: (updateData: Partial<RegistrationData>) => Promise<void>;
+  refreshRegistration: () => Promise<void>;
+  // Funções de navegação
+  setCurrentStep: (step: CheckoutStep) => void;
+  updateFormData: (data: Partial<RegistrationData>) => void;
+  goToNextStep: () => void;
+  goToPreviousStep: () => void;
+  resetCheckout: () => void;
+}

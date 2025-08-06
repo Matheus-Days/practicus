@@ -3,6 +3,7 @@ import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useMemo, useCallback } from 'react';
 import { EventData } from '../types/events';
+import { RegistrationData } from '../types/checkout';
 
 type FirebaseConfig = {
   apiKey: string;
@@ -24,41 +25,6 @@ const firebaseConfig: FirebaseConfig = JSON.parse(credentialsJson);
 // Initialize Firebase only once
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Interface for registration data
-export interface RegistrationData {
-  eventId: string;
-  userId: string;
-  tipoInscricao: 'participante' | 'juridico';
-  // Fields for individual participant
-  nomeParaCertificado?: string;
-  nomeParaCracha?: string;
-  cpf?: string;
-  telefone?: string;
-  telefoneIsWhatsapp?: boolean;
-  ocupacao?: string;
-  empregador?: string;
-  municipio?: string;
-  comoConheceu?: string;
-  outroComoConheceu?: string;
-  formaPagamento: string;
-  voucherId?: string | null;
-  usoDeImagem?: boolean;
-  // Fields for legal entity
-  nomeResponsavel?: string;
-  telefoneResponsavel?: string;
-  cpfResponsavel?: string;
-  nomeJuridico?: string;
-  cnpj?: string;
-  numeroDeParticipantes?: string;
-  mensagemAosOrganizadores?: string;
-}
-
-// Interface for the document saved in Firestore
-export interface RegistrationDocument extends RegistrationData {
-  paymentStatus: 'pending' | 'payed';
-  createdAt: Date;
-}
-
 // Interface for user data
 export interface UserData {
   uid: string;
@@ -73,49 +39,14 @@ const generateCheckoutId = (userId: string, eventId: string): string => {
   return `${userId}_${eventId}`;
 };
 
+// Função utilitária para gerar ID único da registration
+const generateRegistrationId = (userId: string, eventId: string): string => {
+  return `${userId}_${eventId}`;
+};
+
 export const useFirebase = () => {
   const auth = useMemo(() => getAuth(app), []);
   const firestore = useMemo(() => getFirestore(app), []);
-
-  const createRegistration = useCallback(async (registrationData: RegistrationData): Promise<string> => {
-    try {
-      const docRef = await addDoc(collection(firestore, 'registrations'), {
-        ...registrationData,
-        paymentStatus: 'pending' as const,
-        createdAt: new Date(),
-      } as RegistrationDocument);
-      return docRef.id;
-    } catch (error) {
-      console.error('Error creating registration:', error);
-      throw error;
-    }
-  }, [firestore]);
-
-  const findUserRegistration = useCallback(async (userId: string, eventId: string): Promise<{id: string, data: RegistrationDocument} | null> => {
-    try {
-      const registrationsRef = collection(firestore, 'registrations');
-      const q = query(
-        registrationsRef, 
-        where('userId', '==', userId),
-        where('eventId', '==', eventId)
-      );
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty) {
-        return null;
-      }
-      
-      // Returns the first record found (should be unique)
-      const doc = querySnapshot.docs[0];
-      return {
-        id: doc.id,
-        data: doc.data() as RegistrationDocument
-      };
-    } catch (error) {
-      console.error('Error finding registration:', error);
-      throw error;
-    }
-  }, [firestore]);
 
   const getUserData = useCallback(async (uid: string): Promise<UserData | null> => {
     try {
@@ -212,16 +143,119 @@ export const useFirebase = () => {
     }
   }, [firestore]);
 
+  // Função para buscar registration do usuário
+  const findUserRegistration = useCallback(async (userId: string, eventId: string): Promise<{id: string, data: any} | null> => {
+    try {
+      const registrationId = generateRegistrationId(userId, eventId);
+      const registrationRef = doc(firestore, 'registrations', registrationId);
+      const registrationDoc = await getDoc(registrationRef);
+      
+      if (registrationDoc.exists()) {
+        return {
+          id: registrationDoc.id,
+          data: registrationDoc.data()
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error finding registration:', error);
+      throw error;
+    }
+  }, [firestore]);
+
+  // Função para criar nova registration
+  const createRegistration = useCallback(async (eventId: string, userId: string, registrationData: RegistrationData, voucherId?: string): Promise<string> => {
+    try {
+      const registrationId = generateRegistrationId(userId, eventId);
+      const registrationRef = doc(firestore, 'registrations', registrationId);
+      
+      const newRegistration = {
+        eventId,
+        userId,
+        createdAt: new Date(),
+        status: 'pending' as const,
+        voucherId,
+        ...registrationData
+      };
+
+      await setDoc(registrationRef, newRegistration);
+      return registrationId;
+    } catch (error) {
+      console.error('Error creating registration:', error);
+      throw error;
+    }
+  }, [firestore]);
+
+  // Função para atualizar registration
+  const updateRegistration = useCallback(async (registrationId: string, updateData: Partial<any>): Promise<void> => {
+    try {
+      const registrationRef = doc(firestore, 'registrations', registrationId);
+      
+      await updateDoc(registrationRef, {
+        ...updateData,
+        updatedAt: new Date()
+      });
+    } catch (error) {
+      console.error('Error updating registration:', error);
+      throw error;
+    }
+  }, [firestore]);
+
+  // Função para buscar registration por voucher
+  const findRegistrationByVoucher = useCallback(async (voucherId: string, eventId: string): Promise<{id: string, data: any} | null> => {
+    try {
+      const registrationsRef = collection(firestore, 'registrations');
+      const q = query(
+        registrationsRef,
+        where('voucherId', '==', voucherId),
+        where('eventId', '==', eventId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        return {
+          id: doc.id,
+          data: doc.data()
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error finding registration by voucher:', error);
+      throw error;
+    }
+  }, [firestore]);
+
+  // Função para obter token de ID do usuário autenticado
+  const getIdToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        return null;
+      }
+      return await user.getIdToken();
+    } catch (error) {
+      console.error('Error getting ID token:', error);
+      return null;
+    }
+  }, [auth]);
+
   return {
     auth,
     firestore,
-    createRegistration,
-    findUserRegistration,
+    getIdToken,
     getUserData,
     getEventData,
     findUserCheckout,
     createCheckout,
     updateCheckout,
+    findUserRegistration,
+    createRegistration,
+    updateRegistration,
+    findRegistrationByVoucher,
   };
 };
 

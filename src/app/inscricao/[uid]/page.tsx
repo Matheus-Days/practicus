@@ -4,7 +4,7 @@ import { createClient } from '@/prismicio';
 import HeadingBadge from '@/app/components/HeadingBadge';
 import BoundedMain from '@/app/components/BoundedMain';
 import PageBanner from '@/app/components/PageBanner';
-import MyRegistration from '@/app/components/MyRegistration';
+import Checkouts from '../../components/Checkouts';
 
 type Params = { uid: string };
 
@@ -22,7 +22,7 @@ export default async function Page({ params }: { params: Params }) {
         titleField={page.data.nome_do_evento}
       />
       <div className="mt-8">
-        <MyRegistration eventId={params.uid} />
+        <Checkouts eventId={params.uid} />
       </div>
     </BoundedMain>
   );
