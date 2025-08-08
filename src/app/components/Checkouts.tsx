@@ -6,8 +6,7 @@ import { sendSignInLinkToEmail } from 'firebase/auth';
 import { User } from 'firebase/auth';
 import { EventData } from '../types/events';
 import { CheckoutProvider } from '../contexts/CheckoutContext';
-import CheckoutStatus from './CheckoutStatus';
-import BillingDetails from './checkout-steps/BillingDetails';
+import CheckoutFlow from './checkout-steps/CheckoutFlow';
 
 interface CheckoutsProps {
   eventId: string;
@@ -150,11 +149,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
         </div>
 
         <div className="mt-4">
-          <CheckoutStatus eventId={eventId} />
-        </div>
-
-        <div className="mt-4">
-          <BillingDetails />
+          <CheckoutFlow />
         </div>
       </CheckoutProvider>
     );

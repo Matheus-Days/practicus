@@ -42,7 +42,7 @@ export function CheckoutProvider({
   user,
   eventId,
 }: CheckoutProviderProps) {
-  const { createCheckout: createCheckoutDocument, updateCheckout: updateCheckoutDocument, getCheckout } = useCheckoutAPI();
+  const { createCheckout: createCheckoutDocument, updateCheckout: updateCheckoutDocument, deleteCheckout, getCheckout } = useCheckoutAPI();
 
   const [checkout, setCheckout] = useState<CheckoutData | null>(null);
   const [registration, setRegistration] = useState<Registration | null>(null);
@@ -164,6 +164,26 @@ export function CheckoutProvider({
     }
   };
 
+  // Função para deletar checkout
+  const deleteCheckoutData = async () => {
+    if (!checkout?.id) {
+      throw new Error("Checkout não encontrado para exclusão");
+    }
+
+    try {
+      setLoading(true);
+      await deleteCheckout(checkout.id);
+      
+      setCheckout(null);
+      setCurrentStep("select-type");
+    } catch (error) {
+      setError("Erro ao deletar checkout");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Função para atualizar registration
   const updateRegistrationData = async (updateData: Partial<Registration>) => {
     // implement
@@ -246,6 +266,7 @@ export function CheckoutProvider({
     createCheckout,
     refreshCheckout,
     updateCheckout: updateCheckoutData,
+    deleteCheckout: deleteCheckoutData,
     createRegistration,
     updateRegistration: updateRegistrationData,
     refreshRegistration,

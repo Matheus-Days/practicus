@@ -20,6 +20,7 @@ export type RegistrationData = {
   occupation?: string;
   phone: string;
   useImage?: boolean;
+  status: 'ok' | 'cancelled' | 'invalid';
 };
 
 export type Registration = {
@@ -71,6 +72,7 @@ export interface CheckoutContextType {
   createCheckout: () => Promise<void>;
   refreshCheckout: () => Promise<void>;
   updateCheckout: (updateData: UpdateCheckoutRequest) => Promise<void>;
+  deleteCheckout: () => Promise<void>;
   // Funções de registration
   createRegistration: (
     registrationData: RegistrationData,
