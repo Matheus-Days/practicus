@@ -3,12 +3,11 @@ import { firestore } from "@/lib/firebase-admin";
 import { validateAuth } from "@/lib/auth-utils";
 import {
   validateUpdateCheckoutRequest,
-  createErrorResponse,
-  createSuccessResponse,
   extractUpdateCheckoutDataFromRequestBody,
 } from "../utils";
 import { UpdateCheckoutRequest } from "../checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
+import { createErrorResponse, createSuccessResponse } from "../../utils";
 
 // PUT /api/checkouts/[id] - Atualizar checkout específico
 export async function PUT(

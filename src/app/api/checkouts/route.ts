@@ -3,14 +3,13 @@ import { firestore } from "@/lib/firebase-admin";
 import { validateAuth } from "@/lib/auth-utils";
 import {
   validateCreateCheckoutRequest,
-  createErrorResponse,
-  createSuccessResponse,
   extractCreateCheckoutDataFromRequestBody,
   createCheckoutDocument,
   createCheckoutDocumentId,
 } from "./utils";
 import { CreateCheckoutRequest } from "./checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
+import { createErrorResponse, createSuccessResponse } from "../utils";
 
 // POST /api/checkouts - Create a new checkout
 export async function POST(request: NextRequest) {

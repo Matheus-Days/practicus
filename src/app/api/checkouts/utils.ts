@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import {
   CheckoutDocument,
   CreateCheckoutRequest,
@@ -123,16 +122,5 @@ export function createCheckoutDocumentId(
   userUid: string
 ): string {
   return `${eventId}_${userUid}`;
-}
-//#endregion
-
-//#region Response functions
-
-export function createErrorResponse(message: string, status: number = 400) {
-  return NextResponse.json({ error: message }, { status });
-}
-
-export function createSuccessResponse<T>(data: T, status: number = 200) {
-  return NextResponse.json(data, { status });
 }
 //#endregion
