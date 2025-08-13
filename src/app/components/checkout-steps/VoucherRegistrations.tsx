@@ -17,6 +17,7 @@ import {
   Paper,
   Alert,
   Snackbar,
+  CircularProgress,
 } from "@mui/material";
 import {
   Group as GroupIcon,
@@ -27,49 +28,64 @@ import {
   Cancel as CancelIcon,
   Pending as PendingIcon,
 } from "@mui/icons-material";
+import { useCheckout } from "../../contexts/CheckoutContext";
+import { useRegistrationAPI, RegistrationMinimal } from "../../hooks/registrationAPI";
 
-interface VoucherRegistration {
-  id: string;
-  fullName: string;
-  email: string;
-  status: "ok" | "invalid" | "cancelled";
-}
-
-interface VoucherRegistrationsProps {
-  registrations: VoucherRegistration[];
-  onCancelRegistration?: (registrationId: string) => void;
-  onReactivateRegistration?: (registrationId: string) => void;
-}
-
-export default function VoucherRegistrations({
-  registrations,
-  onCancelRegistration,
-  onReactivateRegistration,
-}: VoucherRegistrationsProps) {
+export default function VoucherRegistrations() {
+  const { checkoutRegistrations, refreshCheckoutRegistrations } = useCheckout();
+  const { updateRegistrationStatus } = useRegistrationAPI();
+  
+  const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     "success" | "error" | "info"
   >("success");
 
-  const handleCancelRegistration = (registrationId: string) => {
-    // TODO: Implementar cancelamento de inscrição
-    setSnackbarMessage(
-      "Funcionalidade de cancelamento será implementada em breve"
-    );
-    setSnackbarSeverity("info");
-    setSnackbarOpen(true);
-    onCancelRegistration?.(registrationId);
+  const handleCancelRegistration = async (registrationId: string) => {
+    try {
+      setLoading(true);
+      
+      // Atualizar status para cancelled
+      await updateRegistrationStatus(registrationId, "cancelled");
+
+      // Recarregar lista
+      await refreshCheckoutRegistrations();
+      
+      setSnackbarMessage("Inscrição cancelada com sucesso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Erro ao cancelar inscrição:", error);
+      setSnackbarMessage("Erro ao cancelar inscrição");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReactivateRegistration = (registrationId: string) => {
-    // TODO: Implementar reativação de inscrição
-    setSnackbarMessage(
-      "Funcionalidade de reativação será implementada em breve"
-    );
-    setSnackbarSeverity("info");
-    setSnackbarOpen(true);
-    onReactivateRegistration?.(registrationId);
+  const handleReactivateRegistration = async (registrationId: string) => {
+    try {
+      setLoading(true);
+      
+      // Atualizar status para ok
+      await updateRegistrationStatus(registrationId, "ok");
+
+      // Recarregar lista
+      await refreshCheckoutRegistrations();
+      
+      setSnackbarMessage("Inscrição reativada com sucesso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Erro ao reativar inscrição:", error);
+      setSnackbarMessage("Erro ao reativar inscrição");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getRegistrationStatusInfo = (status: string) => {
@@ -102,7 +118,7 @@ export default function VoucherRegistrations({
   };
 
   // Mostrar o componente se há registrations, mesmo que não sejam ativas
-  if (registrations.length === 0) {
+  if (checkoutRegistrations.length === 0) {
     return null;
   }
 
@@ -115,83 +131,107 @@ export default function VoucherRegistrations({
             <Typography variant="h6" component="h3">
               Inscritos via voucher
             </Typography>
+            {loading && (
+              <CircularProgress size={20} sx={{ ml: 1 }} />
+            )}
+            <Box sx={{ flexGrow: 1 }} />
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<RefreshIcon />}
+              onClick={refreshCheckoutRegistrations}
+              disabled={loading}
+              sx={{ ml: 'auto' }}
+            >
+              Atualizar lista
+            </Button>
           </Box>
 
-          <TableContainer component={Paper} variant="outlined">
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: "bold" }}>
-                    Nome Completo
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>E-mail</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Situação</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: "bold" }}>
-                    Ações
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {registrations.map((reg) => {
-                  const statusInfo = getRegistrationStatusInfo(reg.status);
-                  return (
-                    <TableRow key={reg.id}>
-                      <TableCell>{reg.fullName}</TableCell>
-                      <TableCell>{reg.email}</TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          {statusInfo.icon}
-                          <Chip
-                            label={statusInfo.label}
-                            color={statusInfo.color}
-                            size="small"
-                            variant="outlined"
-                          />
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        {reg.status === "invalid" ? (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontStyle: "italic" }}
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TableContainer component={Paper} variant="outlined">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Nome Completo
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>E-mail</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Situação</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                      Ações
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {checkoutRegistrations
+                  .filter(reg => !reg.isMyRegistration)
+                  .map((reg) => {
+                    const statusInfo = getRegistrationStatusInfo(reg.status);
+                    return (
+                      <TableRow key={reg.id}>
+                        <TableCell>{reg.fullName}</TableCell>
+                        <TableCell>{reg.email || "Não informado"}</TableCell>
+                        <TableCell>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
                           >
-                            Ação indisponível
-                          </Typography>
-                        ) : reg.status === "cancelled" ? (
-                          <Button
-                            variant="outlined"
-                            color="success"
-                            size="small"
-                            startIcon={<RefreshIcon />}
-                            onClick={() => handleReactivateRegistration(reg.id)}
-                          >
-                            Reativar inscrição
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            startIcon={<DeleteIcon />}
-                            onClick={() => handleCancelRegistration(reg.id)}
-                          >
-                            Cancelar inscrição
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                            {statusInfo.icon}
+                            <Chip
+                              label={statusInfo.label}
+                              color={statusInfo.color}
+                              size="small"
+                              variant="outlined"
+                            />
+                          </Box>
+                        </TableCell>
+                        <TableCell align="center">
+                          {reg.status === "invalid" ? (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ fontStyle: "italic" }}
+                            >
+                              Ação indisponível
+                            </Typography>
+                          ) : reg.status === "cancelled" ? (
+                            <Button
+                              variant="outlined"
+                              color="success"
+                              size="small"
+                              startIcon={<RefreshIcon />}
+                              onClick={() => handleReactivateRegistration(reg.id)}
+                              disabled={loading}
+                            >
+                              Reativar inscrição
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              startIcon={<DeleteIcon />}
+                              onClick={() => handleCancelRegistration(reg.id)}
+                              disabled={loading}
+                            >
+                              Cancelar inscrição
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </CardContent>
       </Card>
 

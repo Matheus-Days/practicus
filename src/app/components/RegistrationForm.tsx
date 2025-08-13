@@ -59,7 +59,7 @@ export default function RegistrationForm({
 
   const [registration, setRegistration] = useState<Partial<RegistrationData>>({
     fullName: initialData.fullName || "",
-    email: user?.email || "",
+    email: initialData.email || user?.email || "",
     phone: initialData.phone || "",
     cpf: initialData.cpf || "",
     isPhoneWhatsapp: initialData.isPhoneWhatsapp || false,
@@ -131,7 +131,7 @@ export default function RegistrationForm({
         label="Email"
         type="email"
         value={registration.email}
-        disabled
+        onChange={(e) => handleFieldChange("email", e.target.value)}
         variant="outlined"
         size="medium"
         helperText="Esse e-mail será usado para envio do certificado."

@@ -16,64 +16,66 @@ import {
   Person as PersonIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { Registration } from "../../types/checkout";
+import { useCheckout } from "../../contexts/CheckoutContext";
 
-import { CheckoutType } from "../../api/checkouts/checkout.types";
-
-interface MyRegistrationProps {
-  registration: Registration | null;
-  registrateMyself: boolean;
-  checkoutType: CheckoutType | null;
-  onGoToRegistration?: () => void;
-  onCancelMyRegistration?: () => void;
-}
-
-export default function MyRegistration({
-  registration,
-  registrateMyself,
-  checkoutType,
-  onGoToRegistration,
-  onCancelMyRegistration,
-}: MyRegistrationProps) {
+export default function MyRegistration() {
+  const { 
+    registration, 
+    registrateMyself, 
+    checkoutType, 
+    setCurrentStep,
+    updateRegistrationStatus,
+    refreshRegistration,
+    checkout
+  } = useCheckout();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     "success" | "error" | "info"
   >("success");
 
-  // Mock data para minha inscrição (será substituído pela API real)
-  const mockMyRegistration: Registration = {
-    id: "my-registration",
-    eventId: "event-123",
-    userId: "user-123",
-    checkoutId: "checkout-123",
-    createdAt: new Date(),
-    fullName: "Matheus Braga Dias",
-    email: "matheus@email.com",
-    cpf: "123.456.789-00",
-    credentialName: "Matheus Dias",
-    phone: "(11) 99999-9999",
-    isPhoneWhatsapp: true,
-    city: "São Paulo",
-    employer: "Practicus",
-    occupation: "Desenvolvedor",
-    howDidYouHearAboutUs: "Indicação",
-    useImage: true,
-    status: "ok",
+  const handleCancelMyRegistration = async () => {
+    try {
+      if (!registration) {
+        throw new Error("Nenhuma inscrição encontrada");
+      }
+      
+      await updateRegistrationStatus(registration.id, "cancelled");
+      await refreshRegistration();
+      setSnackbarMessage("Inscrição cancelada com sucesso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Erro ao cancelar inscrição");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
   };
 
-  const handleCancelMyRegistration = () => {
-    // TODO: Implementar cancelamento da minha inscrição
-    setSnackbarMessage(
-      "Funcionalidade de cancelamento da minha inscrição será implementada em breve"
-    );
-    setSnackbarSeverity("info");
-    setSnackbarOpen(true);
-    onCancelMyRegistration?.();
+  const handleReactivateMyRegistration = async () => {
+    try {
+      if (!registration) {
+        throw new Error("Nenhuma inscrição encontrada");
+      }
+      
+      await updateRegistrationStatus(registration.id, "ok");
+      await refreshRegistration();
+      setSnackbarMessage("Inscrição reativada com sucesso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Erro ao reativar inscrição");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
   };
 
   const shouldShowRegistration = registrateMyself || checkoutType === "voucher";
+  const isMyRegistration = registration?.id === checkout?.id;
+  const canReactivate = isMyRegistration && registration?.status === "cancelled";
 
   if (!shouldShowRegistration) {
     return null;
@@ -98,8 +100,8 @@ export default function MyRegistration({
               </Typography>
             </Box>
             <Chip
-              label="Ativa"
-              color="success"
+              label={registration?.status === "cancelled" ? "Cancelada" : "Ativa"}
+              color={registration?.status === "cancelled" ? "error" : "success"}
               size="small"
               variant="outlined"
             />
@@ -112,25 +114,25 @@ export default function MyRegistration({
 
           <div className="my-4"></div>
 
-          {mockMyRegistration ? (
+          {registration ? (
             <>
               <Box sx={{ mb: 3 }}>
                 <Typography variant="body2">
-                  <strong>Nome completo:</strong> {mockMyRegistration.fullName}
+                  <strong>Nome completo:</strong> {registration.fullName}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Email:</strong> {mockMyRegistration.email}
+                  <strong>Email:</strong> {registration.email}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>CPF:</strong> {mockMyRegistration.cpf}
+                  <strong>CPF:</strong> {registration.cpf}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Nome para crachá:</strong>{" "}
-                  {mockMyRegistration.credentialName}
+                  {registration.credentialName}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Telefone:</strong> {mockMyRegistration.phone}
-                  {mockMyRegistration.isPhoneWhatsapp && (
+                  <strong>Telefone:</strong> {registration.phone}
+                  {registration.isPhoneWhatsapp && (
                     <Chip
                       label="WhatsApp"
                       color="success"
@@ -146,18 +148,29 @@ export default function MyRegistration({
                 <Button
                   variant="outlined"
                   startIcon={<EditIcon />}
-                  onClick={onGoToRegistration}
+                  onClick={() => setCurrentStep("registration-form")}
                 >
                   Editar meus dados de inscrição
                 </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={handleCancelMyRegistration}
-                >
-                  Cancelar inscrição
-                </Button>
+                {registration.status !== "cancelled" ? (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleCancelMyRegistration}
+                  >
+                    Cancelar inscrição
+                  </Button>
+                ) : canReactivate ? (
+                  <Button
+                    variant="outlined"
+                    color="success"
+                    startIcon={<RefreshIcon />}
+                    onClick={handleReactivateMyRegistration}
+                  >
+                    Reativar inscrição
+                  </Button>
+                ) : null}
               </Stack>
             </>
           ) : (
@@ -168,7 +181,7 @@ export default function MyRegistration({
               <Button
                 variant="contained"
                 startIcon={<PersonIcon />}
-                onClick={onGoToRegistration}
+                onClick={() => setCurrentStep("registration-form")}
               >
                 Preencher dados da minha inscrição
               </Button>

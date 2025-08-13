@@ -3,9 +3,43 @@
 import { useCheckout } from "../../contexts/CheckoutContext";
 import Dashboard from "./Dashboard";
 import BillingDetails from "./BillingDetails";
+import RegistrationForm from "../RegistrationForm";
+import { Box, Typography, Button, Card, CardContent } from "@mui/material";
 
 export default function CheckoutFlow() {
-  const { checkout, currentStep, setCurrentStep } = useCheckout();
+  const { 
+    checkout, 
+    currentStep, 
+    setCurrentStep, 
+    formData, 
+    updateFormData, 
+    createRegistration, 
+    updateRegistration,
+    registration 
+  } = useCheckout();
+
+  // Função para salvar dados do formulário
+  const handleSaveRegistration = async () => {
+    if (formData && checkout) {
+      // Validação básica
+      if (!formData.fullName || !formData.phone || !formData.cpf) {
+        alert("Por favor, preencha todos os campos obrigatórios");
+        return;
+      }
+      
+      try {
+        // Se já existe uma registration, atualizar; senão, criar nova
+        if (registration) {
+          await updateRegistration(formData);
+        } else {
+          await createRegistration(formData);
+        }
+      } catch (error) {
+        console.error("Erro ao salvar inscrição:", error);
+        alert("Erro ao salvar inscrição. Tente novamente.");
+      }
+    }
+  };
 
   // Se não há checkout ou está deletado, mostrar BillingDetails
   if (!checkout || checkout.status === "deleted") {
@@ -15,6 +49,41 @@ export default function CheckoutFlow() {
   // Se o usuário está na etapa de billing-details, mostrar BillingDetails
   if (currentStep === "billing-details") {
     return <BillingDetails />;
+  }
+
+  // Se o usuário está na etapa de registration-form, mostrar RegistrationForm
+  if (currentStep === "registration-form") {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          {registration ? "Editar Dados do Participante" : "Dados do Participante"}
+        </Typography>
+        
+        <Card sx={{ boxShadow: 2 }}>
+          <CardContent sx={{ p: 3 }}>
+            <RegistrationForm
+              initialData={formData || {}}
+              onDataChange={updateFormData}
+            />
+          </CardContent>
+        </Card>
+        
+        <Box sx={{ display: "flex", gap: 2, justifyContent: "space-between" }}>
+          <Button
+            variant="outlined"
+            onClick={() => setCurrentStep("overview")}
+          >
+            Voltar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveRegistration}
+          >
+            {registration ? "Atualizar e Continuar" : "Salvar e Continuar"}
+          </Button>
+        </Box>
+      </Box>
+    );
   }
 
   // Caso contrário, mostrar Dashboard

@@ -7,12 +7,13 @@ import {
   LegalEntity,
   UpdateCheckoutRequest,
 } from "../api/checkouts/checkout.types";
+import { RegistrationMinimal } from "../hooks/registrationAPI";
 
 export type RegistrationData = {
   city?: string;
   cpf: string;
   credentialName?: string;
-  email: string;
+  email?: string;
   employer?: string;
   fullName: string;
   howDidYouHearAboutUs?: string;
@@ -20,16 +21,16 @@ export type RegistrationData = {
   occupation?: string;
   phone: string;
   useImage?: boolean;
-  status: 'ok' | 'cancelled' | 'invalid';
 };
 
 export type Registration = {
   id: string;
   eventId: string;
   userId: string;
-  checkoutId?: string;
+  checkoutId: string;
   createdAt: Date;
   updatedAt?: Date;
+  status: 'ok' | 'cancelled' | 'invalid';
 } & RegistrationData;
 
 export type CheckoutStep =
@@ -49,6 +50,7 @@ export interface CheckoutContextType {
   user: User | null;
   checkout: CheckoutData | null;
   registration: Registration | null;
+  checkoutRegistrations: Array<RegistrationMinimal>;
   loading: boolean;
   error: string | null;
   currentStep: CheckoutStep;
@@ -59,6 +61,7 @@ export interface CheckoutContextType {
   registrateMyself: boolean;
   legalEntity: LegalEntity | null;
   voucher: string | null;
+  formData: Partial<RegistrationData>;
   // Funções de preenchimento do checkout
   setBillingDetails: (
     billingDetails: BillingDetailsPF | BillingDetailsPJ | null
@@ -75,11 +78,14 @@ export interface CheckoutContextType {
   deleteCheckout: () => Promise<void>;
   // Funções de registration
   createRegistration: (
-    registrationData: RegistrationData,
+    registrationData: Partial<RegistrationData>,
     voucherId?: string
   ) => Promise<void>;
   updateRegistration: (updateData: Partial<RegistrationData>) => Promise<void>;
+  updateRegistrationStatus: (registrationId: string, status: Registration["status"]) => Promise<void>;
+  deleteRegistration: () => Promise<void>;
   refreshRegistration: () => Promise<void>;
+  refreshCheckoutRegistrations: () => Promise<void>;
   // Funções de navegação
   setCurrentStep: (step: CheckoutStep) => void;
   updateFormData: (data: Partial<RegistrationData>) => void;

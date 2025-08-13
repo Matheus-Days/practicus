@@ -9,17 +9,20 @@ import {
 import {
   ConfirmationNumber as TicketIcon,
 } from "@mui/icons-material";
+import { useCheckout } from "../../contexts/CheckoutContext";
 
-interface VoucherStatisticsProps {
-  vouchersAmount: number;
-  usedVouchers: number;
-}
+export default function VoucherStatistics() {
+  const { checkout, checkoutRegistrations, registrationsAmount } = useCheckout();
 
-export default function VoucherStatistics({
-  vouchersAmount,
-  usedVouchers,
-}: VoucherStatisticsProps) {
-  const availableVouchers = vouchersAmount - usedVouchers;
+  // Não mostrar o componente se não há checkout ou se é um checkout de voucher
+  if (!checkout || checkout.checkoutType === 'voucher') {
+    return null;
+  }
+
+  // Calcular estatísticas
+  const totalRegistrations = checkout.registrateMyself ? registrationsAmount - 1 : registrationsAmount;
+  const usedRegistrations = checkoutRegistrations.filter(reg => reg.status === 'ok' && !reg.isMyRegistration).length;
+  const availableRegistrations = totalRegistrations - usedRegistrations;
 
   return (
     <Card>
@@ -34,26 +37,26 @@ export default function VoucherStatistics({
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
           <Box sx={{ flex: "1 1 200px" }}>
             <Typography variant="subtitle2" color="text.secondary">
-              Total de Vouchers
+              Total de vouchers
             </Typography>
             <Typography variant="h4" color="primary">
-              {vouchersAmount}
+              {totalRegistrations}
             </Typography>
           </Box>
           <Box sx={{ flex: "1 1 200px" }}>
             <Typography variant="subtitle2" color="text.secondary">
-              Vouchers Utilizados
-            </Typography>
-            <Typography variant="h4" color="success.main">
-              {usedVouchers}
-            </Typography>
-          </Box>
-          <Box sx={{ flex: "1 1 200px" }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Vouchers Disponíveis
+              Vouchers utilizados
             </Typography>
             <Typography variant="h4" color="warning.main">
-              {availableVouchers}
+              {usedRegistrations}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: "1 1 200px" }}>
+            <Typography variant="subtitle2" color="text.secondary">
+              Vouchers disponíveis
+            </Typography>
+            <Typography variant="h4" color="success.main">
+              {availableRegistrations}
             </Typography>
           </Box>
         </Box>

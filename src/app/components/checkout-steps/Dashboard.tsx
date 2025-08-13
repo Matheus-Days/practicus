@@ -28,11 +28,9 @@ interface DashboardProps {
 export default function Dashboard({
   onEditBilling,
   onGoToPayment,
-  onGoToRegistration,
 }: DashboardProps) {
   const {
     checkout,
-    registration,
     billingDetails,
     registrationsAmount,
     registrateMyself,
@@ -46,28 +44,6 @@ export default function Dashboard({
   if (!checkout) {
     return <Alert severity="error">Nenhum checkout encontrado.</Alert>;
   }
-
-  // Calcular quantidade de vouchers disponíveis
-  const vouchersAmount = registrateMyself
-    ? registrationsAmount - 1
-    : registrationsAmount;
-
-  // Mock data para inscritos (será substituído pela API real)
-  const mockRegistrations = [
-    { id: "1", fullName: "João Silva", email: "joao@email.com", status: "ok" as const },
-    {
-      id: "2",
-      fullName: "Maria Santos",
-      email: "maria@email.com",
-      status: "invalid" as const,
-    },
-    {
-      id: "3",
-      fullName: "Carina Tavares",
-      email: "carina@email.com",
-      status: "cancelled" as const,
-    },
-  ];
 
   const handleCancelAcquisition = async () => {
     if (!checkout?.id) return;
@@ -91,26 +67,6 @@ export default function Dashboard({
   const handleGoToPayment = () => {
     setCurrentStep("payment");
     onGoToPayment?.();
-  };
-
-  const handleGoToRegistration = () => {
-    setCurrentStep("registration-form");
-    onGoToRegistration?.();
-  };
-
-  const handleCancelMyRegistration = () => {
-    // TODO: Implementar cancelamento da minha inscrição
-    console.log("Cancelar minha inscrição");
-  };
-
-  const handleCancelRegistration = (registrationId: string) => {
-    // TODO: Implementar cancelamento de inscrição
-    console.log("Cancelar inscrição:", registrationId);
-  };
-
-  const handleReactivateRegistration = (registrationId: string) => {
-    // TODO: Implementar reativação de inscrição
-    console.log("Reativar inscrição:", registrationId);
   };
 
   return (
@@ -141,29 +97,16 @@ export default function Dashboard({
       />
 
       {/* Minha Inscrição */}
-      <MyRegistration
-        registration={registration}
-        registrateMyself={registrateMyself}
-        checkoutType={checkout.checkoutType}
-        onGoToRegistration={handleGoToRegistration}
-        onCancelMyRegistration={handleCancelMyRegistration}
-      />
+      <MyRegistration />
 
-      {/* Estatísticas de Vouchers (apenas se completed e vouchersAmount > 0) */}
-      {checkout.status === "completed" && vouchersAmount > 0 && (
-        <VoucherStatistics
-          vouchersAmount={vouchersAmount}
-          usedVouchers={mockRegistrations.filter((reg) => reg.status === "ok").length}
-        />
+      {/* Estatísticas de Vouchers (apenas se completed) */}
+      {checkout.status === "completed" && (
+        <VoucherStatistics />
       )}
 
-      {/* Tabela de Inscritos (apenas se completed e vouchersAmount > 0) */}
-      {checkout.status === "completed" && vouchersAmount > 0 && (
-        <VoucherRegistrations
-          registrations={mockRegistrations}
-          onCancelRegistration={handleCancelRegistration}
-          onReactivateRegistration={handleReactivateRegistration}
-        />
+      {/* Tabela de Inscritos (apenas se completed) */}
+      {checkout.status === "completed" && (
+        <VoucherRegistrations />
       )}
 
       {/* Dialog de Solicitação de Cancelamento */}

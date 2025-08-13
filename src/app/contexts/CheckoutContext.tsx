@@ -26,6 +26,7 @@ import {
   LegalEntity,
 } from "../api/checkouts/checkout.types";
 import { useCheckoutAPI } from "../hooks/checkoutAPI";
+import { RegistrationMinimal, useRegistrationAPI } from "../hooks/registrationAPI";
 
 const CheckoutContext = createContext<CheckoutContextType | undefined>(
   undefined
@@ -43,9 +44,11 @@ export function CheckoutProvider({
   eventId,
 }: CheckoutProviderProps) {
   const { createCheckout: createCheckoutDocument, updateCheckout: updateCheckoutDocument, deleteCheckout, getCheckout } = useCheckoutAPI();
+  const { createRegistration: createRegistrationAPI, getRegistration: getRegistrationAPI, updateRegistration: updateRegistrationAPI, deleteRegistration: deleteRegistrationAPI, getCheckoutRegistrations, updateRegistrationStatus: updateRegistrationStatusAPI } = useRegistrationAPI();
 
   const [checkout, setCheckout] = useState<CheckoutData | null>(null);
   const [registration, setRegistration] = useState<Registration | null>(null);
+  const [checkoutRegistrations, setCheckoutRegistrations] = useState<Array<RegistrationMinimal>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("select-type");
@@ -62,6 +65,19 @@ export function CheckoutProvider({
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(
     null
   );
+  const [formData, setFormData] = useState<Partial<RegistrationData>>({});
+
+  // Função para buscar inscrições do checkout
+  const fetchCheckoutRegistrations = useCallback(async () => {
+    if (!checkout?.id) return;
+    
+    try {
+      const registrations = await getCheckoutRegistrations(checkout.id);
+      setCheckoutRegistrations(registrations);
+    } catch (error) {
+      console.error("Erro ao carregar inscrições do checkout:", error);
+    }
+  }, [checkout?.id, getCheckoutRegistrations]);
 
   // Função para buscar checkout do usuário
   const fetchUserCheckout = useCallback(async () => {
@@ -70,7 +86,7 @@ export function CheckoutProvider({
     if (checkoutRes) {
       fillCheckoutContext(checkoutRes.documentId, checkoutRes.document);
     }
-  }, [user, eventId]);
+  }, [user, eventId, getCheckout]);
 
   const fillCheckoutContext = (checkoutId: string, checkoutDoc: CheckoutDocument) => {
     setCheckout({
@@ -87,8 +103,31 @@ export function CheckoutProvider({
 
   // Função para buscar registration do usuário
   const fetchUserRegistration = useCallback(async () => {
-    // implement
-  }, [user, eventId /* findUserRegistration */]);
+    if (!user || !eventId) return;
+    
+    try {
+      const registration = await getRegistrationAPI(user.uid, eventId);
+      if (registration) {
+        setRegistration(registration);
+        // Preencher formData com os dados da registration existente
+        setFormData({
+          fullName: registration.fullName,
+          email: registration.email,
+          phone: registration.phone,
+          cpf: registration.cpf,
+          isPhoneWhatsapp: registration.isPhoneWhatsapp,
+          credentialName: registration.credentialName,
+          occupation: registration.occupation,
+          employer: registration.employer,
+          city: registration.city,
+          useImage: registration.useImage,
+          howDidYouHearAboutUs: registration.howDidYouHearAboutUs,
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao buscar registration:", error);
+    }
+  }, [user, eventId, getRegistrationAPI]);
 
   // Função para criar novo checkout
   const createCheckout = async () => {
@@ -136,10 +175,48 @@ export function CheckoutProvider({
 
   // Função para criar nova registration
   const createRegistration = async (
-    registrationData: RegistrationData,
-    voucherId?: string
+    registrationData: Partial<RegistrationData>,
   ) => {
-    // implement
+    if (!user || !eventId || !checkout?.id) {
+      throw new Error("Usuário ou evento não encontrado");
+    }
+
+    // Garantir que campos obrigatórios estejam presentes
+    if (!registrationData.fullName || !registrationData.phone || !registrationData.cpf) {
+      throw new Error("Campos obrigatórios não preenchidos");
+    }
+
+    try {
+      setLoading(true);
+      
+      // Verificar se já existe uma registration para este usuário/evento
+      const existingRegistration = await getRegistrationAPI(user.uid, eventId);
+      if (existingRegistration) {
+        throw new Error("Já existe uma inscrição para este usuário neste evento");
+      }
+
+      // Criar registration no Firestore
+      const registrationId = await createRegistrationAPI(
+        eventId,
+        user.uid,
+        registrationData as RegistrationData,
+        checkout.id, // Passar checkoutId se disponível
+      );
+
+      // Buscar a registration criada para atualizar o estado
+      const newRegistration = await getRegistrationAPI(user.uid, eventId);
+      if (newRegistration) {
+        setRegistration(newRegistration);
+      }
+      
+      setCurrentStep("overview");
+    } catch (error) {
+      setError("Erro ao criar inscrição");
+      console.error(error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Função para atualizar checkout
@@ -185,8 +262,67 @@ export function CheckoutProvider({
   };
 
   // Função para atualizar registration
-  const updateRegistrationData = async (updateData: Partial<Registration>) => {
-    // implement
+  const updateRegistrationData = async (updateData: Partial<RegistrationData>) => {
+    if (!user || !eventId) {
+      throw new Error("Usuário ou evento não encontrado");
+    }
+
+    if (!registration) {
+      throw new Error("Nenhuma inscrição encontrada para atualizar");
+    }
+
+    try {
+      setLoading(true);
+      
+      // Atualizar registration no Firestore
+      await updateRegistrationAPI(user.uid, eventId, updateData);
+
+      // Buscar a registration atualizada para atualizar o estado
+      const updatedRegistration = await getRegistrationAPI(user.uid, eventId);
+      if (updatedRegistration) {
+        setRegistration(updatedRegistration);
+        // Atualizar também o formData
+        setFormData(prev => ({ ...prev, ...updateData }));
+      }
+      
+      setCurrentStep("overview");
+    } catch (error) {
+      setError("Erro ao atualizar inscrição");
+      console.error(error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para deletar registration
+  const deleteRegistrationData = async () => {
+    if (!user || !eventId) {
+      throw new Error("Usuário ou evento não encontrado");
+    }
+
+    if (!registration) {
+      throw new Error("Nenhuma inscrição encontrada para deletar");
+    }
+
+    try {
+      setLoading(true);
+      
+      // Deletar registration no Firestore
+      await deleteRegistrationAPI(user.uid, eventId);
+
+      // Limpar estados
+      setRegistration(null);
+      setFormData({});
+      
+      setCurrentStep("overview");
+    } catch (error) {
+      setError("Erro ao deletar inscrição");
+      console.error(error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Função para atualizar checkout
@@ -211,7 +347,7 @@ export function CheckoutProvider({
 
   // Função para atualizar dados do formulário de inscrição (registration)
   const updateFormDataHandler = (data: Partial<RegistrationData>) => {
-    // setFormData((prev) => ({ ...prev, ...data }));
+    setFormData((prev) => ({ ...prev, ...data }));
   };
 
   // Função para ir para próxima etapa
@@ -241,10 +377,16 @@ export function CheckoutProvider({
     fetchUserRegistration();
   }, [fetchUserCheckout, fetchUserRegistration]);
 
+  // Buscar inscrições do checkout quando o checkout mudar
+  useEffect(() => {
+    fetchCheckoutRegistrations();
+  }, [fetchCheckoutRegistrations]);
+
   const value: CheckoutContextType = {
     user,
     checkout,
     registration,
+    checkoutRegistrations,
     loading,
     error,
     currentStep,
@@ -255,6 +397,7 @@ export function CheckoutProvider({
     registrateMyself,
     legalEntity,
     voucher,
+    formData,
     // Funções de preenchimento do checkout
     setBillingDetails,
     setRegistrationsAmount,
@@ -269,7 +412,10 @@ export function CheckoutProvider({
     deleteCheckout: deleteCheckoutData,
     createRegistration,
     updateRegistration: updateRegistrationData,
+    deleteRegistration: deleteRegistrationData,
+    updateRegistrationStatus: updateRegistrationStatusAPI,
     refreshRegistration,
+    refreshCheckoutRegistrations: fetchCheckoutRegistrations,
     setCurrentStep: setCurrentStepHandler,
     updateFormData: updateFormDataHandler,
     goToNextStep,
