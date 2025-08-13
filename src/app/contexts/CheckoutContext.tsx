@@ -13,8 +13,6 @@ import {
   CheckoutContextType,
   CheckoutData,
   CheckoutStep,
-  Registration,
-  RegistrationData,
 } from "../types/checkout";
 import {
   BillingDetailsPF,
@@ -26,7 +24,8 @@ import {
   LegalEntity,
 } from "../api/checkouts/checkout.types";
 import { useCheckoutAPI } from "../hooks/checkoutAPI";
-import { RegistrationMinimal, useRegistrationAPI } from "../hooks/registrationAPI";
+import { RegistrationData, RegistrationMinimal, useRegistrationAPI } from "../hooks/registrationAPI";
+import { RegistrationFormData } from "../api/registrations/registration.types";
 
 const CheckoutContext = createContext<CheckoutContextType | undefined>(
   undefined
@@ -44,10 +43,10 @@ export function CheckoutProvider({
   eventId,
 }: CheckoutProviderProps) {
   const { createCheckout: createCheckoutDocument, updateCheckout: updateCheckoutDocument, deleteCheckout, getCheckout } = useCheckoutAPI();
-  const { createRegistration: createRegistrationAPI, getRegistration: getRegistrationAPI, updateRegistration: updateRegistrationAPI, deleteRegistration: deleteRegistrationAPI, getCheckoutRegistrations, updateRegistrationStatus: updateRegistrationStatusAPI } = useRegistrationAPI();
+  const { createRegistration: createRegistrationAPI, getRegistration: getRegistrationAPI, updateRegistration: updateRegistrationAPI, getCheckoutRegistrations, updateRegistrationStatus: updateRegistrationStatusAPI } = useRegistrationAPI();
 
   const [checkout, setCheckout] = useState<CheckoutData | null>(null);
-  const [registration, setRegistration] = useState<Registration | null>(null);
+  const [registration, setRegistration] = useState<RegistrationData | null>(null);
   const [checkoutRegistrations, setCheckoutRegistrations] = useState<Array<RegistrationMinimal>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +64,7 @@ export function CheckoutProvider({
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(
     null
   );
-  const [formData, setFormData] = useState<Partial<RegistrationData>>({});
+  const [formData, setFormData] = useState<Partial<RegistrationFormData>>({});
 
   // Função para buscar inscrições do checkout
   const fetchCheckoutRegistrations = useCallback(async () => {
@@ -106,7 +105,7 @@ export function CheckoutProvider({
     if (!user || !eventId) return;
     
     try {
-      const registration = await getRegistrationAPI(user.uid, eventId);
+      const registration = await getRegistrationAPI(eventId, user.uid);
       if (registration) {
         setRegistration(registration);
         // Preencher formData com os dados da registration existente
@@ -153,7 +152,6 @@ export function CheckoutProvider({
 
     if (legalEntity) checkoutData.legalEntity = legalEntity;
     if (billingDetails) checkoutData.billingDetails = billingDetails;
-    if (voucher) checkoutData.voucher = voucher;
     if (registrateMyself) checkoutData.registrateMyself = registrateMyself;
 
     try {
@@ -175,7 +173,7 @@ export function CheckoutProvider({
 
   // Função para criar nova registration
   const createRegistration = async (
-    registrationData: Partial<RegistrationData>,
+    registrationData: RegistrationFormData,
   ) => {
     if (!user || !eventId || !checkout?.id) {
       throw new Error("Usuário ou evento não encontrado");
@@ -189,25 +187,17 @@ export function CheckoutProvider({
     try {
       setLoading(true);
       
-      // Verificar se já existe uma registration para este usuário/evento
-      const existingRegistration = await getRegistrationAPI(user.uid, eventId);
-      if (existingRegistration) {
-        throw new Error("Já existe uma inscrição para este usuário neste evento");
-      }
-
-      // Criar registration no Firestore
-      const registrationId = await createRegistrationAPI(
+      const result = await createRegistrationAPI({
         eventId,
-        user.uid,
-        registrationData as RegistrationData,
-        checkout.id, // Passar checkoutId se disponível
-      );
+        userId: user.uid,
+        checkoutId: checkout.id,
+        ...registrationData,
+      });
 
-      // Buscar a registration criada para atualizar o estado
-      const newRegistration = await getRegistrationAPI(user.uid, eventId);
-      if (newRegistration) {
-        setRegistration(newRegistration);
-      }
+      setRegistration({
+        id: result.documentId,
+        ...result.document,
+      });
       
       setCurrentStep("overview");
     } catch (error) {
@@ -227,11 +217,11 @@ export function CheckoutProvider({
 
     try {
       setLoading(true);
-      const res = await updateCheckoutDocument(checkout.id, updateData);
+      const result = await updateCheckoutDocument(checkout.id, updateData);
       
       setCheckout({
-        id: res.documentId,
-        ...res.document,
+        id: result.documentId,
+        ...result.document,
       });
     } catch (error) {
       setError("Erro ao atualizar checkout");
@@ -262,7 +252,7 @@ export function CheckoutProvider({
   };
 
   // Função para atualizar registration
-  const updateRegistrationData = async (updateData: Partial<RegistrationData>) => {
+  const updateRegistrationData = async (updateData: Partial<RegistrationFormData>) => {
     if (!user || !eventId) {
       throw new Error("Usuário ou evento não encontrado");
     }
@@ -275,49 +265,19 @@ export function CheckoutProvider({
       setLoading(true);
       
       // Atualizar registration no Firestore
-      await updateRegistrationAPI(user.uid, eventId, updateData);
+      const result = await updateRegistrationAPI(user.uid, eventId, updateData);
 
       // Buscar a registration atualizada para atualizar o estado
-      const updatedRegistration = await getRegistrationAPI(user.uid, eventId);
-      if (updatedRegistration) {
-        setRegistration(updatedRegistration);
-        // Atualizar também o formData
-        setFormData(prev => ({ ...prev, ...updateData }));
-      }
+      setRegistration({
+        id: result.documentId,
+        ...result.document,
+      });
+      // Atualizar também o formData
+      setFormData(prev => ({ ...prev, ...updateData }));
       
       setCurrentStep("overview");
     } catch (error) {
       setError("Erro ao atualizar inscrição");
-      console.error(error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Função para deletar registration
-  const deleteRegistrationData = async () => {
-    if (!user || !eventId) {
-      throw new Error("Usuário ou evento não encontrado");
-    }
-
-    if (!registration) {
-      throw new Error("Nenhuma inscrição encontrada para deletar");
-    }
-
-    try {
-      setLoading(true);
-      
-      // Deletar registration no Firestore
-      await deleteRegistrationAPI(user.uid, eventId);
-
-      // Limpar estados
-      setRegistration(null);
-      setFormData({});
-      
-      setCurrentStep("overview");
-    } catch (error) {
-      setError("Erro ao deletar inscrição");
       console.error(error);
       throw error;
     } finally {
@@ -335,29 +295,14 @@ export function CheckoutProvider({
     await fetchUserRegistration();
   };
 
-  // Função para definir tipo de checkout
-  const setCheckoutTypeHandler = (type: CheckoutType) => {
-    // implement
-  };
-
   // Função para definir etapa atual
   const setCurrentStepHandler = (step: CheckoutStep) => {
     setCurrentStep(step);
   };
 
   // Função para atualizar dados do formulário de inscrição (registration)
-  const updateFormDataHandler = (data: Partial<RegistrationData>) => {
+  const updateFormDataHandler = (data: Partial<RegistrationFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
-  };
-
-  // Função para ir para próxima etapa
-  const goToNextStep = () => {
-    // implement
-  };
-
-  // Função para ir para etapa anterior
-  const goToPreviousStep = () => {
-    // implement
   };
 
   // Função para resetar checkout
@@ -412,14 +357,11 @@ export function CheckoutProvider({
     deleteCheckout: deleteCheckoutData,
     createRegistration,
     updateRegistration: updateRegistrationData,
-    deleteRegistration: deleteRegistrationData,
     updateRegistrationStatus: updateRegistrationStatusAPI,
     refreshRegistration,
     refreshCheckoutRegistrations: fetchCheckoutRegistrations,
     setCurrentStep: setCurrentStepHandler,
     updateFormData: updateFormDataHandler,
-    goToNextStep,
-    goToPreviousStep,
     resetCheckout,
   };
 
