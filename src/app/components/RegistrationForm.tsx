@@ -11,12 +11,12 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
-import { RegistrationData } from "../types/checkout";
 import { useCheckout } from "../contexts/CheckoutContext";
+import { RegistrationFormData } from "../api/registrations/registration.types";
 
 interface RegistrationFormProps {
-  initialData?: Partial<RegistrationData>;
-  onDataChange: (data: Partial<RegistrationData>) => void;
+  initialData?: Partial<RegistrationFormData>;
+  onDataChange: (data: Partial<RegistrationFormData>) => void;
 }
 
 // CPF validation function
@@ -57,7 +57,7 @@ export default function RegistrationForm({
 }: RegistrationFormProps) {
   const { user } = useCheckout();
 
-  const [registration, setRegistration] = useState<Partial<RegistrationData>>({
+  const [registration, setRegistration] = useState<Partial<RegistrationFormData>>({
     fullName: initialData.fullName || "",
     email: initialData.email || user?.email || "",
     phone: initialData.phone || "",
@@ -79,7 +79,7 @@ export default function RegistrationForm({
   const [phoneError, setPhoneError] = useState(false);
   const [cpfError, setCpfError] = useState(false);
 
-  const handleFieldChange = (field: keyof RegistrationData, value: any) => {
+  const handleFieldChange = (field: keyof RegistrationFormData, value: any) => {
     if (field === "credentialName") {
       setCredNameCounter(value.length);
     }
@@ -131,7 +131,7 @@ export default function RegistrationForm({
         label="Email"
         type="email"
         value={registration.email}
-        onChange={(e) => handleFieldChange("email", e.target.value)}
+        disabled
         variant="outlined"
         size="medium"
         helperText="Esse e-mail será usado para envio do certificado."

@@ -15,6 +15,8 @@ import {
   Divider,
   Snackbar,
   Alert,
+  Card,
+  Stack,
 } from "@mui/material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import {
@@ -23,13 +25,7 @@ import {
   LegalEntity,
 } from "../../api/checkouts/checkout.types";
 
-interface BillingDetailsProps {
-  onComplete?: () => void;
-}
-
-export default function BillingDetails({
-  onComplete,
-}: BillingDetailsProps) {
+export default function BillingDetails() {
   const {
     setCheckoutType,
     setBillingDetails,
@@ -45,6 +41,7 @@ export default function BillingDetails({
     checkout,
     loading,
     user,
+    setCurrentStep,
   } = useCheckout();
 
   // Estado para controlar o snackbar
@@ -76,6 +73,9 @@ export default function BillingDetails({
   const [localLegalEntity, setLocalLegalEntity] = useState<LegalEntity | null>(legalEntity);
   const [localRegistrateMyself, setLocalRegistrateMyself] = useState(registrateMyself || false);
 
+  // Verificar se já existe um checkout
+  const hasExistingCheckout = checkout && checkout.status !== 'deleted';
+
   // Atualizar emails quando o usuário mudar
   useEffect(() => {
     const userEmail = user?.email || "";
@@ -104,7 +104,7 @@ export default function BillingDetails({
         responsibleEmail: pj.responsibleEmail || user?.email || "",
       });
     }
-  }, [legalEntity, billingDetails]);
+  }, [legalEntity, billingDetails, user?.email]);
 
   // Garantir que os campos sempre tenham valores definidos quando trocar de tipo
   useEffect(() => {
@@ -163,11 +163,6 @@ export default function BillingDetails({
 
   const handleCreateCheckout = async () => {
     try {
-      setCheckoutType("acquire");
-      
-      // Verifica se já existe um checkout para este evento
-      const hasExistingCheckout = checkout && checkout.status !== 'deleted';
-      
       if (hasExistingCheckout) {
         // Atualiza checkout existente
         await updateCheckout({
@@ -182,12 +177,25 @@ export default function BillingDetails({
         setSnackbarMessage("Dados da compra atualizados com sucesso!");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
+        
+        // Redireciona para o Dashboard após atualização bem-sucedida
+        // TODO: rever uso de timeout por conta de Snackbar
+        setTimeout(() => {
+          setCurrentStep("overview");
+        }, 1500);
       } else {
+        // Para novo checkout, definir o tipo ANTES de criar
+        setCheckoutType("acquire");
+        
+        // Aguardar um tick para garantir que o estado foi atualizado
+        await new Promise(resolve => setTimeout(resolve, 0));
+        
         // Cria novo checkout
         await createCheckout();
+        
+        // Redireciona para o Dashboard após criação bem-sucedida
+        setCurrentStep("overview");
       }
-      
-      onComplete?.();
     } catch (error) {
       console.error("Erro ao processar checkout:", error);
       
@@ -196,6 +204,10 @@ export default function BillingDetails({
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentStep("overview");
   };
 
   const isFormValid = (): boolean => {
@@ -221,268 +233,285 @@ export default function BillingDetails({
   };
 
   return (
-    <Box
-      sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 600 }}
-    >
-      <Typography variant="h5" component="h2" gutterBottom>
-        Informações da compra
-      </Typography>
+    <Card sx={{ p: 4 }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 600 }}
+      >
+        <Typography variant="h5" component="h2" gutterBottom>
+          Informações da compra
+        </Typography>
 
-      {/* I. Campo de quantidade de inscrições */}
-      <TextField
-        fullWidth
-        label="Quantidade de Inscrições"
-        type="number"
-        value={localRegistrationsAmount}
-        onChange={(e) => {
-          const value = parseInt(e.target.value) || 1;
-          setLocalRegistrationsAmount(value);
-          setRegistrationsAmount(value);
-        }}
-        variant="outlined"
-        size="medium"
-        required
-        slotProps={{ htmlInput: { min: 1 } }}
-        helperText="Mínimo de 1 inscrição"
-      />
-
-      {/* II. Seletor do tipo de pessoa */}
-      <FormControl fullWidth required>
-        <InputLabel>Tipo de Pessoa</InputLabel>
-        <Select
-          value={localLegalEntity || ""}
-          label="Tipo de Pessoa"
-          size="medium"
+        {/* I. Campo de quantidade de inscrições */}
+        <TextField
+          fullWidth
+          label="Quantidade de Inscrições"
+          type="number"
+          value={localRegistrationsAmount}
           onChange={(e) => {
-            const value = e.target.value as LegalEntity;
-            setLocalLegalEntity(value);
-            setLegalEntity(value);
+            const value = parseInt(e.target.value) || 1;
+            setLocalRegistrationsAmount(value);
+            setRegistrationsAmount(value);
           }}
-        >
-          <MenuItem value="pf">Pessoa Física</MenuItem>
-          <MenuItem value="pj">Pessoa Jurídica</MenuItem>
-        </Select>
-      </FormControl>
+          variant="outlined"
+          size="medium"
+          required
+          slotProps={{ htmlInput: { min: 1 } }}
+          helperText="Mínimo de 1 inscrição"
+        />
 
-      {/* III. Campos de dados de cobrança */}
-      {localLegalEntity && (
-        <>
-          <Divider />
-          <Typography variant="h6" component="h3" gutterBottom>
-            Dados de cobrança
-          </Typography>
-          <Typography variant="body1" gutterBottom>
-            Os dados informado serão usados para a emissão do recibo de pagamento.
-          </Typography>
+        {/* II. Seletor do tipo de pessoa */}
+        <FormControl fullWidth required>
+          <InputLabel>Tipo de Pessoa</InputLabel>
+          <Select
+            value={localLegalEntity || ""}
+            label="Tipo de Pessoa"
+            size="medium"
+            onChange={(e) => {
+              const value = e.target.value as LegalEntity;
+              setLocalLegalEntity(value);
+              setLegalEntity(value);
+            }}
+          >
+            <MenuItem value="pf">Pessoa Física</MenuItem>
+            <MenuItem value="pj">Pessoa Jurídica</MenuItem>
+          </Select>
+        </FormControl>
 
-          {localLegalEntity === "pf" ? (
-            // Campos para Pessoa Física
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <TextField
-                fullWidth
-                label="Nome Completo"
-                value={billingDetailsPF.fullName || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPFChange("fullName", e.target.value)
-                }
-                variant="outlined"
-                size="medium"
-                required
-              />
+        {/* III. Campos de dados de cobrança */}
+        {localLegalEntity && (
+          <>
+            <Divider />
+            <Typography variant="h6" component="h3" gutterBottom>
+              Dados de cobrança
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              Os dados informado serão usados para a emissão do recibo de pagamento.
+            </Typography>
 
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={billingDetailsPF.email || ""}
-                disabled
-                variant="outlined"
-                size="medium"
-                required
-                helperText="Email do usuário autenticado"
-              />
-
-              <TextField
-                fullWidth
-                label="Telefone"
-                value={billingDetailsPF.phone || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPFChange("phone", e.target.value)
-                }
-                variant="outlined"
-                size="medium"
-                required
-                helperText="Apenas números"
-              />
-            </Box>
-          ) : (
-            // Campos para Pessoa Jurídica
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <TextField
-                fullWidth
-                label="Nome da Organização"
-                value={billingDetailsPJ.orgName || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPJChange("orgName", e.target.value)
-                }
-                variant="outlined"
-                size="medium"
-                required
-              />
-
-              <TextField
-                fullWidth
-                label="CNPJ"
-                value={billingDetailsPJ.orgCnpj || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPJChange("orgCnpj", e.target.value)
-                }
-                variant="outlined"
-                size="medium"
-                required
-                helperText="Apenas números"
-              />
-
-              <TextField
-                fullWidth
-                label="Telefone da Organização"
-                value={billingDetailsPJ.orgPhone || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPJChange("orgPhone", e.target.value)
-                }
-                variant="outlined"
-                size="medium"
-                required
-                helperText="Apenas números"
-              />
-
-              <TextField
-                fullWidth
-                label="Endereço da Organização"
-                value={billingDetailsPJ.orgAddress || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPJChange("orgAddress", e.target.value)
-                }
-                variant="outlined"
-                size="medium"
-                required
-                multiline
-                rows={2}
-              />
-
-              <TextField
-                fullWidth
-                label="CEP"
-                value={billingDetailsPJ.orgZip || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPJChange("orgZip", e.target.value)
-                }
-                variant="outlined"
-                size="medium"
-                required
-                helperText="Apenas números"
-              />
-
-              <Divider />
-              <Typography variant="subtitle1" gutterBottom>
-                Dados do Responsável
-              </Typography>
-
-              <TextField
-                fullWidth
-                label="Nome do Responsável"
-                value={billingDetailsPJ.responsibleName || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPJChange(
-                    "responsibleName",
-                    e.target.value
-                  )
-                }
-                variant="outlined"
-                size="medium"
-                required
-              />
-
-              <TextField
-                fullWidth
-                label="Email do Responsável"
-                type="email"
-                value={billingDetailsPJ.responsibleEmail || user?.email || ""}
-                disabled
-                variant="outlined"
-                size="medium"
-                required
-                helperText="Email do usuário autenticado"
-              />
-
-              <TextField
-                fullWidth
-                label="Telefone do Responsável"
-                value={billingDetailsPJ.responsiblePhone || ""}
-                onChange={(e) =>
-                  handleBillingDetailsPJChange(
-                    "responsiblePhone",
-                    e.target.value
-                  )
-                }
-                variant="outlined"
-                size="medium"
-                required
-                helperText="Apenas números"
-              />
-            </Box>
-          )}
-
-          {/* IV. Checkbox para registrateMyself */}
-          {localLegalEntity === "pf" && (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={localRegistrateMyself}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setLocalRegistrateMyself(checked);
-                    setRegistrateMyself(checked);
-                  }}
+            {localLegalEntity === "pf" ? (
+              // Campos para Pessoa Física
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Nome Completo"
+                  value={billingDetailsPF.fullName || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPFChange("fullName", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
                 />
-              }
-              label="Esta inscrição é para mim"
-            />
+
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={billingDetailsPF.email || ""}
+                  disabled
+                  variant="outlined"
+                  size="medium"
+                  required
+                  helperText="Email do usuário autenticado"
+                />
+
+                <TextField
+                  fullWidth
+                  label="Telefone"
+                  value={billingDetailsPF.phone || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPFChange("phone", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                  helperText="Apenas números"
+                />
+              </Box>
+            ) : (
+              // Campos para Pessoa Jurídica
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Nome da Organização"
+                  value={billingDetailsPJ.orgName || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange("orgName", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                />
+
+                <TextField
+                  fullWidth
+                  label="CNPJ"
+                  value={billingDetailsPJ.orgCnpj || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange("orgCnpj", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                  helperText="Apenas números"
+                />
+
+                <TextField
+                  fullWidth
+                  label="Telefone da Organização"
+                  value={billingDetailsPJ.orgPhone || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange("orgPhone", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                  helperText="Apenas números"
+                />
+
+                <TextField
+                  fullWidth
+                  label="Endereço da Organização"
+                  value={billingDetailsPJ.orgAddress || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange("orgAddress", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                  multiline
+                  rows={2}
+                />
+
+                <TextField
+                  fullWidth
+                  label="CEP"
+                  value={billingDetailsPJ.orgZip || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange("orgZip", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                  helperText="Apenas números"
+                />
+
+                <Divider />
+                <Typography variant="subtitle1" gutterBottom>
+                  Dados do Responsável
+                </Typography>
+
+                <TextField
+                  fullWidth
+                  label="Nome do Responsável"
+                  value={billingDetailsPJ.responsibleName || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange(
+                      "responsibleName",
+                      e.target.value
+                    )
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                />
+
+                <TextField
+                  fullWidth
+                  label="Email do Responsável"
+                  type="email"
+                  value={billingDetailsPJ.responsibleEmail || user?.email || ""}
+                  disabled
+                  variant="outlined"
+                  size="medium"
+                  required
+                  helperText="Email do usuário autenticado"
+                />
+
+                <TextField
+                  fullWidth
+                  label="Telefone do Responsável"
+                  value={billingDetailsPJ.responsiblePhone || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange(
+                      "responsiblePhone",
+                      e.target.value
+                    )
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                  helperText="Apenas números"
+                />
+              </Box>
+            )}
+
+            {/* IV. Checkbox para registrateMyself */}
+            {localLegalEntity === "pf" && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={localRegistrateMyself}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setLocalRegistrateMyself(checked);
+                      setRegistrateMyself(checked);
+                    }}
+                  />
+                }
+                label="Esta inscrição é para mim"
+              />
+            )}
+          </>
+        )}
+
+        {/* Botões de ação */}
+        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+          {/* Botão Voltar - apenas quando já existe um checkout */}
+          {hasExistingCheckout && (
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={handleBackToDashboard}
+              disabled={loading}
+            >
+              Voltar
+            </Button>
           )}
-        </>
-      )}
+          
+          {/* Botão principal */}
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleCreateCheckout}
+            disabled={loading || !isFormValid()}
+            sx={{ flex: 1 }}
+          >
+            {loading 
+              ? "Processando..." 
+              : hasExistingCheckout
+                ? "Atualizar dados da compra"
+                : "Avançar"
+            }
+          </Button>
+        </Stack>
 
-      {/* Botão para criar/atualizar checkout */}
-      <Button
-        variant="contained"
-        size="large"
-        onClick={handleCreateCheckout}
-        disabled={loading || !isFormValid()}
-        sx={{ mt: 2 }}
-      >
-        {loading 
-          ? "Processando..." 
-          : checkout && checkout.status !== 'deleted'
-            ? "Atualizar dados da compra"
-            : "Avançar"
-        }
-      </Button>
-
-      {/* Snackbar para notificações */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setSnackbarOpen(false)} 
-          severity={snackbarSeverity}
-          sx={{ width: '100%' }}
+        {/* Snackbar para notificações */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert 
+            onClose={() => setSnackbarOpen(false)} 
+            severity={snackbarSeverity}
+            sx={{ width: '100%' }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Card>
   );
 }

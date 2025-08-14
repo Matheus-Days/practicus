@@ -158,10 +158,8 @@ export function CheckoutProvider({
       setLoading(true);
       const res = await createCheckoutDocument(checkoutData);
       
-      setCheckout({
-        id: res.documentId,
-        ...res.document,
-      });
+      // Atualizar o checkout e todos os estados relacionados
+      fillCheckoutContext(res.documentId, res.document);
       setCurrentStep("overview");
     } catch (error) {
       setError("Erro ao criar checkout");
@@ -219,10 +217,8 @@ export function CheckoutProvider({
       setLoading(true);
       const result = await updateCheckoutDocument(checkout.id, updateData);
       
-      setCheckout({
-        id: result.documentId,
-        ...result.document,
-      });
+      // Atualizar o checkout e todos os estados relacionados
+      fillCheckoutContext(result.documentId, result.document);
     } catch (error) {
       setError("Erro ao atualizar checkout");
       console.error(error);

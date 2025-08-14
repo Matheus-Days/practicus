@@ -18,6 +18,7 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import {
   Group as GroupIcon,
@@ -29,12 +30,17 @@ import {
   Pending as PendingIcon,
 } from "@mui/icons-material";
 import { useCheckout } from "../../contexts/CheckoutContext";
-import { useRegistrationAPI, RegistrationMinimal } from "../../hooks/registrationAPI";
+import { useRegistrationAPI } from "../../hooks/registrationAPI";
 
 export default function VoucherRegistrations() {
-  const { checkoutRegistrations, refreshCheckoutRegistrations } = useCheckout();
+  const {
+    checkout,
+    checkoutRegistrations,
+    refreshCheckoutRegistrations,
+    registrationsAmount,
+  } = useCheckout();
   const { updateRegistrationStatus } = useRegistrationAPI();
-  
+
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -42,22 +48,30 @@ export default function VoucherRegistrations() {
     "success" | "error" | "info"
   >("success");
 
+  // Calcular vouchers disponíveis (mesmo cálculo do VoucherStatistics)
+  const totalRegistrations = checkout?.registrateMyself
+    ? registrationsAmount - 1
+    : registrationsAmount;
+  const usedRegistrations = checkoutRegistrations.filter(
+    (reg) => reg.status === "ok" && !reg.isMyRegistration
+  ).length;
+  const availableRegistrations = totalRegistrations - usedRegistrations;
+
   const handleCancelRegistration = async (registrationId: string) => {
     try {
       setLoading(true);
-      
+
       // Atualizar status para cancelled
       await updateRegistrationStatus(registrationId, "cancelled");
 
       // Recarregar lista
       await refreshCheckoutRegistrations();
-      
+
       setSnackbarMessage("Inscrição cancelada com sucesso");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Erro ao cancelar inscrição:", error);
-      setSnackbarMessage("Erro ao cancelar inscrição");
+    } catch (error: any) {
+      setSnackbarMessage(error.message);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
@@ -68,19 +82,18 @@ export default function VoucherRegistrations() {
   const handleReactivateRegistration = async (registrationId: string) => {
     try {
       setLoading(true);
-      
+
       // Atualizar status para ok
       await updateRegistrationStatus(registrationId, "ok");
 
       // Recarregar lista
       await refreshCheckoutRegistrations();
-      
+
       setSnackbarMessage("Inscrição reativada com sucesso");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Erro ao reativar inscrição:", error);
-      setSnackbarMessage("Erro ao reativar inscrição");
+    } catch (error: any) {
+      setSnackbarMessage(error.message);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
@@ -131,9 +144,7 @@ export default function VoucherRegistrations() {
             <Typography variant="h6" component="h3">
               Inscritos via voucher
             </Typography>
-            {loading && (
-              <CircularProgress size={20} sx={{ ml: 1 }} />
-            )}
+            {loading && <CircularProgress size={20} sx={{ ml: 1 }} />}
             <Box sx={{ flexGrow: 1 }} />
             <Button
               variant="outlined"
@@ -141,7 +152,7 @@ export default function VoucherRegistrations() {
               startIcon={<RefreshIcon />}
               onClick={refreshCheckoutRegistrations}
               disabled={loading}
-              sx={{ ml: 'auto' }}
+              sx={{ ml: "auto" }}
             >
               Atualizar lista
             </Button>
@@ -168,66 +179,80 @@ export default function VoucherRegistrations() {
                 </TableHead>
                 <TableBody>
                   {checkoutRegistrations
-                  .filter(reg => !reg.isMyRegistration)
-                  .map((reg) => {
-                    const statusInfo = getRegistrationStatusInfo(reg.status);
-                    return (
-                      <TableRow key={reg.id}>
-                        <TableCell>{reg.fullName}</TableCell>
-                        <TableCell>{reg.email || "Não informado"}</TableCell>
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            {statusInfo.icon}
-                            <Chip
-                              label={statusInfo.label}
-                              color={statusInfo.color}
-                              size="small"
-                              variant="outlined"
-                            />
-                          </Box>
-                        </TableCell>
-                        <TableCell align="center">
-                          {reg.status === "invalid" ? (
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ fontStyle: "italic" }}
+                    .filter((reg) => !reg.isMyRegistration)
+                    .map((reg) => {
+                      const statusInfo = getRegistrationStatusInfo(reg.status);
+                      return (
+                        <TableRow key={reg.id}>
+                          <TableCell>{reg.fullName}</TableCell>
+                          <TableCell>{reg.email || "Não informado"}</TableCell>
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
                             >
-                              Ação indisponível
-                            </Typography>
-                          ) : reg.status === "cancelled" ? (
-                            <Button
-                              variant="outlined"
-                              color="success"
-                              size="small"
-                              startIcon={<RefreshIcon />}
-                              onClick={() => handleReactivateRegistration(reg.id)}
-                              disabled={loading}
-                            >
-                              Reativar inscrição
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outlined"
-                              color="error"
-                              size="small"
-                              startIcon={<DeleteIcon />}
-                              onClick={() => handleCancelRegistration(reg.id)}
-                              disabled={loading}
-                            >
-                              Cancelar inscrição
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                              {statusInfo.icon}
+                              <Chip
+                                label={statusInfo.label}
+                                color={statusInfo.color}
+                                size="small"
+                                variant="outlined"
+                              />
+                            </Box>
+                          </TableCell>
+                          <TableCell align="center">
+                            {reg.status === "invalid" ? (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ fontStyle: "italic" }}
+                              >
+                                Ação indisponível
+                              </Typography>
+                            ) : reg.status === "cancelled" ? (
+                              <Tooltip
+                                title={
+                                  availableRegistrations <= 0
+                                    ? "Não há vouchers disponíveis"
+                                    : ""
+                                }
+                              >
+                                <span>
+                                  <Button
+                                    variant="outlined"
+                                    color="success"
+                                    size="small"
+                                    startIcon={<RefreshIcon />}
+                                    onClick={() =>
+                                      handleReactivateRegistration(reg.id)
+                                    }
+                                    disabled={
+                                      loading || availableRegistrations <= 0
+                                    }
+                                  >
+                                    Reativar inscrição
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                            ) : (
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                size="small"
+                                startIcon={<DeleteIcon />}
+                                onClick={() => handleCancelRegistration(reg.id)}
+                                disabled={loading}
+                              >
+                                Cancelar inscrição
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                 </TableBody>
               </Table>
             </TableContainer>

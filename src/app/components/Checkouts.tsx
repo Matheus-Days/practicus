@@ -156,7 +156,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-md p-6">
+    <div className="bg-white border border-gray-200 rounded-md p-6 w-full max-w-4xl">
       <div className="text-center mb-6">
         <h3 className="text-lg font-medium text-gray-900 mb-2">Minha Inscrição</h3>
         <p className="text-gray-600">Faça login para verificar ou realizar sua inscrição</p>

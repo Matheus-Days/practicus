@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: Params }) {
         lgImageField={page.data.imagem_ilustrativa.Banner}
         titleField={page.data.nome_do_evento}
       />
-      <div className="mt-8">
+      <div className="flex flex-col items-center mt-8">
         <Checkouts eventId={params.uid} />
       </div>
     </BoundedMain>

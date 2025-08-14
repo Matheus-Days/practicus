@@ -18,18 +18,18 @@ import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
 } from "@mui/icons-material";
-import { Registration } from "../../types/checkout";
 import { useCheckout } from "../../contexts/CheckoutContext";
+import { RegistrationStatus } from "../../api/registrations/registration.types";
 
 export default function MyRegistration() {
-  const { 
-    registration, 
-    registrateMyself, 
-    checkoutType, 
+  const {
+    registration,
+    registrateMyself,
+    checkoutType,
     setCurrentStep,
     updateRegistrationStatus,
     refreshRegistration,
-    checkout
+    checkout,
   } = useCheckout();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -42,7 +42,7 @@ export default function MyRegistration() {
       if (!registration) {
         throw new Error("Nenhuma inscrição encontrada");
       }
-      
+
       await updateRegistrationStatus(registration.id, "cancelled");
       await refreshRegistration();
       setSnackbarMessage("Inscrição cancelada com sucesso");
@@ -60,7 +60,7 @@ export default function MyRegistration() {
       if (!registration) {
         throw new Error("Nenhuma inscrição encontrada");
       }
-      
+
       await updateRegistrationStatus(registration.id, "ok");
       await refreshRegistration();
       setSnackbarMessage("Inscrição reativada com sucesso");
@@ -73,9 +73,32 @@ export default function MyRegistration() {
     }
   };
 
+  const getChipLabel = (status?: RegistrationStatus) => {
+    switch (status) {
+      case "cancelled":
+        return "Cancelada";
+      case "ok":
+        return "Ativa";
+      default:
+        return "Inválida";
+    }
+  };
+
+  const getChipColor = (status?: RegistrationStatus) => {
+    switch (status) {
+      case "cancelled":
+        return "error";
+      case "ok":
+        return "success";
+      default:
+        return "warning";
+    }
+  };
+
   const shouldShowRegistration = registrateMyself || checkoutType === "voucher";
   const isMyRegistration = registration?.id === checkout?.id;
-  const canReactivate = isMyRegistration && registration?.status === "cancelled";
+  const canReactivate =
+    isMyRegistration && registration?.status === "cancelled";
 
   if (!shouldShowRegistration) {
     return null;
@@ -99,18 +122,23 @@ export default function MyRegistration() {
                 Minha Inscrição no evento
               </Typography>
             </Box>
-            <Chip
-              label={registration?.status === "cancelled" ? "Cancelada" : "Ativa"}
-              color={registration?.status === "cancelled" ? "error" : "success"}
-              size="small"
-              variant="outlined"
-            />
+            {registration && (
+              <Chip
+                label={getChipLabel(registration?.status)}
+                color={getChipColor(registration?.status)}
+                size="medium"
+                variant="filled"
+              />
+            )}
           </Box>
-          <Typography variant="body2">
-            Principais dados da sua inscrição. Eles serão usados para gerar o
-            crachá e o certificado de participação, além de qualquer comunicação entre a equipe do evento e você, então verifique se estão
-            corretos e os edite se necessário.
-          </Typography>
+          {registration && (
+            <Typography variant="body2">
+              Principais dados da sua inscrição. Eles serão usados para gerar o
+              crachá e o certificado de participação, além de qualquer
+              comunicação entre a equipe do evento e você, então verifique se
+              estão corretos e os edite se necessário.
+            </Typography>
+          )}
 
           <div className="my-4"></div>
 
@@ -130,18 +158,19 @@ export default function MyRegistration() {
                   <strong>Nome para crachá:</strong>{" "}
                   {registration.credentialName}
                 </Typography>
-                <Typography variant="body2">
-                  <strong>Telefone:</strong> {registration.phone}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="body2">
+                    <strong>Telefone:</strong> {registration.phone}
+                  </Typography>
                   {registration.isPhoneWhatsapp && (
                     <Chip
                       label="WhatsApp"
                       color="success"
                       size="small"
                       variant="outlined"
-                      sx={{ ml: 1 }}
                     />
                   )}
-                </Typography>
+                </Box>
               </Box>
 
               <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
@@ -176,14 +205,16 @@ export default function MyRegistration() {
           ) : (
             <Box sx={{ textAlign: "center", py: 3 }}>
               <Typography variant="body1" color="text.secondary">
-                Você ainda não preencheu seus dados de inscrição.
+                Sua vaga no evento está garantida, mas você ainda não preencheu
+                seus dados de inscrição.
               </Typography>
+              <div className="my-4"></div>
               <Button
                 variant="contained"
                 startIcon={<PersonIcon />}
                 onClick={() => setCurrentStep("registration-form")}
               >
-                Preencher dados da minha inscrição
+                Preencher minha inscrição
               </Button>
             </Box>
           )}
@@ -206,4 +237,4 @@ export default function MyRegistration() {
       </Snackbar>
     </>
   );
-} 
+}
