@@ -5,4 +5,5 @@ export { default as MyRegistration } from './MyRegistration';
 export { default as VoucherStatistics } from './VoucherStatistics';
 export { default as VoucherRegistrations } from './VoucherRegistrations';
 export { default as Dashboard } from './Dashboard';
-export { default as Example } from './Example'; 
+export { default as SelectType } from './SelectType';
+export { default as VoucherValidation } from './VoucherValidation'; 

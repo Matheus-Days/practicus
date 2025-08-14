@@ -3,8 +3,11 @@
 import { useCheckout } from "../../contexts/CheckoutContext";
 import Dashboard from "./Dashboard";
 import BillingDetails from "./BillingDetails";
+import SelectType from "./SelectType";
+import VoucherValidation from "./VoucherValidation";
 import RegistrationForm from "../RegistrationForm";
 import { Box, Typography, Button, Card, CardContent } from "@mui/material";
+import { RegistrationFormData } from "../../api/registrations/registration.types";
 
 export default function CheckoutFlow() {
   const { 
@@ -32,7 +35,7 @@ export default function CheckoutFlow() {
         if (registration) {
           await updateRegistration(formData);
         } else {
-          await createRegistration(formData);
+          await createRegistration(formData as RegistrationFormData);
         }
       } catch (error) {
         console.error("Erro ao salvar inscrição:", error);
@@ -41,9 +44,20 @@ export default function CheckoutFlow() {
     }
   };
 
-  // Se não há checkout ou está deletado, mostrar BillingDetails
-  if (!checkout || checkout.status === "deleted") {
-    return <BillingDetails />;
+  // Se não há checkout ou está deletado, mostrar SelectType
+  // TODO: verificar se é necessário algo do tipo com checkouts marcados como deletados
+  // if (!checkout || checkout.status === "deleted") {
+  //   return <SelectType />;
+  // }
+
+  // Se o usuário está na etapa de select-type, mostrar SelectType
+  if (currentStep === "select-type") {
+    return <SelectType />;
+  }
+
+  // Se o usuário está na etapa de voucher-validation, mostrar VoucherValidation
+  if (currentStep === "voucher-validation") {
+    return <VoucherValidation />;
   }
 
   // Se o usuário está na etapa de billing-details, mostrar BillingDetails
@@ -86,7 +100,7 @@ export default function CheckoutFlow() {
     );
   }
 
-  // Caso contrário, mostrar Dashboard
+  // Caso contrário, mostrar Dashboard (incluindo quando currentStep === "overview")
   return (
     <Dashboard
       onEditBilling={() => setCurrentStep("billing-details")}

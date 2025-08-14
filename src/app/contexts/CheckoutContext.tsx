@@ -98,6 +98,11 @@ export function CheckoutProvider({
     setLegalEntity(checkoutDoc.legalEntity || null);
     setVoucher(checkoutDoc.voucher || null);
     setCheckoutType(checkoutDoc.checkoutType || null);
+    
+    // Se o checkout não está deletado, direcionar para o Dashboard
+    if (checkoutDoc.status !== "deleted") {
+      setCurrentStep("overview");
+    }
   };
 
   // Função para buscar registration do usuário
@@ -137,7 +142,6 @@ export function CheckoutProvider({
       !billingDetails ||
       registrationsAmount <= 0
     ) {
-    console.log("createCheckout", user, eventId, checkoutType, billingDetails, registrationsAmount, legalEntity, voucher, registrateMyself);
     throw new Error(
         "Informações obrigatórias para criação de checkout faltando."
       );
