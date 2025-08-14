@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import {
   doc,
   getDoc,
-  updateDoc,
   collection,
   query,
   where,
@@ -56,28 +55,26 @@ export const useRegistrationAPI = () => {
     async (
       registrationData: CreateRegistrationRequest
     ): Promise<RegistrationResponse> => {
-      try {
-        const response = await makeAuthenticatedRequest("/api/registrations", {
-          method: "POST",
-          body: JSON.stringify(registrationData),
-        });
+      const response = await makeAuthenticatedRequest("/api/registrations", {
+        method: "POST",
+        body: JSON.stringify(registrationData),
+      });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erro ao criar inscrição");
-        }
-
-        return await response.json();
-      } catch (error) {
-        throw error;
+      if (!response.ok) {
+        throw new Error((await response.json()).error);
       }
+
+      return await response.json();
     },
     [makeAuthenticatedRequest]
   );
 
   // READ - Buscar inscrição por eventId e userUid
   const getRegistration = useCallback(
-    async (eventId: string, userUid: string): Promise<RegistrationData | null> => {
+    async (
+      eventId: string,
+      userUid: string
+    ): Promise<RegistrationData | null> => {
       try {
         const registrationId = generateRegistrationDocumentId(eventId, userUid);
         const registrationRef = doc(firestore, "registrations", registrationId);
@@ -165,27 +162,21 @@ export const useRegistrationAPI = () => {
       eventId: string,
       updateData: UpdateRegistrationRequest
     ): Promise<RegistrationResponse> => {
-      try {
-        const registrationId = generateRegistrationDocumentId(eventId, userId);
+      const registrationId = generateRegistrationDocumentId(eventId, userId);
 
-        const response = await makeAuthenticatedRequest(
-          `/api/registrations/${registrationId}`,
-          {
-            method: "PUT",
-            body: JSON.stringify(updateData),
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erro ao atualizar inscrição");
+      const response = await makeAuthenticatedRequest(
+        `/api/registrations/${registrationId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(updateData),
         }
+      );
 
-        return await response.json();
-      } catch (error) {
-        console.error("Erro ao atualizar inscrição:", error);
-        throw error;
+      if (!response.ok) {
+        throw new Error((await response.json()).error);
       }
+
+      return await response.json();
     },
     [makeAuthenticatedRequest]
   );
@@ -196,25 +187,19 @@ export const useRegistrationAPI = () => {
       registrationId: string,
       status: "ok" | "cancelled" | "invalid"
     ): Promise<RegistrationResponse> => {
-      try {
-        const response = await makeAuthenticatedRequest(
-          `/api/registrations/${registrationId}/status`,
-          {
-            method: "PUT",
-            body: JSON.stringify({ status }),
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erro ao atualizar status da inscrição");
+      const response = await makeAuthenticatedRequest(
+        `/api/registrations/${registrationId}/status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ status }),
         }
+      );
 
-        return await response.json();
-      } catch (error) {
-        console.error("Erro ao atualizar status da inscrição:", error);
-        throw error;
+      if (!response.ok) {
+        throw new Error((await response.json()).error);
       }
+
+      return await response.json();
     },
     [makeAuthenticatedRequest]
   );

@@ -41,22 +41,16 @@ export const useCheckoutAPI = () => {
   // Criar novo checkout
   const createCheckout = useCallback(
     async (checkoutData: CreateCheckoutRequest): Promise<CheckoutResponse> => {
-      try {
-        const response = await makeAuthenticatedRequest("/api/checkouts", {
-          method: "POST",
-          body: JSON.stringify(checkoutData),
-        });
+      const response = await makeAuthenticatedRequest("/api/checkouts", {
+        method: "POST",
+        body: JSON.stringify(checkoutData),
+      });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erro ao criar checkout");
-        }
-
-        return await response.json();
-      } catch (error) {
-        console.error("Error creating checkout:", error);
-        throw error;
+      if (!response.ok) {
+        throw new Error((await response.json()).error);
       }
+
+      return await response.json();
     },
     [makeAuthenticatedRequest]
   );
@@ -67,25 +61,19 @@ export const useCheckoutAPI = () => {
       checkoutId: string,
       updateData: UpdateCheckoutRequest
     ): Promise<CheckoutResponse> => {
-      try {
-        const response = await makeAuthenticatedRequest(
-          `/api/checkouts/${checkoutId}`,
-          {
-            method: "PUT",
-            body: JSON.stringify(updateData),
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erro ao atualizar checkout");
+      const response = await makeAuthenticatedRequest(
+        `/api/checkouts/${checkoutId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(updateData),
         }
+      );
 
-        return await response.json();
-      } catch (error) {
-        console.error("Error updating checkout:", error);
-        throw error;
+      if (!response.ok) {
+        throw new Error((await response.json()).error);
       }
+
+      return await response.json();
     },
     [makeAuthenticatedRequest]
   );
@@ -93,24 +81,18 @@ export const useCheckoutAPI = () => {
   // "Deletar" checkout (marcar como deletado)
   const deleteCheckout = useCallback(
     async (checkoutId: string): Promise<any> => {
-      try {
-        const response = await makeAuthenticatedRequest(
-          `/api/checkouts/${checkoutId}`,
-          {
-            method: "DELETE",
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erro ao deletar checkout");
+      const response = await makeAuthenticatedRequest(
+        `/api/checkouts/${checkoutId}`,
+        {
+          method: "DELETE",
         }
+      );
 
-        return await response.json();
-      } catch (error) {
-        console.error("Error deleting checkout:", error);
-        throw error;
+      if (!response.ok) {
+        throw new Error((await response.json()).error);
       }
+
+      return await response.json();
     },
     [makeAuthenticatedRequest]
   );
@@ -144,21 +126,15 @@ export const useCheckoutAPI = () => {
 
   // Listar checkouts do usuário
   const listUserCheckouts = useCallback(async (): Promise<any[]> => {
-    try {
-      const response = await makeAuthenticatedRequest("/api/checkouts", {
-        method: "GET",
-      });
+    const response = await makeAuthenticatedRequest("/api/checkouts", {
+      method: "GET",
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erro ao listar checkouts");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error listing checkouts:", error);
-      throw error;
+    if (!response.ok) {
+      throw new Error((await response.json()).error);
     }
+
+    return await response.json();
   }, [makeAuthenticatedRequest]);
 
   return {
