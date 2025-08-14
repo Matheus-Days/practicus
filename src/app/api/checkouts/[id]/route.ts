@@ -52,7 +52,7 @@ export async function PUT(
 
     return createSuccessResponse({
       documentId: id,
-      document: checkoutDoc,
+      document: checkoutDoc.data(),
     });
   } catch (error) {
     console.error("Erro ao atualizar checkout:", error);
