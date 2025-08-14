@@ -12,6 +12,7 @@ import {
   extractUpdateRegistrationStatusDataFromRequestBody,
 } from "../../utils";
 import { createErrorResponse } from "../../../utils";
+import { CheckoutDocument } from "../../../checkouts/checkout.types";
 
 export async function PATCH(
   request: NextRequest,
@@ -55,11 +56,25 @@ export async function PATCH(
     const registration = registrationDoc.data() as RegistrationDocument;
 
     // Se o usuário não for o dono da inscrição, verificar se é admin
-    if (registration.userId !== authenticatedUser.uid) {
+    const userIsRegistrationOwner = registration.userId === authenticatedUser.uid;
+    let checkout: CheckoutDocument | null = null;
+
+    if (!userIsRegistrationOwner) {
+      const checkoutDoc = await firestore
+        .collection("checkouts")
+        .doc(registration.checkoutId)
+        .get();
+      
+      if (!checkoutDoc.exists) {
+        return createErrorResponse("Compra da inscrição não encontrada", 404);
+      }
+
+      checkout = checkoutDoc.data() as CheckoutDocument;
+
       isAdmin = await isUserAdmin(authenticatedUser, firestore);
-      if (!isAdmin)
+      if (!isAdmin && checkout.userId !== authenticatedUser.uid)
         return createErrorResponse(
-          "Usuário não tem permissão para atualizar o status da inscrição",
+          "Usuário não tem permissão para ativar a inscrição",
           403
         );
     }

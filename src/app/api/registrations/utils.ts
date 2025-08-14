@@ -77,25 +77,28 @@ export async function canActivateRegistration(
     }
 
     // Verificar se ainda há vagas disponíveis
-    const registrationsAmount = await firestore
+    // Filtra as inscrições ativas (status "ok") do mesmo checkoutId, mas exclui o documento cujo ID é igual ao checkoutId (ou seja, não conta a inscrição do próprio comprador)
+    const registrationsQuerySnapshot = await firestore
       .collection("registrations")
       .where("checkoutId", "==", registration.checkoutId)
       .where("status", "==", "ok")
-      .count()
       .get();
+
+    // Conta apenas os documentos cujo ID seja diferente do checkoutId, isto é, exclui da contagem a inscrição do próprio comprador.
+    const registrationsAmount = registrationsQuerySnapshot.docs.filter(doc => doc.id !== registration.checkoutId).length;
 
     // Se registrateMyself === true, reservar 1 vaga para o comprador
     const availableSlots = checkout.registrateMyself === true 
       ? checkout.amount - 1 
       : checkout.amount;
-
-    if (registrationsAmount.data().count >= availableSlots) {
-      return {
-        canActivate: false,
-        error: "Compra já atingiu o número máximo de inscrições ativas",
-        errorCode: 403,
-      };
-    }
+  
+      if (registrationsAmount >= availableSlots) {
+        return {
+          canActivate: false,
+          error: "Compra já atingiu o número máximo de inscrições ativas",
+          errorCode: 403,
+        };
+      }
 
     return { canActivate: true };
   } catch (error) {
