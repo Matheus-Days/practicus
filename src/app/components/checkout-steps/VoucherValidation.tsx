@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCheckout } from "../../contexts/CheckoutContext";
+import { useVoucherAPI } from "../../hooks/voucherAPI";
 import RegistrationForm from "../RegistrationForm";
 import {
   Box,
@@ -24,9 +25,11 @@ import {
 type ValidationState = "idle" | "validating" | "success" | "error";
 
 export default function VoucherValidation() {
-  const { setVoucher, setCurrentStep, formData, updateFormData } = useCheckout();
+  const { setVoucher, setCurrentStep, formData, updateFormData, createVoucherCheckout, loading, error } = useCheckout();
+  const { validateVoucher } = useVoucherAPI();
   const [voucherCode, setVoucherCode] = useState("");
   const [validationState, setValidationState] = useState<ValidationState>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
   const handleValidateVoucher = async () => {
@@ -35,21 +38,56 @@ export default function VoucherValidation() {
     }
 
     setValidationState("validating");
+    setErrorMessage("");
 
-    // Simulação de validação mockada
-    setTimeout(() => {
-      // Mock: vouchers válidos começam com "VOUCHER"
-      if (voucherCode.toUpperCase().startsWith("VOUCHER")) {
-        setValidationState("success");
-        setVoucher(voucherCode);
-      } else {
-        setValidationState("error");
-      }
-    }, 1500);
+    try {
+      await validateVoucher(voucherCode.trim());
+      
+      setValidationState("success");
+      setVoucher(voucherCode.trim());
+    } catch (error) {
+      setValidationState("error");
+      setErrorMessage(error instanceof Error ? error.message : "Erro ao validar voucher");
+    }
   };
 
   const handleCreateRegistration = () => {
     setShowRegistrationForm(true);
+  };
+
+  const handleFinalizeRegistration = async () => {
+    if (!formData) {
+      setErrorMessage("Dados obrigatórios não encontrados");
+      return;
+    }
+
+    // Validar campos obrigatórios
+    if (!formData.fullName || !formData.phone || !formData.cpf) {
+      setErrorMessage("Por favor, preencha todos os campos obrigatórios");
+      return;
+    }
+
+    try {
+      // Garantir que todos os campos obrigatórios estejam presentes
+      const registrationData = {
+        fullName: formData.fullName,
+        email: formData.email || "",
+        phone: formData.phone,
+        cpf: formData.cpf,
+        isPhoneWhatsapp: formData.isPhoneWhatsapp || false,
+        credentialName: formData.credentialName || formData.fullName,
+        occupation: formData.occupation || "",
+        employer: formData.employer || "",
+        city: formData.city || "",
+        useImage: formData.useImage || false,
+        howDidYouHearAboutUs: formData.howDidYouHearAboutUs || "",
+      };
+
+      await createVoucherCheckout(voucherCode.trim(), registrationData);
+      // O contexto já redireciona para "overview" após sucesso
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Erro ao criar inscrição");
+    }
   };
 
   const handleBackToSelectType = () => {
@@ -65,7 +103,7 @@ export default function VoucherValidation() {
       case "success":
         return "Voucher válido! Você pode prosseguir com a inscrição.";
       case "error":
-        return "Código de voucher inválido. Verifique e tente novamente.";
+        return errorMessage || "Código de voucher inválido. Verifique e tente novamente.";
       default:
         return "";
     }
@@ -113,6 +151,12 @@ export default function VoucherValidation() {
           Agora preencha seus dados para completar a inscrição.
         </Alert>
 
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
         <Card sx={{ boxShadow: 2 }}>
           <CardContent sx={{ p: 3 }}>
             <RegistrationForm
@@ -126,15 +170,18 @@ export default function VoucherValidation() {
           <Button
             variant="outlined"
             onClick={() => setShowRegistrationForm(false)}
+            disabled={loading}
           >
             Voltar
           </Button>
           <Button
             variant="contained"
             color="success"
-            startIcon={<PersonAddIcon />}
+            startIcon={loading ? <CircularProgress size={20} /> : <PersonAddIcon />}
+            onClick={handleFinalizeRegistration}
+            disabled={loading}
           >
-            Finalizar Inscrição
+            {loading ? "Criando..." : "Finalizar Inscrição"}
           </Button>
         </Box>
       </Box>
@@ -174,13 +221,10 @@ export default function VoucherValidation() {
           fullWidth
           label="Digite o código do voucher"
           value={voucherCode}
-          onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+          onChange={(e) => setVoucherCode(e.target.value)}
           disabled={validationState === "validating"}
           sx={{ mb: 3 }}
           placeholder="Ex: VOUCHER123"
-          inputProps={{
-            style: { textTransform: "uppercase" }
-          }}
         />
 
         <Alert 
@@ -227,8 +271,7 @@ export default function VoucherValidation() {
       {validationState === "error" && (
         <Alert severity="info" sx={{ maxWidth: 500, mx: "auto" }}>
           <Typography variant="body2">
-            <strong>Dica:</strong> Para testar, use um código que comece com "VOUCHER" 
-            (ex: VOUCHER123, VOUCHER456, etc.)
+            <strong>Dica:</strong> Verifique se o código do voucher está correto e se ainda é válido.
           </Typography>
         </Alert>
       )}

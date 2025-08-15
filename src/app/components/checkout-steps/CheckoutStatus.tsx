@@ -10,9 +10,10 @@ import { CheckoutStatus as CheckoutStatusType } from "../../api/checkouts/checko
 
 interface CheckoutStatusProps {
   status: CheckoutStatusType;
+  checkoutType?: "acquire" | "voucher";
 }
 
-export default function CheckoutStatus({ status }: CheckoutStatusProps) {
+export default function CheckoutStatus({ status, checkoutType }: CheckoutStatusProps) {
   // Traduzir status do checkout
   const getStatusInfo = (status: CheckoutStatusType) => {
     switch (status) {
@@ -28,7 +29,7 @@ export default function CheckoutStatus({ status }: CheckoutStatusProps) {
           label: "Concluída",
           color: "success" as const,
           icon: <CheckCircleIcon color="success" />,
-          description: "Pagamento aprovado e inscrição liberada.",
+          description: checkoutType === "voucher" ? "Voucher utilizado e inscrição criada." : "Pagamento aprovado e inscrições liberadas.",
         };
       case "refunded":
         return {
@@ -63,7 +64,7 @@ export default function CheckoutStatus({ status }: CheckoutStatusProps) {
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
           <span className="text-green">{statusInfo.icon}</span>
           <Typography variant="h6" component="h2">
-            Situação da aquisição: {statusInfo.label}
+            Situação {checkoutType === "voucher" ? "da inscrição" : "da aquisição"}: {statusInfo.label}
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary">

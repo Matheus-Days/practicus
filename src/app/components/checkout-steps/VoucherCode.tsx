@@ -9,17 +9,23 @@ import {
   IconButton,
   Alert,
   Snackbar,
+  Switch,
+  FormControlLabel,
+  CircularProgress,
 } from "@mui/material";
 import {
   Receipt as ReceiptIcon,
   ContentCopy as CopyIcon,
 } from "@mui/icons-material";
+import { useCheckout } from "../../contexts/CheckoutContext";
 
 interface VoucherCodeProps {
   voucher: string;
 }
 
 export default function VoucherCode({ voucher }: VoucherCodeProps) {
+  const { voucherData, voucherLoading, toggleVoucherActiveStatus } =
+    useCheckout();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<
@@ -41,19 +47,72 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
     }
   };
 
+  const handleToggleActiveStatus = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newActiveStatus = event.target.checked;
+
+    try {
+      await toggleVoucherActiveStatus(newActiveStatus);
+      setSnackbarMessage(
+        `Voucher ${newActiveStatus ? "ativado" : "desativado"} com sucesso!`
+      );
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Erro ao alterar status do voucher");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
   return (
     <>
       <Card>
         <CardContent>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-            <ReceiptIcon color="primary" />
-            <Typography variant="h6" component="h3">
-              Código do voucher
-            </Typography>
-          </Box>
           <Box
             sx={{
-              backgroundColor: "primary.main",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+              <ReceiptIcon color="primary" />
+              <Typography variant="h6" component="h3">
+                Código do voucher
+              </Typography>
+            </Box>
+            {voucherData && (
+              <Box
+                sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={voucherData.active}
+                      onChange={handleToggleActiveStatus}
+                      disabled={voucherLoading}
+                    />
+                  }
+                  label={
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                        {voucherData.active
+                          ? "Desativar voucher"
+                          : "Ativar voucher"}
+                      </Typography>
+                      {voucherLoading && <CircularProgress size={16} />}
+                    </Box>
+                  }
+                />
+              </Box>
+            )}
+          </Box>
+
+          <Box
+            sx={{
+              backgroundColor: voucherData?.active ? "primary.main" : "warning.main",
               color: "white",
               p: 2,
               borderRadius: 1,
@@ -107,4 +166,4 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
       </Snackbar>
     </>
   );
-} 
+}

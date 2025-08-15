@@ -76,36 +76,38 @@ export default function Dashboard({
       </Typography>
 
       {/* Status do Checkout */}
-      <CheckoutStatus status={checkout.status} />
+      <CheckoutStatus status={checkout.status} checkoutType={checkout.checkoutType} />
 
       {/* Código do Voucher */}
       {checkout.voucher && (
         <VoucherCode voucher={checkout.voucher} />
       )}
 
-      {/* Resumo da Compra */}
-      <PurchaseSummary
-        registrationsAmount={registrationsAmount}
-        legalEntity={legalEntity}
-        registrateMyself={registrateMyself}
-        billingDetails={billingDetails}
-        checkoutStatus={checkout.status}
-        onEditBilling={handleEditBilling}
-        onGoToPayment={handleGoToPayment}
-        onCancelAcquisition={handleCancelAcquisition}
-        onRequestCancellation={handleRequestCancellation}
-      />
+      {/* Resumo da Compra - apenas para checkouts do tipo 'acquire' */}
+      {checkout.checkoutType === "acquire" && (
+        <PurchaseSummary
+          registrationsAmount={registrationsAmount}
+          legalEntity={legalEntity}
+          registrateMyself={registrateMyself}
+          billingDetails={billingDetails}
+          checkoutStatus={checkout.status}
+          onEditBilling={handleEditBilling}
+          onGoToPayment={handleGoToPayment}
+          onCancelAcquisition={handleCancelAcquisition}
+          onRequestCancellation={handleRequestCancellation}
+        />
+      )}
 
       {/* Minha Inscrição */}
       <MyRegistration />
 
-      {/* Estatísticas de Vouchers (apenas se completed) */}
-      {checkout.status === "completed" && (
+      {/* Estatísticas de Vouchers (apenas se completed e tipo acquire) */}
+      {checkout.status === "completed" && checkout.checkoutType === "acquire" && (
         <VoucherStatistics />
       )}
 
-      {/* Tabela de Inscritos (apenas se completed) */}
-      {checkout.status === "completed" && (
+      {/* Tabela de Inscritos (apenas se completed e tipo acquire) */}
+      {checkout.status === "completed" && checkout.checkoutType === "acquire" && (
         <VoucherRegistrations />
       )}
 
