@@ -9,6 +9,7 @@ import {
 } from "../api/checkouts/checkout.types";
 import { RegistrationData, RegistrationMinimal } from "../hooks/registrationAPI";
 import { RegistrationFormData, RegistrationResponse } from "../api/registrations/registration.types";
+import { VoucherData } from "../hooks/voucherAPI";
 
 export type CheckoutStep =
   | "select-type" // Selecionar tipo de checkout (acquire ou voucher)
@@ -25,6 +26,7 @@ export type CheckoutData = CheckoutDocument & {
 
 export interface CheckoutContextType {
   user: User | null;
+  eventId: string;
   checkout: CheckoutData | null;
   registration: RegistrationData | null;
   checkoutRegistrations: Array<RegistrationMinimal>;
@@ -38,6 +40,8 @@ export interface CheckoutContextType {
   registrateMyself: boolean;
   legalEntity: LegalEntity | null;
   voucher: string | null;
+  voucherData: VoucherData | null;
+  voucherLoading: boolean;
   formData: Partial<RegistrationFormData>;
   // Funções de preenchimento do checkout
   setBillingDetails: (
@@ -50,6 +54,7 @@ export interface CheckoutContextType {
   setCheckoutType: (checkoutType: CheckoutType | null) => void;
   // Funções de checkout
   createCheckout: () => Promise<void>;
+  createVoucherCheckout: (voucherCode: string, registrationData: RegistrationFormData) => Promise<void>;
   refreshCheckout: () => Promise<void>;
   updateCheckout: (updateData: UpdateCheckoutRequest) => Promise<void>;
   deleteCheckout: () => Promise<void>;
@@ -62,6 +67,8 @@ export interface CheckoutContextType {
   updateRegistrationStatus: (registrationId: string, status: RegistrationData["status"]) => Promise<RegistrationResponse>;
   refreshRegistration: () => Promise<void>;
   refreshCheckoutRegistrations: () => Promise<void>;
+  // Funções de voucher
+  toggleVoucherActiveStatus: (active: boolean) => Promise<void>;
   // Funções de navegação
   setCurrentStep: (step: CheckoutStep) => void;
   updateFormData: (data: Partial<RegistrationFormData>) => void;
