@@ -7,6 +7,7 @@ import {
   UpdateRegistrationStatusRequest,
 } from "./registration.types";
 import { CheckoutDocument } from "../checkouts/checkout.types";
+import { createCheckoutDocumentId } from "../checkouts/utils";
 
 export async function isUserAdmin(
   user: DecodedIdToken,
@@ -240,5 +241,5 @@ export function generateRegistrationDocumentId(
   eventId: string,
   userId: string
 ): string {
-  return `${eventId}_${userId}`;
+  return createCheckoutDocumentId(eventId, userId);
 }

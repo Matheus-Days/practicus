@@ -3,12 +3,17 @@ export interface PriceBreakpoint {
   priceInCents: number;
 }
 
-export interface EventData {
-  id: string;
+export type EventStatus = 'open' | 'closed' | 'canceled';
+
+export type EventDocument = {
   maxParticipants?: number;
   currentParticipants?: number;
   priceBreakpoints?: PriceBreakpoint[];
-  status?: 'open' | 'closed' | 'canceled';
+  status?: EventStatus;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export type EventData = EventDocument & {
+  id: string;
 } 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { validateAuth } from "../../../../lib/auth-utils";
 import { DecodedIdToken } from "firebase-admin/auth";
 import { RegistrationDocument, RegistrationResponse } from "../registration.types";

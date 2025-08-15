@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { firestore } from "@/lib/firebase-admin";
 import { validateAuth } from "@/lib/auth-utils";
 import {

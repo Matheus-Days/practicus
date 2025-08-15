@@ -9,11 +9,6 @@ import {
 import { createCheckoutDocumentId } from "../api/checkouts/utils";
 import { doc, getDoc } from "firebase/firestore";
 
-export interface CheckoutAPIError {
-  message: string;
-  status?: number;
-}
-
 export const useCheckoutAPI = () => {
   const { getIdToken, firestore } = useFirebase();
 
