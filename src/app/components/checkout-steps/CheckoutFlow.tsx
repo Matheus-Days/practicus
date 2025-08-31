@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import Dashboard from "./Dashboard";
 import BillingDetails from "./BillingDetails";
@@ -21,15 +22,12 @@ export default function CheckoutFlow() {
     registration 
   } = useCheckout();
 
+  // Estado para validação do formulário
+  const [isFormValid, setIsFormValid] = useState(false);
+
   // Função para salvar dados do formulário
   const handleSaveRegistration = async () => {
     if (formData && checkout) {
-      // Validação básica
-      if (!formData.fullName || !formData.phone || !formData.cpf) {
-        alert("Por favor, preencha todos os campos obrigatórios");
-        return;
-      }
-      
       try {
         // Se já existe uma registration, atualizar; senão, criar nova
         if (registration) {
@@ -78,6 +76,7 @@ export default function CheckoutFlow() {
             <RegistrationForm
               initialData={formData || {}}
               onDataChange={updateFormData}
+              onValidationChange={setIsFormValid}
             />
           </CardContent>
         </Card>
@@ -92,6 +91,7 @@ export default function CheckoutFlow() {
           <Button
             variant="contained"
             onClick={handleSaveRegistration}
+            disabled={!isFormValid}
           >
             {registration ? "Atualizar e Continuar" : "Salvar e Continuar"}
           </Button>

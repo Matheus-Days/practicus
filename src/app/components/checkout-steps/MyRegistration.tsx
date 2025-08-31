@@ -37,6 +37,31 @@ export default function MyRegistration() {
     "success" | "error" | "info"
   >("success");
 
+  const handleActivateMyRegistration = async () => {
+    try {
+      if (!registration) {
+        throw new Error("Nenhuma inscrição encontrada");
+      }
+
+      if (!checkout) {
+        throw new Error("Checkout não encontrado");
+      }
+
+      // Determinar o novo status baseado no status do checkout
+      const newStatus: RegistrationStatus = checkout.status === 'pending' ? 'pending' : 'ok';
+      
+      await updateRegistrationStatus(registration.id, newStatus);
+      await refreshRegistration();
+      setSnackbarMessage("Inscrição ativada com sucesso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage((error as Error).message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
   const handleCancelMyRegistration = async () => {
     try {
       if (!registration) {
@@ -55,22 +80,38 @@ export default function MyRegistration() {
     }
   };
 
-  const handleReactivateMyRegistration = async () => {
-    try {
-      if (!registration) {
-        throw new Error("Nenhuma inscrição encontrada");
-      }
-
-      await updateRegistrationStatus(registration.id, "ok");
-      await refreshRegistration();
-      setSnackbarMessage("Inscrição reativada com sucesso");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (error) {
-      setSnackbarMessage("Erro ao reativar inscrição");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+  // Função para verificar se o botão "Ativar inscrição" deve estar habilitado
+  const canActivateMyRegistration = () => {
+    if (!registration || !checkout) return false;
+    
+    // Não pode ativar se o checkout for deleted ou refunded
+    if (checkout.status === 'deleted' || checkout.status === 'refunded') {
+      return false;
     }
+    
+    // Não pode ativar se a inscrição já estiver ok
+    if (registration.status === 'ok') {
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Função para verificar se o botão "Cancelar inscrição" deve estar habilitado
+  const canCancelMyRegistration = () => {
+    if (!registration) return false;
+    
+    // Não pode cancelar se a inscrição já estiver cancelada
+    if (registration.status === 'cancelled') {
+      return false;
+    }
+    
+    // Não pode cancelar se o checkout for deleted ou refunded
+    if (checkout && (checkout.status === 'deleted' || checkout.status === 'refunded')) {
+      return false;
+    }
+    
+    return true;
   };
 
   const getChipLabel = (status?: RegistrationStatus) => {
@@ -79,6 +120,8 @@ export default function MyRegistration() {
         return "Cancelada";
       case "ok":
         return "Ativa";
+      case "pending":
+        return "Pendente";
       default:
         return "Inválida";
     }
@@ -90,6 +133,8 @@ export default function MyRegistration() {
         return "error";
       case "ok":
         return "success";
+      case "pending":
+        return "warning";
       default:
         return "warning";
     }
@@ -97,8 +142,6 @@ export default function MyRegistration() {
 
   const shouldShowRegistration = registrateMyself || checkoutType === "voucher";
   const isMyRegistration = registration?.id === checkout?.id;
-  const canReactivate =
-    isMyRegistration && registration?.status === "cancelled";
 
   if (!shouldShowRegistration) {
     return null;
@@ -181,7 +224,7 @@ export default function MyRegistration() {
                 >
                   Editar meus dados de inscrição
                 </Button>
-                {registration.status !== "cancelled" ? (
+                {canCancelMyRegistration() ? (
                   <Button
                     variant="outlined"
                     color="error"
@@ -190,14 +233,14 @@ export default function MyRegistration() {
                   >
                     Cancelar inscrição
                   </Button>
-                ) : canReactivate ? (
+                ) : canActivateMyRegistration() ? (
                   <Button
                     variant="outlined"
                     color="success"
                     startIcon={<RefreshIcon />}
-                    onClick={handleReactivateMyRegistration}
+                    onClick={handleActivateMyRegistration}
                   >
-                    Reativar inscrição
+                    Ativar inscrição
                   </Button>
                 ) : null}
               </Stack>

@@ -102,12 +102,12 @@ export default function Dashboard({
       <MyRegistration />
 
       {/* Estatísticas de Vouchers (apenas se completed e tipo acquire) */}
-      {checkout.status === "completed" && checkout.checkoutType === "acquire" && (
+      {(checkout.status === "completed" || checkout.status === "pending") && checkout.checkoutType === "acquire" && (
         <VoucherStatistics />
       )}
 
       {/* Tabela de Inscritos (apenas se completed e tipo acquire) */}
-      {checkout.status === "completed" && checkout.checkoutType === "acquire" && (
+      {(checkout.status === "completed" || checkout.status === "pending") && checkout.checkoutType === "acquire" && (
         <VoucherRegistrations />
       )}
 

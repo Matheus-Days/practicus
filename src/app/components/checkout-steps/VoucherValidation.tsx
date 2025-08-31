@@ -31,6 +31,7 @@ export default function VoucherValidation() {
   const [validationState, setValidationState] = useState<ValidationState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const handleValidateVoucher = async () => {
     if (!voucherCode.trim()) {
@@ -58,12 +59,6 @@ export default function VoucherValidation() {
   const handleFinalizeRegistration = async () => {
     if (!formData) {
       setErrorMessage("Dados obrigatórios não encontrados");
-      return;
-    }
-
-    // Validar campos obrigatórios
-    if (!formData.fullName || !formData.phone || !formData.cpf) {
-      setErrorMessage("Por favor, preencha todos os campos obrigatórios");
       return;
     }
 
@@ -162,6 +157,7 @@ export default function VoucherValidation() {
             <RegistrationForm
               initialData={formData || {}}
               onDataChange={updateFormData}
+              onValidationChange={setIsFormValid}
             />
           </CardContent>
         </Card>
@@ -179,7 +175,7 @@ export default function VoucherValidation() {
             color="success"
             startIcon={loading ? <CircularProgress size={20} /> : <PersonAddIcon />}
             onClick={handleFinalizeRegistration}
-            disabled={loading}
+            disabled={loading || !isFormValid}
           >
             {loading ? "Criando..." : "Finalizar Inscrição"}
           </Button>

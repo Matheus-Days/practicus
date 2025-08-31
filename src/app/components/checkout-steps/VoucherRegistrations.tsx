@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import { useRegistrationAPI } from "../../hooks/registrationAPI";
+import { RegistrationStatus } from "../../api/registrations/registration.types";
 
 export default function VoucherRegistrations() {
   const {
@@ -53,9 +54,37 @@ export default function VoucherRegistrations() {
     ? registrationsAmount - 1
     : registrationsAmount;
   const usedRegistrations = checkoutRegistrations.filter(
-    (reg) => reg.status === "ok" && !reg.isMyRegistration
+    (reg) => (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
   ).length;
   const availableRegistrations = totalRegistrations - usedRegistrations;
+
+  const handleActivateRegistration = async (registrationId: string) => {
+    try {
+      setLoading(true);
+
+      if (!checkout) {
+        throw new Error("Checkout não encontrado");
+      }
+
+      // Determinar o novo status baseado no status do checkout
+      const newStatus = (checkout.status === 'pending' ? 'pending' : 'ok') as RegistrationStatus;
+      
+      await updateRegistrationStatus(registrationId, newStatus);
+
+      // Recarregar lista
+      await refreshCheckoutRegistrations();
+
+      setSnackbarMessage("Inscrição ativada com sucesso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error: any) {
+      setSnackbarMessage(error.message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCancelRegistration = async (registrationId: string) => {
     try {
@@ -79,26 +108,36 @@ export default function VoucherRegistrations() {
     }
   };
 
-  const handleReactivateRegistration = async (registrationId: string) => {
-    try {
-      setLoading(true);
-
-      // Atualizar status para ok
-      await updateRegistrationStatus(registrationId, "ok");
-
-      // Recarregar lista
-      await refreshCheckoutRegistrations();
-
-      setSnackbarMessage("Inscrição reativada com sucesso");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (error: any) {
-      setSnackbarMessage(error.message);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    } finally {
-      setLoading(false);
+  // Função para verificar se o botão "Ativar inscrição" deve estar habilitado
+  const canActivateRegistration = (registration: any) => {
+    if (!checkout) return false;
+    
+    // Não pode ativar se o checkout for deleted ou refunded
+    if (checkout.status === 'deleted' || checkout.status === 'refunded') {
+      return false;
     }
+    
+    // Não pode ativar se a inscrição já estiver ok
+    if (registration.status === 'ok') {
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Função para verificar se o botão "Cancelar inscrição" deve estar habilitado
+  const canCancelRegistration = (registration: any) => {
+    // Não pode cancelar se a inscrição já estiver cancelada
+    if (registration.status === 'cancelled') {
+      return false;
+    }
+    
+    // Não pode cancelar se o checkout for deleted ou refunded
+    if (checkout && (checkout.status === 'deleted' || checkout.status === 'refunded')) {
+      return false;
+    }
+    
+    return true;
   };
 
   const getRegistrationStatusInfo = (status: string) => {
@@ -108,6 +147,12 @@ export default function VoucherRegistrations() {
           label: "Ativa",
           color: "success" as const,
           icon: <CheckCircleIcon fontSize="small" color="success" />,
+        };
+      case "pending":
+        return {
+          label: "Pendente",
+          color: "warning" as const,
+          icon: <PendingIcon fontSize="small" color="warning" />,
         };
       case "invalid":
         return {
@@ -212,7 +257,7 @@ export default function VoucherRegistrations() {
                               >
                                 Ação indisponível
                               </Typography>
-                            ) : reg.status === "cancelled" ? (
+                            ) : (reg.status === "cancelled") ? (
                               <Tooltip
                                 title={
                                   availableRegistrations <= 0
@@ -227,13 +272,13 @@ export default function VoucherRegistrations() {
                                     size="small"
                                     startIcon={<RefreshIcon />}
                                     onClick={() =>
-                                      handleReactivateRegistration(reg.id)
+                                      handleActivateRegistration(reg.id)
                                     }
                                     disabled={
-                                      loading || availableRegistrations <= 0
+                                      loading || availableRegistrations <= 0 || !canActivateRegistration(reg)
                                     }
                                   >
-                                    Reativar inscrição
+                                    Ativar inscrição
                                   </Button>
                                 </span>
                               </Tooltip>
@@ -244,7 +289,7 @@ export default function VoucherRegistrations() {
                                 size="small"
                                 startIcon={<DeleteIcon />}
                                 onClick={() => handleCancelRegistration(reg.id)}
-                                disabled={loading}
+                                disabled={loading || !canCancelRegistration(reg)}
                               >
                                 Cancelar inscrição
                               </Button>
