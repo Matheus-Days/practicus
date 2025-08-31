@@ -30,10 +30,10 @@ export async function validateVoucher(firestore: Firestore, voucherData: Voucher
   }
 
   if (buyerCheckoutData.status === "deleted") {
-    return { valid: false, message: "Comprador não encontrado. Por favor, entre em contato com o suporte." };
+    return { valid: false, message: "Comprador não encontrado. Por favor, entre em contato com o responsável pela compra." };
   }
 
-  if (buyerCheckoutData.status !== "completed") {
+  if (buyerCheckoutData.status !== "completed" && buyerCheckoutData.status !== "pending") {
     return { valid: false, message: "Compra de inscrições incompleta. Por favor, entre em contato com o responsável pela compra." };
   }
 

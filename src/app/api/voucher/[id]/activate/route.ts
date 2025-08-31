@@ -3,11 +3,10 @@
 import { DecodedIdToken } from "firebase-admin/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { validateAuth } from "../../../../../lib/auth-utils";
-import { createErrorResponse } from "../../../utils";
+import { createErrorResponse, isUserAdmin } from "../../../utils";
 import { VoucherActivateRequest, VoucherDocument } from "../../voucher.types";
 import { firestore } from "../../../../../lib/firebase-admin";
 import { CheckoutDocument } from "../../../checkouts/checkout.types";
-import { isUserAdmin } from "../../../registrations/utils";
 
 export async function PATCH(
   request: NextRequest,
