@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   TextField,
   Checkbox,
@@ -82,7 +82,7 @@ export default function RegistrationForm({
   const [cpfError, setCpfError] = useState(false);
 
   // Validation function
-  const validateForm = (): boolean => {
+  const validateForm = useCallback((): boolean => {
     // Verificar se todos os campos obrigatórios estão preenchidos
     const hasFullName = registration.fullName?.trim() !== undefined && registration.fullName?.trim() !== "";
     const hasPhone = registration.phone?.trim() !== undefined && registration.phone?.trim() !== "";
@@ -103,13 +103,13 @@ export default function RegistrationForm({
                           (registration.howDidYouHearAboutUs === "outro" && otherSource.trim() !== "");
 
     return hasFullName && hasPhone && hasCpf && hasHowDidYouHearAboutUs && isPhoneValid && isCpfValid && hasAgreedToImageUse && hasValidSource;
-  };
+  }, [registration, phoneError, cpfError, otherSource]);
 
   // Effect para notificar mudanças na validação
   useEffect(() => {
     const isValid = validateForm();
     onValidationChange?.(isValid);
-  }, [registration, phoneError, cpfError, otherSource, onValidationChange]);
+  }, [validateForm, onValidationChange]);
 
   const handleFieldChange = (field: keyof RegistrationFormData, value: any) => {
     if (field === "credentialName") {

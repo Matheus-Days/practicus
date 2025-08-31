@@ -6,7 +6,7 @@ import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Swiper from 'swiper';
 import { IoArrowBack, IoArrowForward } from 'react-icons/io5';
 
@@ -17,10 +17,10 @@ type SecaoDepoimentosContentProps = {
 export default function SecaoDepoimentosContent({
   depoimentos
 }: SecaoDepoimentosContentProps) {
-  let swiper: Swiper | undefined;
+  const swiperRef = useRef<Swiper | undefined>();
 
   useEffect(() => {
-    swiper = new Swiper('.swiper', {
+    swiperRef.current = new Swiper('.swiper', {
       centeredSlides: true,
       hashNavigation: {
         watchState: true
@@ -73,7 +73,7 @@ export default function SecaoDepoimentosContent({
     <div className="flex items-center w-full gap-6">
       <button
         className="p-3 mb-5 hidden md:block"
-        onClick={() => swiper?.slidePrev()}
+        onClick={() => swiperRef.current?.slidePrev()}
       >
         <IoArrowBack className="size-12" />
       </button>
@@ -89,7 +89,7 @@ export default function SecaoDepoimentosContent({
       </div>
       <button
         className="p-3 mb-5 hidden md:block"
-        onClick={() => swiper?.slideNext()}
+        onClick={() => swiperRef.current?.slideNext()}
       >
         <IoArrowForward className="size-12" />
       </button>

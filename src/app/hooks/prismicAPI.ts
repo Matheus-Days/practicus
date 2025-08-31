@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '../../prismicio';
 import { EventoDocument } from '../../../prismicio-types';
 import { asText } from '@prismicio/client';
@@ -30,25 +30,7 @@ export const usePrismicEvents = (filterUsedEvents: boolean = false) => {
   const [error, setError] = useState<string | null>(null);
   const { firestore } = useFirebase();
 
-  const fetchFirestoreEvents = async (): Promise<string[]> => {
-    try {
-      const eventsQuery = collection(firestore, "events");
-      const eventsSnapshot = await getDocs(eventsQuery);
-      const usedPrismicUids: string[] = [];
-      
-      eventsSnapshot.forEach((doc) => {
-        // O ID do documento no Firestore é o próprio UID do Prismic
-        usedPrismicUids.push(doc.id);
-      });
-      
-      return usedPrismicUids;
-    } catch (err) {
-      console.error('Erro ao buscar eventos do Firestore:', err);
-      return [];
-    }
-  };
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -64,6 +46,24 @@ export const usePrismicEvents = (filterUsedEvents: boolean = false) => {
       
       // Se filtro estiver ativado, buscar UIDs já utilizados no Firestore
       if (filterUsedEvents) {
+        const fetchFirestoreEvents = async (): Promise<string[]> => {
+          try {
+            const eventsQuery = collection(firestore, "events");
+            const eventsSnapshot = await getDocs(eventsQuery);
+            const usedPrismicUids: string[] = [];
+            
+            eventsSnapshot.forEach((doc) => {
+              // O ID do documento no Firestore é o próprio UID do Prismic
+              usedPrismicUids.push(doc.id);
+            });
+            
+            return usedPrismicUids;
+          } catch (err) {
+            console.error('Erro ao buscar eventos do Firestore:', err);
+            return [];
+          }
+        };
+        
         usedPrismicUids = await fetchFirestoreEvents();
       }
 
@@ -110,11 +110,11 @@ export const usePrismicEvents = (filterUsedEvents: boolean = false) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterUsedEvents, firestore]);
 
   useEffect(() => {
     fetchEvents();
-  }, [filterUsedEvents, firestore]);
+  }, [fetchEvents]);
 
   return {
     events,

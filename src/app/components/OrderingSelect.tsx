@@ -42,10 +42,10 @@ export default function OrderingSelect({
     >
       <Select
         onChange={onChange}
-        placeholder="Ordernar por"
-        defaultValue={ defaultValue || "none"}
+        displayEmpty
+        defaultValue={defaultValue || "none"}
       >
-        <OrderingMenuItem value="none" disabled hidden>
+        <OrderingMenuItem value="none" disabled>
           Ordernar por
         </OrderingMenuItem>
         <OrderingMenuItem value={ORDERING.newest}>Recentes</OrderingMenuItem>

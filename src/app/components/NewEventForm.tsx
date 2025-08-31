@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { setDoc, doc } from 'firebase/firestore';
 import { useFirebase } from '../hooks/firebase';
 import { createClient } from '@/prismicio';
@@ -31,13 +31,7 @@ export default function NewEventForm({ isOpen, onClose, onEventCreated, existing
   });
 
   // Buscar eventos do Prismic quando o dialog abrir
-  useEffect(() => {
-    if (isOpen && prismicEvents.length === 0) {
-      fetchPrismicEvents();
-    }
-  }, [isOpen, prismicEvents.length]);
-
-  const fetchPrismicEvents = async () => {
+  const fetchPrismicEvents = useCallback(async () => {
     setLoadingPrismicEvents(true);
     try {
       const client = createClient();
@@ -60,7 +54,13 @@ export default function NewEventForm({ isOpen, onClose, onEventCreated, existing
     } finally {
       setLoadingPrismicEvents(false);
     }
-  };
+  }, [existingEvents]);
+
+  useEffect(() => {
+    if (isOpen && prismicEvents.length === 0) {
+      fetchPrismicEvents();
+    }
+  }, [isOpen, prismicEvents.length, fetchPrismicEvents]);
 
   // Função para converter BRL para centavos
   const parseCurrency = (value: string): number => {
@@ -159,11 +159,18 @@ export default function NewEventForm({ isOpen, onClose, onEventCreated, existing
     try {
       const eventDocRef = doc(firestore, 'events', selectedPrismicEvent);
       
+      // Buscar dados do evento do Prismic selecionado
+      const selectedPrismicEventData = prismicEvents.find(event => event.uid === selectedPrismicEvent);
+      const eventDate = selectedPrismicEventData ? extractTextFromPrismicField(selectedPrismicEventData.data.data_do_evento) : '';
+      const eventLocal = selectedPrismicEventData ? extractTextFromPrismicField(selectedPrismicEventData.data.local_do_evento) : '';
+      
       const eventData = {
         title: formData.title,
         maxParticipants: formData.maxParticipants,
         priceBreakpoints: sortedBreakpoints,
         status: formData.status,
+        eventDate,
+        eventLocal,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -173,6 +180,7 @@ export default function NewEventForm({ isOpen, onClose, onEventCreated, existing
       const newEvent: EventData = {
         id: selectedPrismicEvent,
         ...eventData,
+        registrationsCount: 0,
         status: formData.status as EventData['status']
       };
       

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -142,15 +142,7 @@ export default function CheckoutDetailsDialog({
   const [checkout, setCheckout] = useState<CheckoutData | null>(checkoutData || null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  useEffect(() => {
-    if (open && checkoutId && onFetchCheckout && !checkoutData) {
-      fetchCheckout();
-    } else if (checkoutData) {
-      setCheckout(checkoutData);
-    }
-  }, [open, checkoutId, checkoutData, onFetchCheckout]);
-
-  const fetchCheckout = async () => {
+  const fetchCheckout = useCallback(async () => {
     if (!checkoutId || !onFetchCheckout) return;
     
     setLoading(true);
@@ -164,7 +156,15 @@ export default function CheckoutDetailsDialog({
     } finally {
       setLoading(false);
     }
-  };
+  }, [checkoutId, onFetchCheckout]);
+
+  useEffect(() => {
+    if (open && checkoutId && onFetchCheckout && !checkoutData) {
+      fetchCheckout();
+    } else if (checkoutData) {
+      setCheckout(checkoutData);
+    }
+  }, [open, checkoutId, checkoutData, onFetchCheckout, fetchCheckout]);
 
   const handleClose = () => {
     setCheckout(null);
