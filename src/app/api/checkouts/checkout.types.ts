@@ -70,4 +70,9 @@ export type CheckoutResponse = {
   document: CheckoutDocument;
 };
 
+export type UpdateCheckoutStatusRequest = Pick<
+  CheckoutDocument,
+  "status"
+>;
+
 //#endregion

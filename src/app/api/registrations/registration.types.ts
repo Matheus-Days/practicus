@@ -12,7 +12,7 @@ export type RegistrationFormData = {
   useImage?: boolean;
 };
 
-export type RegistrationStatus = "ok" | "cancelled" | "invalid";
+export type RegistrationStatus = "ok" | "cancelled" | "invalid" | "pending";
 
 export type RegistrationDocument = {
   eventId: string;

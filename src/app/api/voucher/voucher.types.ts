@@ -4,8 +4,8 @@ import { RegistrationDocument, RegistrationFormData } from "../registrations/reg
 export type VoucherDocument = {
   active: boolean;
   checkoutId: string;
-  createdAt: string;
-  updatedAt?: string;
+  createdAt: Date;
+  updatedAt?: Date;
 };
 
 export type ValidateVoucherResponse =
