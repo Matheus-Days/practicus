@@ -79,9 +79,15 @@ export async function PATCH(
         );
     }
 
+    const checkoutDoc = await firestore
+      .collection("checkouts")
+      .doc(registration.checkoutId)
+      .get();
+
     // Ao tentar ativar uma inscrição, verificar se a compra está válida e se ainda há vagas disponíveis
     if (status === "ok") {
       const validationResult = await canActivateRegistration(
+        checkoutDoc,
         registration,
         isAdmin,
         firestore,

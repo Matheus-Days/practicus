@@ -19,6 +19,7 @@ import {
   createSuccessResponse,
   isUserAdmin,
 } from "../utils";
+import { CheckoutDocument, CheckoutStatus } from "../checkouts/checkout.types";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -56,7 +57,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const registrationDoc = generateRegistrationDocument(data);
+    const checkoutDoc = await firestore.collection("checkouts").doc(data.checkoutId).get();
+    const checkout = checkoutDoc.data() as CheckoutDocument;
+    const registrationDoc = generateRegistrationDocument(data, checkout.status);
 
     const registrationDocId = generateRegistrationDocumentId(
       data.eventId,
@@ -64,6 +67,7 @@ export async function POST(request: NextRequest) {
     );
 
     const validationResult = await canActivateRegistration(
+      checkoutDoc,
       registrationDoc,
       isAdmin,
       firestore,
@@ -102,11 +106,12 @@ export async function POST(request: NextRequest) {
 }
 
 function generateRegistrationDocument(
-  data: CreateRegistrationRequest
+  data: CreateRegistrationRequest,
+  checkoutStatus: CheckoutStatus
 ): RegistrationDocument {
   return {
     ...data,
     createdAt: new Date(),
-    status: "ok",
+    status: checkoutStatus === "completed" ? "ok" : "pending",
   };
 }

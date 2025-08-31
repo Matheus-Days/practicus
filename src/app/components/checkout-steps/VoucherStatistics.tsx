@@ -23,6 +23,10 @@ export default function VoucherStatistics() {
   ).length;
   const availableRegistrations = totalRegistrations - usedRegistrations;
 
+  if (totalRegistrations === 0) {
+    return null;
+  }
+
   return (
     <Card>
       <CardContent>

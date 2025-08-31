@@ -9,7 +9,7 @@ import { CheckoutDocument } from "../../../checkouts/checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
 import { validateAuth } from "../../../../../lib/auth-utils";
 import { createCheckoutDocumentId } from "../../../checkouts/utils";
-import { RegistrationDocument } from "../../../registrations/registration.types";
+import { RegistrationDocument, RegistrationStatus } from "../../../registrations/registration.types";
 
 export async function POST(
   request: NextRequest,
@@ -59,7 +59,8 @@ export async function POST(
 
     const checkoutDocRef = firestore.collection("checkouts").doc(checkoutDocId);
     
-    if ((await checkoutDocRef.get()).exists) {
+    const checkoutDoc = await checkoutDocRef.get();
+    if (checkoutDoc.exists && checkoutDoc.data()?.status !== "deleted") {
       return createErrorResponse("Uma outra inscrição (checkout) já existe para esse email.", 400);
     }
 
@@ -69,20 +70,19 @@ export async function POST(
   }
 
   try {
+    const buyerCheckoutDoc = await firestore.collection("checkouts").doc(voucherData.checkoutId).get();
+    const buyerCheckoutData = buyerCheckoutDoc.data() as CheckoutDocument;
+
     registration = {
       checkoutId: voucherData.checkoutId, // refers to the buyers checkout
       createdAt: new Date(),
       eventId: body.eventId,
-      status: 'ok',
+      status: getRegistrationStatus(buyerCheckoutData),
       userId: authenticatedUser.uid,
       ...body.registration,
     }
 
     const registrationDocRef = firestore.collection("registrations").doc(checkoutDocId);
-    
-    if ((await registrationDocRef.get()).exists) {
-      return createErrorResponse("Uma outra inscrição já existe para esse email.", 400);
-    }
 
     await registrationDocRef.set(registration);
   } catch (error) {
@@ -95,4 +95,14 @@ export async function POST(
     registrationId: checkoutDocId,
     registration,
   }, 200);
+}
+
+function getRegistrationStatus(buyerCheckoutData: CheckoutDocument): RegistrationStatus {
+  if (buyerCheckoutData.status === "completed") {
+    return "ok";
+  } else if (buyerCheckoutData.status === "pending") {
+    return "pending";
+  } else {
+    return "invalid";
+  }
 }

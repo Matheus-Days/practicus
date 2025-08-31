@@ -3,8 +3,20 @@
 import { useState, useEffect } from 'react';
 import { useFirebase } from '../hooks/firebase';
 import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
-import HeadingBadge from '@/app/components/HeadingBadge';
 import BoundedMain from '@/app/components/BoundedMain';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  CircularProgress,
+  Container,
+  Stack,
+  Alert,
+  AlertTitle
+} from '@mui/material';
+import { CheckCircle, Info, Error, Close } from '@mui/icons-material';
 
 export default function AuthConfirmationPage() {
   const { auth } = useFirebase();
@@ -33,11 +45,9 @@ export default function AuthConfirmationPage() {
           await signInWithEmailLink(auth, email, window.location.href);
           window.localStorage.removeItem('emailForSignIn');
           setStatus('success');
-          setMessage('Autenticação realizada com sucesso!');
         } catch (error: any) {
           console.error('Error signing in with email link:', error);
           setStatus('error');
-          setMessage(`Erro na autenticação: ${error.message}`);
         }
       } else {
         setStatus('error');
@@ -57,72 +67,95 @@ export default function AuthConfirmationPage() {
   if (status === 'loading') {
     return (
       <BoundedMain>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Processando autenticação...</p>
-          </div>
-        </div>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          minHeight="50vh"
+        >
+          <Stack spacing={3} alignItems="center">
+            <CircularProgress size={48} />
+            <Typography variant="body1" color="text.secondary">
+              Processando autenticação...
+            </Typography>
+          </Stack>
+        </Box>
       </BoundedMain>
     );
   }
 
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'success':
+        return {
+          icon: <CheckCircle sx={{ fontSize: 48, color: 'success.main' }} />,
+          severity: 'success' as const,
+          title: 'Autenticação bem-sucedida',
+          buttonText: 'Fechar e Voltar',
+          buttonColor: 'success' as const
+        };
+      case 'already-authenticated':
+        return {
+          icon: <Info sx={{ fontSize: 48, color: 'info.main' }} />,
+          severity: 'info' as const,
+          title: 'Já Autenticado',
+          buttonText: 'Fechar e Continuar',
+          buttonColor: 'primary' as const
+        };
+      case 'error':
+        return {
+          icon: <Error sx={{ fontSize: 48, color: 'error.main' }} />,
+          severity: 'error' as const,
+          title: 'Erro na Autenticação',
+          buttonText: 'Fechar',
+          buttonColor: 'error' as const
+        };
+      default:
+        return {
+          icon: <Error sx={{ fontSize: 48, color: 'error.main' }} />,
+          severity: 'error' as const,
+          title: 'Erro',
+          buttonText: 'Fechar',
+          buttonColor: 'error' as const
+        };
+    }
+  };
+
+  const statusConfig = getStatusConfig();
+
   return (
     <BoundedMain>
-      <div className="max-w-md mx-auto text-center">
-        <div className="mb-6">
-          {status === 'success' ? (
-            <div className="text-green-600 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          ) : status === 'already-authenticated' ? (
-            <div className="text-blue-600 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          ) : (
-            <div className="text-red-600 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-          )}
-        </div>
+      <Container maxWidth="sm">
+        <Card variant="outlined">
+          <CardContent sx={{ p: 4 }}>
+            <Stack spacing={3} alignItems="center" textAlign="center">
+              <Box>
+                {statusConfig.icon}
+              </Box>
 
-        <HeadingBadge as="h1" className="mb-4">
-          {status === 'success' && 'Autenticação Bem-sucedida'}
-          {status === 'already-authenticated' && 'Já Autenticado'}
-          {status === 'error' && 'Erro na Autenticação'}
-        </HeadingBadge>
+              <Alert severity={statusConfig.severity} sx={{ width: '100%' }}>
+                <AlertTitle>{statusConfig.title}</AlertTitle>
+                {message}
+              </Alert>
 
-        <p className="text-gray-600 mb-8">
-          {message}
-        </p>
+              <Button
+                variant="contained"
+                color={statusConfig.buttonColor}
+                size="large"
+                fullWidth
+                onClick={handleClose}
+                startIcon={<Close />}
+              >
+                {statusConfig.buttonText}
+              </Button>
 
-        <div className="space-y-4">
-          <button
-            onClick={handleClose}
-            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              status === 'success'
-                ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                : status === 'already-authenticated'
-                ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-                : 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500'
-            }`}
-          >
-            {status === 'success' && 'Fechar e Voltar'}
-            {status === 'already-authenticated' && 'Fechar e Continuar'}
-            {status === 'error' && 'Fechar'}
-          </button>
-        </div>
-
-        <p className="text-xs text-gray-500 mt-6">
-          Esta janela pode ser fechada com segurança.
-        </p>
-      </div>
+              <Typography variant="caption" color="text.secondary">
+                Esta janela já pode ser fechada.
+              </Typography>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Container>
     </BoundedMain>
   );
 } 

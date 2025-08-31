@@ -17,12 +17,14 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
+  Cancel as CancelIcon,
 } from "@mui/icons-material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
 
 export default function MyRegistration() {
   const {
+    deleteCheckout,
     registration,
     registrateMyself,
     checkoutType,
@@ -48,8 +50,9 @@ export default function MyRegistration() {
       }
 
       // Determinar o novo status baseado no status do checkout
-      const newStatus: RegistrationStatus = checkout.status === 'pending' ? 'pending' : 'ok';
-      
+      const newStatus: RegistrationStatus =
+        checkout.status === "pending" ? "pending" : "ok";
+
       await updateRegistrationStatus(registration.id, newStatus);
       await refreshRegistration();
       setSnackbarMessage("Inscrição ativada com sucesso");
@@ -83,34 +86,37 @@ export default function MyRegistration() {
   // Função para verificar se o botão "Ativar inscrição" deve estar habilitado
   const canActivateMyRegistration = () => {
     if (!registration || !checkout) return false;
-    
+
     // Não pode ativar se o checkout for deleted ou refunded
-    if (checkout.status === 'deleted' || checkout.status === 'refunded') {
+    if (checkout.status === "deleted" || checkout.status === "refunded") {
       return false;
     }
-    
+
     // Não pode ativar se a inscrição já estiver ok
-    if (registration.status === 'ok') {
+    if (registration.status === "ok") {
       return false;
     }
-    
+
     return true;
   };
 
   // Função para verificar se o botão "Cancelar inscrição" deve estar habilitado
   const canCancelMyRegistration = () => {
     if (!registration) return false;
-    
+
     // Não pode cancelar se a inscrição já estiver cancelada
-    if (registration.status === 'cancelled') {
+    if (registration.status === "cancelled") {
       return false;
     }
-    
+
     // Não pode cancelar se o checkout for deleted ou refunded
-    if (checkout && (checkout.status === 'deleted' || checkout.status === 'refunded')) {
+    if (
+      checkout &&
+      (checkout.status === "deleted" || checkout.status === "refunded")
+    ) {
       return false;
     }
-    
+
     return true;
   };
 
@@ -146,6 +152,19 @@ export default function MyRegistration() {
   if (!shouldShowRegistration) {
     return null;
   }
+
+  const handleDeleteVoucherCheckout = async () => {
+    try {
+      await deleteCheckout();
+      setSnackbarMessage("Inscrição deletada com sucesso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage((error as Error).message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
 
   return (
     <>
@@ -228,10 +247,10 @@ export default function MyRegistration() {
                   <Button
                     variant="outlined"
                     color="error"
-                    startIcon={<DeleteIcon />}
+                    startIcon={<CancelIcon />}
                     onClick={handleCancelMyRegistration}
                   >
-                    Cancelar inscrição
+                    Desativar inscrição
                   </Button>
                 ) : canActivateMyRegistration() ? (
                   <Button
@@ -244,13 +263,44 @@ export default function MyRegistration() {
                   </Button>
                 ) : null}
               </Stack>
+              {checkout && checkout.checkoutType === "voucher" && (
+                <Stack
+                  direction="column"
+                  sx={{ flexWrap: "wrap", gap: 1, mt: 2 }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    *Quer se inscrever de outra forma que não com voucher?
+                    Pressione o botão abaixo para deletar esta incrição e
+                    escolher outra opção:
+                  </Typography>
+                  <div>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={handleDeleteVoucherCheckout}
+                    >
+                      Deletar inscrição
+                    </Button>
+                  </div>
+                </Stack>
+              )}
             </>
           ) : (
             <Box sx={{ textAlign: "center", py: 3 }}>
-              <Typography variant="body1" color="text.secondary">
-                Sua vaga no evento está garantida, mas você ainda não preencheu
-                seus dados de inscrição.
-              </Typography>
+              {checkout && checkout.status === "completed" && (
+                <Typography variant="body1" color="text.secondary">
+                  Sua vaga no evento está garantida, mas você ainda não
+                  preencheu seus dados de inscrição.
+                </Typography>
+              )}
+              {checkout && checkout.status === "pending" && (
+                <Typography variant="body1" color="text.secondary">
+                  O pagamento ou aprovação de suas vaga no evento ainda está
+                  pendente,<br /> porém você já pode preencher seus dados de
+                  inscrição.
+                </Typography>
+              )}
               <div className="my-4"></div>
               <Button
                 variant="contained"

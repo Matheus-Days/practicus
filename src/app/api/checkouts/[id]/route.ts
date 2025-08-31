@@ -5,9 +5,10 @@ import {
   validateUpdateCheckoutRequest,
   extractUpdateCheckoutDataFromRequestBody,
 } from "../utils";
-import { UpdateCheckoutRequest } from "../checkout.types";
+import { CheckoutDocument, UpdateCheckoutRequest } from "../checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
 import { createErrorResponse, createSuccessResponse } from "../../utils";
+import { NextResponse } from "next/server";
 
 // PUT /api/checkouts/[id] - Atualizar checkout específico
 export async function PUT(
@@ -65,6 +66,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  console.log("Deleting checkout:", params.id);
   try {
     let authenticatedUser: DecodedIdToken;
 
@@ -79,12 +81,26 @@ export async function DELETE(
 
     const { id } = params;
 
+    const checkoutDoc = await firestore.collection("checkouts").doc(id).get();
+    const checkoutData = checkoutDoc.data() as CheckoutDocument;
+
+    if (checkoutData.userId !== authenticatedUser.uid) {
+      return createErrorResponse("Usuário não tem permissão para deletar esta aquisição", 403);
+    }
+
+    const registrationDoc = await firestore
+      .collection("registrations")
+      .doc(id)
+      .get();
+    
+    await registrationDoc.ref.delete();
+
     await firestore.collection("checkouts").doc(id).update({
       status: "deleted",
       deletedAt: new Date(),
     });
 
-    return createSuccessResponse(undefined, 204);
+    return new NextResponse(undefined, { status: 204 });
   } catch (error) {
     console.error("Erro ao deletar checkout:", error);
     return createErrorResponse("Erro interno do servidor", 500);

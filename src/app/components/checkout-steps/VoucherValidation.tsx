@@ -21,14 +21,24 @@ import {
   Error as ErrorIcon,
   PersonAdd as PersonAddIcon,
 } from "@mui/icons-material";
+import { RegistrationFormData } from "../../api/registrations/registration.types";
 
 type ValidationState = "idle" | "validating" | "success" | "error";
 
 export default function VoucherValidation() {
-  const { setVoucher, setCurrentStep, formData, updateFormData, createVoucherCheckout, loading, error } = useCheckout();
+  const {
+    setVoucher,
+    setCurrentStep,
+    formData,
+    updateFormData,
+    createVoucherCheckout,
+    loading,
+    error,
+  } = useCheckout();
   const { validateVoucher } = useVoucherAPI();
   const [voucherCode, setVoucherCode] = useState("");
-  const [validationState, setValidationState] = useState<ValidationState>("idle");
+  const [validationState, setValidationState] =
+    useState<ValidationState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -43,12 +53,14 @@ export default function VoucherValidation() {
 
     try {
       await validateVoucher(voucherCode.trim());
-      
+
       setValidationState("success");
       setVoucher(voucherCode.trim());
     } catch (error) {
       setValidationState("error");
-      setErrorMessage(error instanceof Error ? error.message : "Erro ao validar voucher");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Erro ao validar voucher"
+      );
     }
   };
 
@@ -78,10 +90,15 @@ export default function VoucherValidation() {
         howDidYouHearAboutUs: formData.howDidYouHearAboutUs || "",
       };
 
-      await createVoucherCheckout(voucherCode.trim(), registrationData);
+      await createVoucherCheckout(
+        voucherCode.trim(),
+        registrationData as RegistrationFormData
+      );
       // O contexto já redireciona para "overview" após sucesso
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Erro ao criar inscrição");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Erro ao criar inscrição"
+      );
     }
   };
 
@@ -98,7 +115,10 @@ export default function VoucherValidation() {
       case "success":
         return "Voucher válido! Você pode prosseguir com a inscrição.";
       case "error":
-        return errorMessage || "Código de voucher inválido. Verifique e tente novamente.";
+        return (
+          errorMessage ||
+          "Código de voucher inválido. Verifique e tente novamente."
+        );
       default:
         return "";
     }
@@ -140,10 +160,10 @@ export default function VoucherValidation() {
             Dados do Participante
           </Typography>
         </Box>
-        
+
         <Alert severity="success" sx={{ mb: 2 }}>
-          Voucher <strong>{voucherCode}</strong> validado com sucesso! 
-          Agora preencha seus dados para completar a inscrição.
+          Voucher <strong>{voucherCode}</strong> validado com sucesso! Agora
+          preencha seus dados para completar a inscrição.
         </Alert>
 
         {error && (
@@ -173,7 +193,9 @@ export default function VoucherValidation() {
           <Button
             variant="contained"
             color="success"
-            startIcon={loading ? <CircularProgress size={20} /> : <PersonAddIcon />}
+            startIcon={
+              loading ? <CircularProgress size={20} /> : <PersonAddIcon />
+            }
             onClick={handleFinalizeRegistration}
             disabled={loading || !isFormValid}
           >
@@ -195,19 +217,17 @@ export default function VoucherValidation() {
         </Typography>
       </Box>
 
-      <Paper 
-        elevation={2} 
-        sx={{ 
-          p: 4, 
-          maxWidth: 500, 
-          mx: "auto", 
+      <Paper
+        elevation={2}
+        sx={{
+          p: 4,
+          maxWidth: 500,
+          mx: "auto",
           width: "100%",
-          textAlign: "center"
+          textAlign: "center",
         }}
       >
-        <Box sx={{ mb: 3 }}>
-          {getValidationIcon()}
-        </Box>
+        <Box sx={{ mb: 3 }}>{getValidationIcon()}</Box>
 
         <Typography variant="h6" gutterBottom>
           Código do Voucher
@@ -223,8 +243,8 @@ export default function VoucherValidation() {
           placeholder="Ex: VOUCHER123"
         />
 
-        <Alert 
-          severity={getValidationColor()} 
+        <Alert
+          severity={getValidationColor()}
           sx={{ mb: 3, textAlign: "left" }}
         >
           {getValidationMessage()}
@@ -238,14 +258,22 @@ export default function VoucherValidation() {
           >
             Voltar
           </Button>
-          
+
           <Button
             variant="contained"
             onClick={handleValidateVoucher}
             disabled={!voucherCode.trim() || validationState === "validating"}
-            startIcon={validationState === "validating" ? <CircularProgress size={20} /> : <VoucherIcon />}
+            startIcon={
+              validationState === "validating" ? (
+                <CircularProgress size={20} />
+              ) : (
+                <VoucherIcon />
+              )
+            }
           >
-            {validationState === "validating" ? "Validando..." : "Validar Voucher"}
+            {validationState === "validating"
+              ? "Validando..."
+              : "Validar Voucher"}
           </Button>
         </Box>
 
@@ -267,7 +295,8 @@ export default function VoucherValidation() {
       {validationState === "error" && (
         <Alert severity="info" sx={{ maxWidth: 500, mx: "auto" }}>
           <Typography variant="body2">
-            <strong>Dica:</strong> Verifique se o código do voucher está correto e se ainda é válido.
+            <strong>Dica:</strong> Verifique se o código do voucher está correto
+            e se ainda é válido.
           </Typography>
         </Alert>
       )}

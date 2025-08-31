@@ -77,7 +77,7 @@ export const useCheckoutAPI = () => {
 
   // "Deletar" checkout (marcar como deletado)
   const deleteCheckout = useCallback(
-    async (checkoutId: string): Promise<any> => {
+    async (checkoutId: string): Promise<void> => {
       const response = await makeAuthenticatedRequest(
         `/api/checkouts/${checkoutId}`,
         {
@@ -88,8 +88,6 @@ export const useCheckoutAPI = () => {
       if (!response.ok) {
         throw new Error((await response.json()).error);
       }
-
-      return await response.json();
     },
     [makeAuthenticatedRequest]
   );

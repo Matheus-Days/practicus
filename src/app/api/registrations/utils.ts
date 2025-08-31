@@ -1,4 +1,4 @@
-import { Firestore } from "firebase-admin/firestore";
+import { DocumentSnapshot, Firestore } from "firebase-admin/firestore";
 import {
   CreateRegistrationRequest,
   RegistrationDocument,
@@ -19,18 +19,13 @@ export type CanActivateRegistrationResult =
     };
 
 export async function canActivateRegistration(
+  checkoutDoc: DocumentSnapshot,
   registration: RegistrationDocument,
   isAdmin: boolean,
   firestore: Firestore,
   registrationId: string
 ): Promise<CanActivateRegistrationResult> {
   try {
-    // Verificar se a compra existe
-    const checkoutDoc = await firestore
-      .collection("checkouts")
-      .doc(registration.checkoutId)
-      .get();
-
     if (!checkoutDoc.exists) {
       return {
         canActivate: false,
