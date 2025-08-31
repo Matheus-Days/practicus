@@ -1,19 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import React from 'react';
 import { User } from 'firebase/auth';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  Container,
+  CssBaseline,
+  ThemeProvider,
+  createTheme,
+} from '@mui/material';
+import {
+  Logout as LogoutIcon,
+} from '@mui/icons-material';
 import { useFirebase } from '../hooks/firebase';
 import { UserData } from '../hooks/firebase';
-import EventsList from './EventsList';
+import { AdminProvider, useAdminContext } from '../contexts/AdminContext';
+import EventsList from './admin/EventsList';
+import EventDetails from './admin/EventDetails';
 
-interface AdminPanelProps {
+// Tema personalizado
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+});
+
+interface AdminPanelContentProps {
   user: User;
   userData: UserData;
 }
 
-export default function AdminPanel({ user, userData }: AdminPanelProps) {
+function AdminPanelContent({ user, userData }: AdminPanelContentProps) {
   const { auth } = useFirebase();
-  const [activeTab, setActiveTab] = useState('events');
+  const { currentView } = useAdminContext();
 
   const handleSignOut = async () => {
     try {
@@ -24,71 +52,51 @@ export default function AdminPanel({ user, userData }: AdminPanelProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <CssBaseline />
+      
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Painel Administrativo</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
-                <span>Olá, </span>
-                <span className="font-medium">{userData.displayName || user.email}</span>
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Sair
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation */}
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('registrations')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'registrations'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+      <AppBar position="static" elevation={1}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Painel Administrativo
+          </Typography>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Typography variant="body2" color="inherit">
+              Olá, {userData.displayName || user.email}
+            </Typography>
+            <Button
+              color="inherit"
+              startIcon={<LogoutIcon />}
+              onClick={handleSignOut}
+              sx={{ textTransform: 'none' }}
             >
-              Inscrições
-            </button>
-            <button
-              onClick={() => setActiveTab('events')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'events'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Eventos
-            </button>
-          </div>
-        </div>
-      </nav>
+              Sair
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {activeTab === 'registrations' && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Gerenciar Inscrições</h2>
-              <p className="text-gray-600">Funcionalidade em desenvolvimento...</p>
-            </div>
-          )}
+      <Container maxWidth="xl" sx={{ flexGrow: 1, py: 3 }}>
+        {currentView === 'events-list' && <EventsList />}
+        {currentView === 'event-details' && <EventDetails />}
+      </Container>
+    </Box>
+  );
+}
 
-          {activeTab === 'events' && <EventsList />}
-        </div>
-      </main>
-    </div>
+interface AdminPanelProps {
+  user: User;
+  userData: UserData;
+}
+
+export default function AdminPanel({ user, userData }: AdminPanelProps) {
+  return (
+    <ThemeProvider theme={theme}>
+      <AdminProvider user={user}>
+        <AdminPanelContent user={user} userData={userData} />
+      </AdminProvider>
+    </ThemeProvider>
   );
 } 
