@@ -3,11 +3,13 @@ import { useFirebase } from "./firebase";
 import {
   CheckoutDocument,
   CheckoutResponse,
+  CheckoutStatus,
   CreateCheckoutRequest,
   UpdateCheckoutRequest,
 } from "../api/checkouts/checkout.types";
 import { createCheckoutDocumentId } from "../api/checkouts/utils";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { CheckoutData } from "../types/checkout";
 
 export const useCheckoutAPI = () => {
   const { getIdToken, firestore } = useFirebase();
@@ -119,24 +121,73 @@ export const useCheckoutAPI = () => {
     [firestore]
   );
 
-  // Listar checkouts do usuário
-  const listUserCheckouts = useCallback(async (): Promise<any[]> => {
-    const response = await makeAuthenticatedRequest("/api/checkouts", {
-      method: "GET",
-    });
+  // Only for admin
+  const changeCheckoutStatus = useCallback(
+    async (checkoutId: string, status: CheckoutStatus): Promise<CheckoutResponse> => {
+      const response = await makeAuthenticatedRequest(
+        `/api/checkouts/${checkoutId}/status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ status }),
+        }
+      );
 
-    if (!response.ok) {
-      throw new Error((await response.json()).error);
-    }
+      if (!response.ok) {
+        throw new Error((await response.json()).error);
+      }
 
-    return await response.json();
-  }, [makeAuthenticatedRequest]);
+      return await response.json();
+    },
+    [makeAuthenticatedRequest]
+  );
+
+  // Only for admin
+  const listCheckoutsByEvent = useCallback(
+    async (eventId: string): Promise<CheckoutData[]> => {
+      const checkoutsQuery = query(
+        collection(firestore, "checkouts"),
+        where("eventId", "==", eventId),
+        where("checkoutType", "==", "acquire")
+      );
+      const checkoutsDoc = await getDocs(checkoutsQuery);
+      return checkoutsDoc.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as CheckoutDocument),
+      }));
+    },
+    [firestore]
+  );
+
+  // Buscar checkout por ID (para admin)
+  const getCheckoutById = useCallback(
+    async (checkoutId: string): Promise<CheckoutData> => {
+      try {
+        const checkoutRef = doc(firestore, "checkouts", checkoutId);
+        const checkoutDoc = await getDoc(checkoutRef);
+
+        if (!checkoutDoc.exists()) {
+          throw new Error("Checkout não encontrado");
+        }
+
+        return {
+          id: checkoutDoc.id,
+          ...(checkoutDoc.data() as CheckoutDocument),
+        };
+      } catch (error) {
+        console.error("Error fetching checkout document:", error);
+        throw error;
+      }
+    },
+    [firestore]
+  );
 
   return {
+    changeCheckoutStatus,
     createCheckout,
-    updateCheckout,
     deleteCheckout,
     getCheckout,
-    listUserCheckouts,
+    getCheckoutById,
+    listCheckoutsByEvent,
+    updateCheckout,
   };
 };

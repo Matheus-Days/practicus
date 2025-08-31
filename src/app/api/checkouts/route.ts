@@ -10,6 +10,7 @@ import {
 import { CreateCheckoutRequest } from "./checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
 import { createErrorResponse, createSuccessResponse } from "../utils";
+import { VoucherDocument } from "../voucher/voucher.types";
 
 // POST /api/checkouts - Create a new checkout
 export async function POST(request: NextRequest) {
@@ -58,6 +59,18 @@ export async function POST(request: NextRequest) {
       .collection("checkouts")
       .doc(checkoutDocumentId)
       .set(checkoutDocument);
+
+    const voucherDoc: VoucherDocument = {
+      active: true,
+      checkoutId: checkoutDocumentId,
+      createdAt: new Date(),
+    };
+    const voucherRes = await firestore.collection("vouchers").add(voucherDoc);
+
+    await firestore
+      .collection("checkouts")
+      .doc(checkoutDocumentId)
+      .update({ voucher: voucherRes.id });
 
     return createSuccessResponse(
       {
