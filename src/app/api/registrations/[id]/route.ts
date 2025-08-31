@@ -1,14 +1,20 @@
 import { NextRequest } from "next/server";
 import { validateAuth } from "../../../../lib/auth-utils";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { RegistrationDocument, RegistrationResponse } from "../registration.types";
+import {
+  RegistrationDocument,
+  RegistrationResponse,
+} from "../registration.types";
 import { firestore } from "../../../../lib/firebase-admin";
 import {
-  isUserAdmin,
   validateUpdateRegistration,
   extractUpdateRegistrationDataFromRequestBody,
 } from "../utils";
-import { createErrorResponse, createSuccessResponse } from "../../utils";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  isUserAdmin,
+} from "../../utils";
 
 export async function PUT(
   request: NextRequest,

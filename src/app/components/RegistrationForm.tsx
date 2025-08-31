@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Checkbox,
@@ -17,6 +17,7 @@ import { RegistrationFormData } from "../api/registrations/registration.types";
 interface RegistrationFormProps {
   initialData?: Partial<RegistrationFormData>;
   onDataChange: (data: Partial<RegistrationFormData>) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
 // CPF validation function
@@ -54,6 +55,7 @@ function validateCPF(cpf: string): boolean {
 export default function RegistrationForm({
   initialData = {},
   onDataChange,
+  onValidationChange,
 }: RegistrationFormProps) {
   const { user } = useCheckout();
 
@@ -78,6 +80,36 @@ export default function RegistrationForm({
   // Validation states
   const [phoneError, setPhoneError] = useState(false);
   const [cpfError, setCpfError] = useState(false);
+
+  // Validation function
+  const validateForm = (): boolean => {
+    // Verificar se todos os campos obrigatórios estão preenchidos
+    const hasFullName = registration.fullName?.trim() !== undefined && registration.fullName?.trim() !== "";
+    const hasPhone = registration.phone?.trim() !== undefined && registration.phone?.trim() !== "";
+    const hasCpf = registration.cpf?.trim() !== undefined && registration.cpf?.trim() !== "";
+    const hasHowDidYouHearAboutUs = registration.howDidYouHearAboutUs?.trim() !== undefined && registration.howDidYouHearAboutUs?.trim() !== "";
+
+    // Verificar se o telefone é válido (sem erros de validação)
+    const isPhoneValid = !phoneError && hasPhone;
+
+    // Verificar se o CPF é válido (sem erros de validação)
+    const isCpfValid = !cpfError && hasCpf;
+
+    // Verificar se concordou com o uso de imagem
+    const hasAgreedToImageUse = registration.useImage === true;
+
+    // Verificar se "como ficou sabendo" está preenchido quando "outro" é selecionado
+    const hasValidSource = registration.howDidYouHearAboutUs !== "outro" || 
+                          (registration.howDidYouHearAboutUs === "outro" && otherSource.trim() !== "");
+
+    return hasFullName && hasPhone && hasCpf && hasHowDidYouHearAboutUs && isPhoneValid && isCpfValid && hasAgreedToImageUse && hasValidSource;
+  };
+
+  // Effect para notificar mudanças na validação
+  useEffect(() => {
+    const isValid = validateForm();
+    onValidationChange?.(isValid);
+  }, [registration, phoneError, cpfError, otherSource, onValidationChange]);
 
   const handleFieldChange = (field: keyof RegistrationFormData, value: any) => {
     if (field === "credentialName") {
@@ -229,6 +261,7 @@ export default function RegistrationForm({
         }}
         variant="outlined"
         size="medium"
+        required
         />
       )}
 

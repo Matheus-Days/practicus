@@ -1,4 +1,3 @@
-import { DecodedIdToken } from "firebase-admin/auth";
 import { Firestore } from "firebase-admin/firestore";
 import {
   CreateRegistrationRequest,
@@ -8,15 +7,6 @@ import {
 } from "./registration.types";
 import { CheckoutDocument } from "../checkouts/checkout.types";
 import { createCheckoutDocumentId } from "../checkouts/utils";
-
-export async function isUserAdmin(
-  user: DecodedIdToken,
-  fs: Firestore
-): Promise<boolean> {
-  const userDoc = await fs.collection("users").doc(user.uid).get();
-  const userData = userDoc.data();
-  return userData?.admin === true;
-}
 
 export type CanActivateRegistrationResult =
   | {
@@ -52,10 +42,10 @@ export async function canActivateRegistration(
     const checkout = checkoutDoc.data() as CheckoutDocument;
 
     // Verificar se a compra está finalizada e válida
-    if (checkout.status !== "completed") {
+    if (checkout.status !== "completed" && checkout.status !== "pending") {
       return {
         canActivate: false,
-        error: "Compra da inscrição não está finalizada ou válida",
+        error: "Não é possível ativar uma inscrição cuja compra foi cancelada.",
         errorCode: 403,
       };
     }
@@ -64,7 +54,10 @@ export async function canActivateRegistration(
     if (isAdmin) return { canActivate: true };
 
     // Verificar se é a inscrição do próprio comprador (vaga reservada)
-    if (checkout.registrateMyself === true && registrationId === registration.checkoutId) {
+    if (
+      checkout.registrateMyself === true &&
+      registrationId === registration.checkoutId
+    ) {
       return { canActivate: true };
     }
 
@@ -86,20 +79,23 @@ export async function canActivateRegistration(
       .get();
 
     // Conta apenas os documentos cujo ID seja diferente do checkoutId, isto é, exclui da contagem a inscrição do próprio comprador.
-    const registrationsAmount = registrationsQuerySnapshot.docs.filter(doc => doc.id !== registration.checkoutId).length;
+    const registrationsAmount = registrationsQuerySnapshot.docs.filter(
+      (doc) => doc.id !== registration.checkoutId
+    ).length;
 
     // Se registrateMyself === true, reservar 1 vaga para o comprador
-    const availableSlots = checkout.registrateMyself === true 
-      ? checkout.amount - 1 
-      : checkout.amount;
-  
-      if (registrationsAmount >= availableSlots) {
-        return {
-          canActivate: false,
-          error: "Compra já atingiu o número máximo de inscrições ativas",
-          errorCode: 403,
-        };
-      }
+    const availableSlots =
+      checkout.registrateMyself === true
+        ? checkout.amount - 1
+        : checkout.amount;
+
+    if (registrationsAmount >= availableSlots) {
+      return {
+        canActivate: false,
+        error: "Compra já atingiu o número máximo de inscrições ativas",
+        errorCode: 403,
+      };
+    }
 
     return { canActivate: true };
   } catch (error) {
@@ -224,7 +220,8 @@ export function validateUpdateRegistrationStatus(
   if (
     data.status === "cancelled" ||
     data.status === "invalid" ||
-    data.status === "ok"
+    data.status === "ok" ||
+    data.status === "pending"
   )
     return true;
   return false;

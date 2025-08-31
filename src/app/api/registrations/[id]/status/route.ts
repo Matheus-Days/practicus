@@ -6,12 +6,11 @@ import { DecodedIdToken } from "firebase-admin/auth";
 import { RegistrationDocument } from "../../registration.types";
 import { firestore } from "../../../../../lib/firebase-admin";
 import {
-  isUserAdmin,
   canActivateRegistration,
   validateUpdateRegistrationStatus,
   extractUpdateRegistrationStatusDataFromRequestBody,
 } from "../../utils";
-import { createErrorResponse } from "../../../utils";
+import { createErrorResponse, isUserAdmin } from "../../../utils";
 import { CheckoutDocument } from "../../../checkouts/checkout.types";
 
 export async function PATCH(
@@ -56,7 +55,8 @@ export async function PATCH(
     const registration = registrationDoc.data() as RegistrationDocument;
 
     // Se o usuário não for o dono da inscrição, verificar se é admin
-    const userIsRegistrationOwner = registration.userId === authenticatedUser.uid;
+    const userIsRegistrationOwner =
+      registration.userId === authenticatedUser.uid;
     let checkout: CheckoutDocument | null = null;
 
     if (!userIsRegistrationOwner) {
@@ -64,7 +64,7 @@ export async function PATCH(
         .collection("checkouts")
         .doc(registration.checkoutId)
         .get();
-      
+
       if (!checkoutDoc.exists) {
         return createErrorResponse("Compra da inscrição não encontrada", 404);
       }

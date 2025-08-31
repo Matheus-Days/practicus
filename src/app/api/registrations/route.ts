@@ -7,7 +7,6 @@ import {
   canActivateRegistration,
   extractCreateRegistrationDataFromRequestBody,
   generateRegistrationDocumentId,
-  isUserAdmin,
   validateCreateRegistration,
 } from "./utils";
 import {
@@ -15,7 +14,11 @@ import {
   RegistrationDocument,
 } from "./registration.types";
 import { firestore } from "../../../lib/firebase-admin";
-import { createErrorResponse, createSuccessResponse } from "../utils";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  isUserAdmin,
+} from "../utils";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();

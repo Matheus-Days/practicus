@@ -12,6 +12,7 @@ import {
   CreateRegistrationRequest,
   RegistrationDocument,
   RegistrationResponse,
+  RegistrationStatus,
   UpdateRegistrationRequest,
 } from "../api/registrations/registration.types";
 import { generateRegistrationDocumentId } from "../api/registrations/utils";
@@ -185,7 +186,7 @@ export const useRegistrationAPI = () => {
   const updateRegistrationStatus = useCallback(
     async (
       registrationId: string,
-      status: "ok" | "cancelled" | "invalid"
+      status: RegistrationStatus
     ): Promise<RegistrationResponse> => {
       const response = await makeAuthenticatedRequest(
         `/api/registrations/${registrationId}/status`,
@@ -204,11 +205,33 @@ export const useRegistrationAPI = () => {
     [makeAuthenticatedRequest]
   );
 
+  // Only for admin
+  const listRegistrationsByEvent = useCallback(
+    async (eventId: string, status?: RegistrationStatus): Promise<RegistrationData[]> => {
+      let registrationsQuery = query(
+        collection(firestore, "registrations"),
+        where("eventId", "==", eventId)
+      );
+
+      if (status) {
+        registrationsQuery = query(registrationsQuery, where("status", "==", status));
+      }
+
+      const registrationsDoc = await getDocs(registrationsQuery);
+      return registrationsDoc.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as RegistrationDocument),
+      }));
+    },
+    [firestore]
+  );
+
   return {
     createRegistration,
     getRegistration,
     getEventRegistrations,
     getCheckoutRegistrations,
+    listRegistrationsByEvent,
     updateRegistration,
     updateRegistrationStatus,
   };
