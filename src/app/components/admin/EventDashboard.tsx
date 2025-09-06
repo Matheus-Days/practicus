@@ -5,19 +5,16 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   Box,
   LinearProgress,
   Chip,
-  IconButton,
-  Tooltip,
   Button,
 } from "@mui/material";
 import {
   People as PeopleIcon,
   ShoppingCart as ShoppingCartIcon,
   CheckCircle as CheckCircleIcon,
-  EditDocument as EditDocumentIcon,
+  Description as DescriptionIcon,
   Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { useAdminContext } from "../../contexts/AdminContext";
@@ -186,7 +183,7 @@ export default function EventDashboard() {
                   {totalRegistrations}
                 </Typography>
               </Box>
-              <EditDocumentIcon color="info" sx={{ fontSize: 40 }} />
+              <DescriptionIcon color="info" sx={{ fontSize: 40 }} />
             </Box>
           </CardContent>
         </Card>

@@ -4,7 +4,6 @@ import {
   EmptyImageFieldImage,
   FilledImageFieldImage,
   KeyTextField,
-  LinkField,
   RichTextField
 } from '@prismicio/client';
 import {
@@ -70,7 +69,7 @@ const CardParagraph = ({ children }: { children: ReactNode }) => (
 
 export default function CourseCard({ className, data }: CourseCardProps) {
   const linkType = data.__typename === 'curso' ? 'modulo_ou_curso' : 'evento';
-  const linkField: LinkField = {
+  const linkField: any = {
     url: `/${linkType}/${data.uid}`,
     link_type: 'Document'
   };

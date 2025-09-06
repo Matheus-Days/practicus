@@ -1,4 +1,4 @@
-import { Content, LinkField, RichTextField } from '@prismicio/client';
+import { RichTextField } from '@prismicio/client';
 import {
   JSXMapSerializer,
   PrismicImage,
@@ -23,7 +23,7 @@ const conteudoComponents: JSXMapSerializer = {
 };
 
 export default function PostCard({ className, post }: PostCardProps) {
-  const linkField: LinkField = {
+  const linkField: any = {
     url: `/post/${post.uid}`,
     link_type: 'Document'
   };
