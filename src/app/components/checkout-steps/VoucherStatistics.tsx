@@ -5,7 +5,7 @@ import { ConfirmationNumber as TicketIcon } from "@mui/icons-material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 
 export default function VoucherStatistics() {
-  const { checkout, checkoutRegistrations, registrationsAmount } =
+  const { checkout, checkoutRegistrations, registration, registrationsAmount } =
     useCheckout();
 
   // Não mostrar o componente se não há checkout ou se é um checkout de voucher
@@ -13,8 +13,10 @@ export default function VoucherStatistics() {
     return null;
   }
 
+  const registratedMyself = registration && ["ok", "pending"].includes(registration.status);
+  console.log(registratedMyself);
   // Calcular estatísticas
-  const totalRegistrations = checkout.registrateMyself
+  const totalRegistrations = registratedMyself
     ? registrationsAmount - 1
     : registrationsAmount;
   const usedRegistrations = checkoutRegistrations.filter(
@@ -50,7 +52,7 @@ export default function VoucherStatistics() {
             <Typography variant="subtitle2" color="text.secondary">
               Vouchers utilizados
             </Typography>
-            <Typography variant="h4" color="warning.main">
+            <Typography variant="h4" color="success.main">
               {usedRegistrations}
             </Typography>
           </Box>
@@ -58,7 +60,7 @@ export default function VoucherStatistics() {
             <Typography variant="subtitle2" color="text.secondary">
               Vouchers disponíveis
             </Typography>
-            <Typography variant="h4" color="success.main">
+            <Typography variant="h4" color="warning.main">
               {availableRegistrations}
             </Typography>
           </Box>

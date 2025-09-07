@@ -54,7 +54,8 @@ export default function VoucherRegistrations() {
     ? registrationsAmount - 1
     : registrationsAmount;
   const usedRegistrations = checkoutRegistrations.filter(
-    (reg) => (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
+    (reg) =>
+      (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
   ).length;
   const availableRegistrations = totalRegistrations - usedRegistrations;
 
@@ -67,8 +68,10 @@ export default function VoucherRegistrations() {
       }
 
       // Determinar o novo status baseado no status do checkout
-      const newStatus = (checkout.status === 'pending' ? 'pending' : 'ok') as RegistrationStatus;
-      
+      const newStatus = (
+        checkout.status === "pending" ? "pending" : "ok"
+      ) as RegistrationStatus;
+
       await updateRegistrationStatus(registrationId, newStatus);
 
       // Recarregar lista
@@ -111,32 +114,35 @@ export default function VoucherRegistrations() {
   // Função para verificar se o botão "Ativar inscrição" deve estar habilitado
   const canActivateRegistration = (registration: any) => {
     if (!checkout) return false;
-    
+
     // Não pode ativar se o checkout for deleted ou refunded
-    if (checkout.status === 'deleted' || checkout.status === 'refunded') {
+    if (checkout.status === "deleted" || checkout.status === "refunded") {
       return false;
     }
-    
+
     // Não pode ativar se a inscrição já estiver ok
-    if (registration.status === 'ok') {
+    if (registration.status === "ok") {
       return false;
     }
-    
+
     return true;
   };
 
   // Função para verificar se o botão "Desativar inscrição" deve estar habilitado
   const canCancelRegistration = (registration: any) => {
     // Não pode desativar se a inscrição já estiver cancelada
-    if (registration.status === 'cancelled') {
+    if (registration.status === "cancelled") {
       return false;
     }
-    
+
     // Não pode desativar se o checkout for deleted ou refunded
-    if (checkout && (checkout.status === 'deleted' || checkout.status === 'refunded')) {
+    if (
+      checkout &&
+      (checkout.status === "deleted" || checkout.status === "refunded")
+    ) {
       return false;
     }
-    
+
     return true;
   };
 
@@ -162,7 +168,7 @@ export default function VoucherRegistrations() {
         };
       case "cancelled":
         return {
-          label: "Cancelada",
+          label: "Desativada",
           color: "error" as const,
           icon: <CancelIcon fontSize="small" color="error" />,
         };
@@ -175,8 +181,10 @@ export default function VoucherRegistrations() {
     }
   };
 
-  // Mostrar o componente se há registrations, mesmo que não sejam ativas
-  if (checkoutRegistrations.length === 0) {
+  // Mostrar o componente se há registrations além da própria, mesmo que não sejam ativas
+  if (
+    checkoutRegistrations.filter((reg) => !reg.isMyRegistration).length === 0
+  ) {
     return null;
   }
 
@@ -257,7 +265,7 @@ export default function VoucherRegistrations() {
                               >
                                 Ação indisponível
                               </Typography>
-                            ) : (reg.status === "cancelled") ? (
+                            ) : reg.status === "cancelled" ? (
                               <Tooltip
                                 title={
                                   availableRegistrations <= 0
@@ -275,7 +283,9 @@ export default function VoucherRegistrations() {
                                       handleActivateRegistration(reg.id)
                                     }
                                     disabled={
-                                      loading || availableRegistrations <= 0 || !canActivateRegistration(reg)
+                                      loading ||
+                                      availableRegistrations <= 0 ||
+                                      !canActivateRegistration(reg)
                                     }
                                   >
                                     Ativar inscrição
@@ -289,7 +299,9 @@ export default function VoucherRegistrations() {
                                 size="small"
                                 startIcon={<DeleteIcon />}
                                 onClick={() => handleCancelRegistration(reg.id)}
-                                disabled={loading || !canCancelRegistration(reg)}
+                                disabled={
+                                  loading || !canCancelRegistration(reg)
+                                }
                               >
                                 Desativar inscrição
                               </Button>

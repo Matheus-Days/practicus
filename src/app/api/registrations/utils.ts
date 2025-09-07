@@ -48,12 +48,13 @@ export async function canActivateRegistration(
     // A ordem dessa verificação é importante: se o usuário for admin, ele pode ativar a inscrição mesmo que a compra não tenha vagas disponíveis
     if (isAdmin) return { canActivate: true };
 
-    // Verificar se é a inscrição do próprio comprador (vaga reservada)
-    if (
-      checkout.registrateMyself === true &&
-      registrationId === registration.checkoutId
-    ) {
-      return { canActivate: true };
+    // Verificar se o usuário está tentando reativar sua própria inscrição (não permitido)
+    if (registrationId !== registration.checkoutId) {
+      return {
+        canActivate: false,
+        error: "Você não pode reativar sua própria inscrição. Apenas o responsável pela compra pode fazer isso.",
+        errorCode: 403,
+      };
     }
 
     // Verificar se a compra possui um número de inscrições (checkouts do tipo "voucher" não devem ser 'pais' de uma inscrição)
@@ -66,25 +67,17 @@ export async function canActivateRegistration(
     }
 
     // Verificar se ainda há vagas disponíveis
-    // Filtra as inscrições ativas (status "ok") do mesmo checkoutId, mas exclui o documento cujo ID é igual ao checkoutId (ou seja, não conta a inscrição do próprio comprador)
+    // Filtra as inscrições válidas (status "ok" ou "pending") do sob responsabilidade do mesmo checkoutId
     const registrationsQuerySnapshot = await firestore
       .collection("registrations")
       .where("checkoutId", "==", registration.checkoutId)
-      .where("status", "==", "ok")
+      .where("status", "in", ["ok", "pending"])
       .get();
 
-    // Conta apenas os documentos cujo ID seja diferente do checkoutId, isto é, exclui da contagem a inscrição do próprio comprador.
-    const registrationsAmount = registrationsQuerySnapshot.docs.filter(
-      (doc) => doc.id !== registration.checkoutId
-    ).length;
 
-    // Se registrateMyself === true, reservar 1 vaga para o comprador
-    const availableSlots =
-      checkout.registrateMyself === true
-        ? checkout.amount - 1
-        : checkout.amount;
+    const registrationsAmount = registrationsQuerySnapshot.docs.length;
 
-    if (registrationsAmount >= availableSlots) {
+    if (registrationsAmount >= checkout.amount) {
       return {
         canActivate: false,
         error: "Compra já atingiu o número máximo de inscrições ativas",

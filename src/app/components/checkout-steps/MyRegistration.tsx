@@ -87,6 +87,11 @@ export default function MyRegistration() {
   const canActivateMyRegistration = () => {
     if (!registration || !checkout) return false;
 
+    // Não pode ativar a inscrição se checkout for do tipo voucher
+    if (checkout.checkoutType === "voucher") {
+      return false;
+    }
+
     // Não pode ativar se o checkout for deleted ou refunded
     if (checkout.status === "deleted" || checkout.status === "refunded") {
       return false;
@@ -123,11 +128,10 @@ export default function MyRegistration() {
   const getChipLabel = (status?: RegistrationStatus) => {
     switch (status) {
       case "cancelled":
-        return "Cancelada";
+        return "Desativada";
       case "ok":
-        return "Ativa";
       case "pending":
-        return "Pendente";
+        return "Ativa";
       default:
         return "Inválida";
     }
@@ -147,7 +151,6 @@ export default function MyRegistration() {
   };
 
   const shouldShowRegistration = registrateMyself || checkoutType === "voucher";
-  const isMyRegistration = registration?.id === checkout?.id;
 
   if (!shouldShowRegistration) {
     return null;
