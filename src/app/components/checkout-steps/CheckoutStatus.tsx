@@ -6,49 +6,58 @@ import {
   Cancel as CancelIcon,
   Pending as PendingIcon,
 } from "@mui/icons-material";
-import { CheckoutStatus as CheckoutStatusType } from "../../api/checkouts/checkout.types";
+import { useCheckout } from "../../contexts/CheckoutContext";
 
-interface CheckoutStatusProps {
-  status: CheckoutStatusType;
-  checkoutType?: "acquire" | "voucher";
-}
+export default function CheckoutStatus() {
+  const { checkout, registration } = useCheckout();
 
-export default function CheckoutStatus({ status, checkoutType }: CheckoutStatusProps) {
-  // Traduzir status do checkout
-  const getStatusInfo = (status: CheckoutStatusType) => {
-    switch (status) {
+  if (!checkout) return null;
+
+  const getCheckoutStatusInfo = () => {
+    const multiple = Boolean(
+      checkout && checkout.amount && checkout.amount > 1
+    );
+
+    switch (checkout.status) {
       case "pending":
         return {
-          label: "Pagamento Pendente",
+          label: "pagamento pendente",
           color: "warning" as const,
           icon: <PendingIcon color="warning" />,
-          description: "Aguardando confirmação do pagamento.",
+          description: multiple
+            ? "Voucher liberado para inscrições. Porém elas só serão confirmadas após a aprovação do pagamento."
+            : "Aguardando confirmação do pagamento.",
         };
       case "completed":
         return {
-          label: "Concluída",
+          label: "concluída",
           color: "success" as const,
           icon: <CheckCircleIcon color="success" />,
-          description: checkoutType === "voucher" ? "Voucher utilizado e inscrição criada." : "Pagamento aprovado e inscrições liberadas.",
+          description: multiple
+            ? "Seu pagamento foi aprovado e as vagas no evento foram confirmadas e garantidas."
+            : "Seu pagamento foi aprovado e a vaga no evento foi confirmada e garantida.",
         };
       case "refunded":
         return {
-          label: "Reembolsada",
+          label: "reembolsada",
           color: "error" as const,
           icon: <CancelIcon color="error" />,
-          description:
-            "Pagamento reembolsado e processo de inscrição cancelado.",
+          description: multiple
+            ? "Pagamento reembolsado e inscrição cancelada."
+            : "Pagamento reembolsado e inscrições feitas pelo voucher canceladas.",
         };
       case "deleted":
         return {
-          label: "Excluída",
+          label: "excluída",
           color: "default" as const,
           icon: <CancelIcon color="error" />,
-          description: "Processo de aquisição cancelado.",
+          description: multiple
+            ? "Processo de aquisição e inscrições feitas pelo voucher cancelados."
+            : "Processo de aquisição e inscrição cancelados.",
         };
       default:
         return {
-          label: "Desconhecida",
+          label: "desconhecida",
           color: "default" as const,
           icon: <PendingIcon />,
           description: "Situação desconhecida.",
@@ -56,7 +65,46 @@ export default function CheckoutStatus({ status, checkoutType }: CheckoutStatusP
     }
   };
 
-  const statusInfo = getStatusInfo(status);
+  const getVoucherStatusInfo = () => {
+    const status = registration ? registration.status : "invalid";
+    switch (status) {
+      case "ok":
+        return {
+          label: "ativa",
+          color: "success" as const,
+          icon: <CheckCircleIcon color="success" />,
+          description: "Inscrição realizada e vaga garantida no evento.",
+        };
+      case "cancelled":
+        return {
+          label: "desativada",
+          color: "error" as const,
+          icon: <CancelIcon color="error" />,
+          description:
+            "Inscrição desativada e voucher liberado para outra pessoa utilizar. Caso queira reativar sua inscrição, entre em contato com o responsável pela compra.",
+        };
+      case "pending":
+        return {
+          label: "ativa",
+          color: "warning" as const,
+          icon: <PendingIcon color="warning" />,
+          description:
+            "Inscrição realizada, porém sua vaga no evento só será garantida após a aprovação do pagamento do responsável pela compra.",
+        };
+      default:
+        return {
+          label: "desconhecida",
+          color: "default" as const,
+          icon: <PendingIcon />,
+          description: "Situação desconhecida.",
+        };
+    }
+  };
+
+  const statusInfo =
+    checkout.checkoutType === "voucher"
+      ? getVoucherStatusInfo()
+      : getCheckoutStatusInfo();
 
   return (
     <Card>
@@ -64,7 +112,10 @@ export default function CheckoutStatus({ status, checkoutType }: CheckoutStatusP
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
           <span className="text-green">{statusInfo.icon}</span>
           <Typography variant="h6" component="h2">
-            Situação {checkoutType === "voucher" ? "da inscrição" : "da aquisição"}: {statusInfo.label}
+            {checkout.checkoutType === "voucher"
+              ? "Situação da inscrição"
+              : "Situação da aquisição"}
+            : <span className="uppercase">{statusInfo.label}</span>
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary">

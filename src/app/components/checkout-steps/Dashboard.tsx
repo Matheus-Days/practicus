@@ -76,7 +76,7 @@ export default function Dashboard({
       </Typography>
 
       {/* Status do Checkout */}
-      <CheckoutStatus status={checkout.status} checkoutType={checkout.checkoutType} />
+      <CheckoutStatus />
 
       {/* Código do Voucher */}
       {checkout.voucher && (
