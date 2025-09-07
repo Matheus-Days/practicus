@@ -100,7 +100,7 @@ export default function Page() {
   if (!user) {
     return (
       <BoundedMain>
-        <HeadingBadge as="h1" className="mb-6">Administração de Inscrições</HeadingBadge>
+        <HeadingBadge as="h1" className="mb-6">Administração de inscrições</HeadingBadge>
         
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
@@ -128,7 +128,7 @@ export default function Page() {
               disabled={authLoading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {authLoading ? 'Enviando...' : 'Enviar Link de Login'}
+              {authLoading ? 'Enviando...' : 'Enviar link de login'}
             </button>
           </form>
 
@@ -149,7 +149,7 @@ export default function Page() {
   if (!userData?.admin) {
     return (
       <BoundedMain>
-        <HeadingBadge as="h1" className="mb-6">Acesso Negado</HeadingBadge>
+        <HeadingBadge as="h1" className="mb-6">Acesso negado</HeadingBadge>
         
         <div className="max-w-md mx-auto text-center">
           <div className="text-red-600 mb-4">

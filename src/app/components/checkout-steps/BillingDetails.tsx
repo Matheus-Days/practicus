@@ -244,7 +244,7 @@ export default function BillingDetails() {
         {/* I. Campo de quantidade de inscrições */}
         <TextField
           fullWidth
-          label="Quantidade de Inscrições"
+          label="Quantidade de inscrições"
           type="number"
           value={localRegistrationsAmount}
           onChange={(e) => {
@@ -261,10 +261,10 @@ export default function BillingDetails() {
 
         {/* II. Seletor do tipo de pessoa */}
         <FormControl fullWidth required>
-          <InputLabel>Tipo de Pessoa</InputLabel>
+          <InputLabel>Tipo de pessoa</InputLabel>
           <Select
             value={localLegalEntity || ""}
-            label="Tipo de Pessoa"
+            label="Tipo de pessoa"
             size="medium"
             onChange={(e) => {
               const value = e.target.value as LegalEntity;
@@ -272,8 +272,8 @@ export default function BillingDetails() {
               setLegalEntity(value);
             }}
           >
-            <MenuItem value="pf">Pessoa Física</MenuItem>
-            <MenuItem value="pj">Pessoa Jurídica</MenuItem>
+            <MenuItem value="pf">Pessoa física</MenuItem>
+            <MenuItem value="pj">Pessoa jurídica</MenuItem>
           </Select>
         </FormControl>
 
@@ -285,7 +285,7 @@ export default function BillingDetails() {
               Dados de cobrança
             </Typography>
             <Typography variant="body1" gutterBottom>
-              Os dados informado serão usados para a emissão do recibo de pagamento.
+              Os dados informados serão usados para a emissão do recibo de pagamento.
             </Typography>
 
             {localLegalEntity === "pf" ? (
@@ -293,7 +293,7 @@ export default function BillingDetails() {
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <TextField
                   fullWidth
-                  label="Nome Completo"
+                  label="Nome completo"
                   value={billingDetailsPF.fullName || ""}
                   onChange={(e) =>
                     handleBillingDetailsPFChange("fullName", e.target.value)
@@ -333,7 +333,7 @@ export default function BillingDetails() {
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <TextField
                   fullWidth
-                  label="Nome da Organização"
+                  label="Nome da organização"
                   value={billingDetailsPJ.orgName || ""}
                   onChange={(e) =>
                     handleBillingDetailsPJChange("orgName", e.target.value)
@@ -358,7 +358,7 @@ export default function BillingDetails() {
 
                 <TextField
                   fullWidth
-                  label="Telefone da Organização"
+                  label="Telefone da organização"
                   value={billingDetailsPJ.orgPhone || ""}
                   onChange={(e) =>
                     handleBillingDetailsPJChange("orgPhone", e.target.value)
@@ -371,7 +371,7 @@ export default function BillingDetails() {
 
                 <TextField
                   fullWidth
-                  label="Endereço da Organização"
+                  label="Endereço da organização"
                   value={billingDetailsPJ.orgAddress || ""}
                   onChange={(e) =>
                     handleBillingDetailsPJChange("orgAddress", e.target.value)
@@ -398,12 +398,12 @@ export default function BillingDetails() {
 
                 <Divider />
                 <Typography variant="subtitle1" gutterBottom>
-                  Dados do Responsável
+                  Dados do responsável
                 </Typography>
 
                 <TextField
                   fullWidth
-                  label="Nome do Responsável"
+                  label="Nome do responsável"
                   value={billingDetailsPJ.responsibleName || ""}
                   onChange={(e) =>
                     handleBillingDetailsPJChange(
@@ -418,7 +418,7 @@ export default function BillingDetails() {
 
                 <TextField
                   fullWidth
-                  label="Email do Responsável"
+                  label="Email do responsável"
                   type="email"
                   value={billingDetailsPJ.responsibleEmail || user?.email || ""}
                   disabled
@@ -430,7 +430,7 @@ export default function BillingDetails() {
 
                 <TextField
                   fullWidth
-                  label="Telefone do Responsável"
+                  label="Telefone do responsável"
                   value={billingDetailsPJ.responsiblePhone || ""}
                   onChange={(e) =>
                     handleBillingDetailsPJChange(

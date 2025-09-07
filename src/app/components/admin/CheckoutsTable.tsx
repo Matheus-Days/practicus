@@ -179,11 +179,11 @@ export default function CheckoutsTable() {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Pessoa</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Adiquido por</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Adquirido por</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Valor</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Data de Criação</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Data de criação</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }} align="center">Ações</TableCell>
             </TableRow>
           </TableHead>
@@ -286,19 +286,19 @@ export default function CheckoutsTable() {
           <ListItemIcon>
             <CheckCircleIcon color="success" />
           </ListItemIcon>
-          Marcar como concluído
+          Marcar como pago
         </MenuItem>
         <MenuItem onClick={() => handleStatusChange("pending")}>
           <ListItemIcon>
             <PendingIcon color="warning" />
           </ListItemIcon>
-          Marcar como pendente
+          Marcar como pagamento pendente
         </MenuItem>
         <MenuItem onClick={() => handleStatusChange("deleted")}>
           <ListItemIcon>
             <CancelIcon color="error" />
           </ListItemIcon>
-          Cancelar
+          Cancelar compra
         </MenuItem>
       </Menu>
 

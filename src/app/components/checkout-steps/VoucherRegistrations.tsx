@@ -125,14 +125,14 @@ export default function VoucherRegistrations() {
     return true;
   };
 
-  // Função para verificar se o botão "Cancelar inscrição" deve estar habilitado
+  // Função para verificar se o botão "Desativar inscrição" deve estar habilitado
   const canCancelRegistration = (registration: any) => {
-    // Não pode cancelar se a inscrição já estiver cancelada
+    // Não pode desativar se a inscrição já estiver cancelada
     if (registration.status === 'cancelled') {
       return false;
     }
     
-    // Não pode cancelar se o checkout for deleted ou refunded
+    // Não pode desativar se o checkout for deleted ou refunded
     if (checkout && (checkout.status === 'deleted' || checkout.status === 'refunded')) {
       return false;
     }
@@ -213,7 +213,7 @@ export default function VoucherRegistrations() {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: "bold" }}>
-                      Nome Completo
+                      Nome completo
                     </TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>E-mail</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Situação</TableCell>
@@ -291,7 +291,7 @@ export default function VoucherRegistrations() {
                                 onClick={() => handleCancelRegistration(reg.id)}
                                 disabled={loading || !canCancelRegistration(reg)}
                               >
-                                Cancelar inscrição
+                                Desativar inscrição
                               </Button>
                             )}
                           </TableCell>

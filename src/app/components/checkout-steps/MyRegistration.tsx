@@ -77,7 +77,7 @@ export default function MyRegistration() {
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
-      setSnackbarMessage("Erro ao cancelar inscrição");
+      setSnackbarMessage("Erro ao desativar inscrição");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
@@ -100,16 +100,16 @@ export default function MyRegistration() {
     return true;
   };
 
-  // Função para verificar se o botão "Cancelar inscrição" deve estar habilitado
+  // Função para verificar se o botão "Desativar inscrição" deve estar habilitado
   const canCancelMyRegistration = () => {
     if (!registration) return false;
 
-    // Não pode cancelar se a inscrição já estiver cancelada
+    // Não pode desativar se a inscrição já estiver cancelada
     if (registration.status === "cancelled") {
       return false;
     }
 
-    // Não pode cancelar se o checkout for deleted ou refunded
+    // Não pode desativar se o checkout for deleted ou refunded
     if (
       checkout &&
       (checkout.status === "deleted" || checkout.status === "refunded")
@@ -181,7 +181,7 @@ export default function MyRegistration() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <PersonIcon color="primary" />
               <Typography variant="h6" component="h3">
-                Minha Inscrição no evento
+                Minha inscrição no evento
               </Typography>
             </Box>
             {registration && (
@@ -270,7 +270,7 @@ export default function MyRegistration() {
                 >
                   <Typography variant="body2" color="text.secondary">
                     *Quer se inscrever de outra forma que não com voucher?
-                    Pressione o botão abaixo para deletar esta incrição e
+                    Pressione o botão abaixo para deletar esta inscrição e
                     escolher outra opção:
                   </Typography>
                   <div>
@@ -296,7 +296,7 @@ export default function MyRegistration() {
               )}
               {checkout && checkout.status === "pending" && (
                 <Typography variant="body1" color="text.secondary">
-                  O pagamento ou aprovação de suas vaga no evento ainda está
+                  O pagamento ou aprovação de sua vaga no evento ainda está
                   pendente,<br /> porém você já pode preencher seus dados de
                   inscrição.
                 </Typography>

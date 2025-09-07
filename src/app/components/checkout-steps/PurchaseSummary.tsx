@@ -65,10 +65,10 @@ export default function PurchaseSummary({
 
           <Box sx={{ flex: "1 1 300px" }}>
             <Typography variant="subtitle2" color="text.secondary">
-              Tipo de Pessoa
+              Tipo de pessoa
             </Typography>
             <Typography variant="h6">
-              {legalEntity === "pf" ? "Pessoa Física" : "Pessoa Jurídica"}
+              {legalEntity === "pf" ? "Pessoa física" : "Pessoa jurídica"}
             </Typography>
           </Box>
 
@@ -86,9 +86,9 @@ export default function PurchaseSummary({
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Dados de Faturamento */}
+        {/* Dados de faturamento */}
         <Typography variant="subtitle1" gutterBottom>
-          Dados de Faturamento
+          Dados de faturamento
         </Typography>
 
         {billingDetails && legalEntity === "pf" ? (
@@ -141,7 +141,7 @@ export default function PurchaseSummary({
                 startIcon={<EditIcon />}
                 onClick={onEditBilling}
               >
-                Editar Dados de Faturamento
+                Editar dados de faturamento
               </Button>
               <Button
                 variant="contained"
@@ -168,7 +168,7 @@ export default function PurchaseSummary({
               startIcon={<DeleteIcon />}
               onClick={onRequestCancellation}
             >
-              Solicitar Cancelamento
+              Solicitar cancelamento
             </Button>
           )}
         </Stack>

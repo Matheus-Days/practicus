@@ -203,7 +203,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
           <Stack spacing={3}>
             <Box textAlign="center">
               <Typography variant="h5" component="h3" gutterBottom>
-                Minha Inscrição
+                Minha inscrição
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Faça login para verificar ou realizar sua inscrição
@@ -235,7 +235,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
                   fullWidth
                   size="large"
                 >
-                  {authLoading ? "Enviando..." : "Enviar Link de Login"}
+                  {authLoading ? "Enviando..." : "Enviar link de login"}
                 </Button>
               </Stack>
             </Box>

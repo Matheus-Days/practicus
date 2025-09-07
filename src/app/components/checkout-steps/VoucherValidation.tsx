@@ -157,7 +157,7 @@ export default function VoucherValidation() {
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
           <SuccessIcon sx={{ color: "success.main", fontSize: 32 }} />
           <Typography variant="h4" component="h1">
-            Dados do Participante
+            Dados do participante
           </Typography>
         </Box>
 
@@ -199,7 +199,7 @@ export default function VoucherValidation() {
             onClick={handleFinalizeRegistration}
             disabled={loading || !isFormValid}
           >
-            {loading ? "Criando..." : "Finalizar Inscrição"}
+            {loading ? "Criando..." : "Finalizar inscrição"}
           </Button>
         </Box>
       </Box>
@@ -210,7 +210,7 @@ export default function VoucherValidation() {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Box sx={{ textAlign: "center", mb: 2 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Validação de Voucher
+          Validação de voucher
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Digite o código do seu voucher para prosseguir com a inscrição
@@ -230,7 +230,7 @@ export default function VoucherValidation() {
         <Box sx={{ mb: 3 }}>{getValidationIcon()}</Box>
 
         <Typography variant="h6" gutterBottom>
-          Código do Voucher
+          Código do voucher
         </Typography>
 
         <TextField
@@ -273,7 +273,7 @@ export default function VoucherValidation() {
           >
             {validationState === "validating"
               ? "Validando..."
-              : "Validar Voucher"}
+              : "Validar voucher"}
           </Button>
         </Box>
 
@@ -286,7 +286,7 @@ export default function VoucherValidation() {
               onClick={handleCreateRegistration}
               startIcon={<PersonAddIcon />}
             >
-              Criar Inscrição
+              Criar inscrição
             </Button>
           </Box>
         )}

@@ -32,7 +32,7 @@ export default function SelectType() {
     [
       {
         type: "acquire" as const,
-        title: "Adquirir Inscrição",
+        title: "Adquirir inscrição",
         description: "Comprar uma ou mais inscrições",
         icon: ShoppingCartIcon,
         color: "primary",
@@ -44,7 +44,7 @@ export default function SelectType() {
       },
       {
         type: "voucher" as const,
-        title: "Usar Voucher",
+        title: "Usar voucher",
         description: "Alguém já reservou minha vaga e quero me inscrever",
         icon: VoucherIcon,
         color: "secondary" as const,

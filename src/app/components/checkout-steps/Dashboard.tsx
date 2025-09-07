@@ -72,7 +72,7 @@ export default function Dashboard({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Dashboard da Inscrição
+        Painel da inscrição
       </Typography>
 
       {/* Status do Checkout */}
@@ -118,7 +118,7 @@ export default function Dashboard({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Solicitar Cancelamento</DialogTitle>
+        <DialogTitle>Solicitar cancelamento</DialogTitle>
         <DialogContent>
           <Typography variant="body1">
             Para solicitar o cancelamento de aquisição de inscrições e
@@ -140,7 +140,7 @@ export default function Dashboard({
               window.open("/contato", "_blank");
             }}
           >
-            Ir para Contato
+            Ir para contato
           </Button>
         </DialogActions>
       </Dialog>

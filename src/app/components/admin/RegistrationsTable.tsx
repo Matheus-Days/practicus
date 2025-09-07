@@ -131,16 +131,16 @@ export default function RegistrationsTable() {
     return true;
   };
 
-  // Função para verificar se o botão "Cancelar inscrição" deve estar habilitado
+  // Função para verificar se o botão "Desativar inscrição" deve estar habilitado
   const canCancelRegistration = (registration: RegistrationData) => {
     const checkout = eventCheckouts.find(c => c.id === registration.checkoutId);
     
-    // Não pode cancelar se a inscrição já estiver cancelada
+    // Não pode desativar se a inscrição já estiver cancelada
     if (registration.status === 'cancelled') {
       return false;
     }
     
-    // Não pode cancelar se o checkout for deleted ou refunded
+    // Não pode desativar se o checkout for deleted ou refunded
     if (checkout && (checkout.status === 'deleted' || checkout.status === 'refunded')) {
       return false;
     }
@@ -237,11 +237,11 @@ export default function RegistrationsTable() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Nome Completo</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Nome completo</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
               <TableCell>Telefone</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Situação</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Data de Inscrição</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Data de inscrição</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }} align="center">Ações</TableCell>
             </TableRow>
           </TableHead>
@@ -333,7 +333,7 @@ export default function RegistrationsTable() {
           <ListItemIcon>
             <CheckCircleIcon color="success" />
           </ListItemIcon>
-          Ativar Inscrição
+          Ativar inscrição
         </MenuItem>
         <MenuItem 
           onClick={handleCancelRegistration}
@@ -342,7 +342,7 @@ export default function RegistrationsTable() {
           <ListItemIcon>
             <CancelIcon color="error" />
           </ListItemIcon>
-          Cancelar Inscrição
+          Desativar inscrição
         </MenuItem>
       </Menu>
 

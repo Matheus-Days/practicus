@@ -246,7 +246,7 @@ export default function CheckoutDetailsDialog({
       >
         <DialogTitle>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Detalhes da Aquisição</Typography>
+            <Typography variant="h6">Detalhes da aquisição</Typography>
             <Button
               onClick={handleClose}
               startIcon={<CloseIcon />}
@@ -278,7 +278,7 @@ export default function CheckoutDetailsDialog({
               {/* Status */}
               <Box mb={3}>
                 <Typography variant="h6" gutterBottom>
-                  Status da Aquisição
+                  Status da aquisição
                 </Typography>
                 <Chip
                   icon={getStatusDisplay(checkout.status).icon}
@@ -295,11 +295,11 @@ export default function CheckoutDetailsDialog({
               <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Informações Gerais
+                    Informações gerais
                   </Typography>
                   <Box>
                     <Typography variant="body2" color="textSecondary">
-                      ID da Aquisição:
+                      ID da aquisição:
                     </Typography>
                     <Box display="flex" alignItems="center" gap={1} mb={2}>
                       <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
@@ -315,7 +315,7 @@ export default function CheckoutDetailsDialog({
                     </Box>
                     
                     <Typography variant="body2" color="textSecondary">
-                      Tipo de Pessoa:
+                      Tipo de pessoa:
                     </Typography>
                     <Chip
                       label={checkout.legalEntity === "pf" ? "Física" : "Jurídica"}
@@ -326,14 +326,14 @@ export default function CheckoutDetailsDialog({
                     />
                     
                     <Typography variant="body2" color="textSecondary">
-                      Número de Inscrições:
+                      Número de inscrições:
                     </Typography>
                     <Typography variant="body1" gutterBottom>
                       {checkout.amount || "Não informado"}
                     </Typography>
                     
                     <Typography variant="body2" color="textSecondary">
-                      Valor Total:
+                      Valor total:
                     </Typography>
                     <Typography variant="h6" color="primary" gutterBottom>
                       {checkout.amount && eventData
@@ -342,7 +342,7 @@ export default function CheckoutDetailsDialog({
                     </Typography>
                     
                     <Typography variant="body2" color="textSecondary">
-                      Data de Criação:
+                      Data de criação:
                     </Typography>
                     <Typography variant="body1" gutterBottom>
                       {formatDate(checkout.createdAt)}
@@ -351,7 +351,7 @@ export default function CheckoutDetailsDialog({
                     {checkout.updatedAt && (
                       <>
                         <Typography variant="body2" color="textSecondary">
-                          Última Atualização:
+                          Última atualização:
                         </Typography>
                         <Typography variant="body1" gutterBottom>
                           {formatDate(checkout.updatedAt)}
@@ -363,7 +363,7 @@ export default function CheckoutDetailsDialog({
 
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Dados de Faturamento
+                    Dados de faturamento
                   </Typography>
                   {checkout.billingDetails ? (
                     checkout.legalEntity === "pf" ? (
@@ -384,7 +384,7 @@ export default function CheckoutDetailsDialog({
                 <>
                   <Divider sx={{ my: 3 }} />
                   <Typography variant="h6" gutterBottom>
-                    Informações Adicionais
+                    Informações adicionais
                   </Typography>
                   <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
                     <Box>

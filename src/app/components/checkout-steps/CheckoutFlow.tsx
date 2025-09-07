@@ -68,7 +68,7 @@ export default function CheckoutFlow() {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          {registration ? "Editar Dados do Participante" : "Dados do Participante"}
+          {registration ? "Editar dados do participante" : "Dados da inscrição"}
         </Typography>
         
         <Card sx={{ boxShadow: 2 }}>
