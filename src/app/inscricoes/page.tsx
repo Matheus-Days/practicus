@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useFirebase } from '../hooks/firebase';
-import { sendSignInLinkToEmail } from 'firebase/auth';
+import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import { User } from 'firebase/auth';
 import AdminPanel from '../components/AdminPanel';
 import HeadingBadge from '@/app/components/HeadingBadge';
@@ -18,6 +18,26 @@ export default function Page() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    const handleEmailSignIn = async () => {
+      if (isSignInWithEmailLink(auth, window.location.href)) {
+        try {
+          const email = window.localStorage.getItem('emailForSignIn');
+          
+          if (!email) {
+            setMessage('Email não encontrado. Por favor, solicite um novo link de autenticação.');
+            return;
+          }
+
+          await signInWithEmailLink(auth, email, window.location.href);
+          window.localStorage.removeItem('emailForSignIn');
+          setMessage('Autenticação realizada com sucesso!');
+        } catch (error: any) {
+          console.error('Error signing in with email link:', error);
+          setMessage(`Erro na autenticação: ${error.message}`);
+        }
+      }
+    };
+
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setUser(user);
       
@@ -36,6 +56,9 @@ export default function Page() {
       setLoading(false);
     });
 
+    // Handle email sign-in if URL contains sign-in link
+    handleEmailSignIn();
+
     return () => unsubscribe();
   }, [auth, getUserData]);
 
@@ -46,7 +69,7 @@ export default function Page() {
 
     try {
       const actionCodeSettings = {
-        url: `${window.location.origin}/auth-confirmation`,
+        url: window.location.href,
         handleCodeInApp: true,
       };
 
