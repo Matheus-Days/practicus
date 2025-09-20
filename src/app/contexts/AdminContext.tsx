@@ -24,6 +24,7 @@ export interface EventDashboardData {
   pendingCheckouts: number;
   completedCheckouts: number;
   totalRegistrations: number;
+  totalAmountInCheckouts: number;
   registrationPercentage: number;
   acquiredSlots: number;
 }
@@ -88,12 +89,10 @@ interface AdminProviderProps {
   user: User;
 }
 
-export const AdminProvider: React.FC<AdminProviderProps> = ({
-  children,
-  user,
-}) => {
+export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const { firestore } = useFirebase();
-  const { listCheckoutsByEvent, changeCheckoutStatus, getCheckoutById } = useCheckoutAPI();
+  const { listCheckoutsByEvent, changeCheckoutStatus, getCheckoutById } =
+    useCheckoutAPI();
   const { listRegistrationsByEvent, updateRegistrationStatus } =
     useRegistrationAPI();
 
@@ -185,6 +184,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
     const completedCheckouts = eventCheckouts.filter(
       (c) => c.status === "completed"
     ).length;
+    const totalAmountInCheckouts = eventCheckouts
+      .filter((c) => c.status === "pending" || c.status === "completed")
+      .reduce((sum, checkout) => sum + (checkout.amount || 0), 0);
     const totalRegistrations = eventRegistrations.filter(
       (r) => r.status === "ok" || r.status === "pending"
     ).length;
@@ -200,6 +202,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
       totalSlots,
       pendingCheckouts,
       completedCheckouts,
+      totalAmountInCheckouts,
       totalRegistrations,
       registrationPercentage,
       acquiredSlots,
