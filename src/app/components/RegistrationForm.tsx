@@ -13,6 +13,9 @@ import {
 } from "@mui/material";
 import { useCheckout } from "../contexts/CheckoutContext";
 import { RegistrationFormData } from "../api/registrations/registration.types";
+import { validateCPF } from "../utils/cpf-utils";
+import { validatePhone } from "../utils/phone-utils";
+import { PatternFormat } from "react-number-format";
 
 interface RegistrationFormProps {
   initialData?: Partial<RegistrationFormData>;
@@ -20,37 +23,6 @@ interface RegistrationFormProps {
   onValidationChange?: (isValid: boolean) => void;
 }
 
-// CPF validation function
-function validateCPF(cpf: string): boolean {
-  // Check if contains only digits
-  if (!/^\d+$/.test(cpf)) return false;
-  
-  // Check if it has 11 digits
-  if (cpf.length !== 11) return false;
-  
-  // Check if all digits are the same
-  if (/^(\d)\1{10}$/.test(cpf)) return false;
-  
-  // Validate first digit
-  let sum = 0;
-  for (let i = 0; i < 9; i++) {
-    sum += parseInt(cpf.charAt(i)) * (10 - i);
-  }
-  let remainder = (sum * 10) % 11;
-  if (remainder === 10 || remainder === 11) remainder = 0;
-  if (remainder !== parseInt(cpf.charAt(9))) return false;
-  
-  // Validate second digit
-  sum = 0;
-  for (let i = 0; i < 10; i++) {
-    sum += parseInt(cpf.charAt(i)) * (11 - i);
-  }
-  remainder = (sum * 10) % 11;
-  if (remainder === 10 || remainder === 11) remainder = 0;
-  if (remainder !== parseInt(cpf.charAt(10))) return false;
-  
-  return true;
-}
 
 export default function RegistrationForm({
   initialData = {},
@@ -73,13 +45,17 @@ export default function RegistrationForm({
     howDidYouHearAboutUs: initialData.howDidYouHearAboutUs || "",
   });
 
-  const [otherSource, setOtherSource] = useState("");
+  const [otherSource, setOtherSource] = useState(initialData.howDidYouHearAboutUs === "outro" ? initialData.howDidYouHearAboutUs : "");
+  const [selectedSource, setSelectedSource] = useState(initialData.howDidYouHearAboutUs || "");
   
   const [credNameCounter, setCredNameCounter] = useState(0);
 
   // Validation states
-  const [phoneError, setPhoneError] = useState(false);
-  const [cpfError, setCpfError] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [cpfError, setCpfError] = useState<string | null>(null);
+  
+  // Estado para controlar o formato da máscara do telefone
+  const [phoneFormat, setPhoneFormat] = useState<string>("(##) #####-####");
 
   // Validation function
   const validateForm = useCallback((): boolean => {
@@ -99,17 +75,27 @@ export default function RegistrationForm({
     const hasAgreedToImageUse = registration.useImage === true;
 
     // Verificar se "como ficou sabendo" está preenchido quando "outro" é selecionado
-    const hasValidSource = registration.howDidYouHearAboutUs !== "outro" || 
-                          (registration.howDidYouHearAboutUs === "outro" && otherSource.trim() !== "");
+    const hasValidSource = selectedSource !== "outro" || 
+                          (selectedSource === "outro" && otherSource.trim() !== "");
 
     return hasFullName && hasPhone && hasCpf && hasHowDidYouHearAboutUs && isPhoneValid && isCpfValid && hasAgreedToImageUse && hasValidSource;
-  }, [registration, phoneError, cpfError, otherSource]);
+  }, [registration, phoneError, cpfError, otherSource, selectedSource]);
 
   // Effect para notificar mudanças na validação
   useEffect(() => {
     const isValid = validateForm();
     onValidationChange?.(isValid);
   }, [validateForm, onValidationChange]);
+
+
+  const handleOtherSourceChange = (value: string) => {
+    setOtherSource(value);
+    if (selectedSource === "outro") {
+      const updatedData = { ...registration, howDidYouHearAboutUs: value };
+      setRegistration(updatedData);
+      onDataChange(updatedData);
+    }
+  };
 
   const handleFieldChange = (field: keyof RegistrationFormData, value: any) => {
     if (field === "credentialName") {
@@ -118,20 +104,36 @@ export default function RegistrationForm({
 
     // Phone validation
     if (field === "phone") {
-      const digits = value.replace(/\D/g, '');
-      const isValid = digits.length >= 10 && digits.length <= 13;
-      setPhoneError(!isValid && digits.length > 0);
+      const validation = validatePhone(value);
+      setPhoneError(validation);
     }
 
     // CPF validation
     if (field === "cpf") {
-      const isValid = validateCPF(value);
-      setCpfError(!isValid && value.length > 0);
+      const validation = validateCPF(value);
+      setCpfError(validation);
     }
 
-    const updatedData = { ...registration, [field]: value };
-    setRegistration(updatedData);
-    onDataChange(updatedData);
+    // Handle "howDidYouHearAboutUs" field changes
+    if (field === "howDidYouHearAboutUs") {
+      setSelectedSource(value);
+      // If changing away from "outro", clear the otherSource
+      if (value !== "outro") {
+        setOtherSource("");
+        const updatedData = { ...registration, [field]: value };
+        setRegistration(updatedData);
+        onDataChange(updatedData);
+      } else {
+        // If selecting "outro", keep the current otherSource value
+        const updatedData = { ...registration, [field]: otherSource || "" };
+        setRegistration(updatedData);
+        onDataChange(updatedData);
+      }
+    } else {
+      const updatedData = { ...registration, [field]: value };
+      setRegistration(updatedData);
+      onDataChange(updatedData);
+    }
   };
 
   return (
@@ -169,16 +171,39 @@ export default function RegistrationForm({
         helperText="Esse e-mail será usado para envio do certificado."
       />
 
-      <TextField
+      <PatternFormat
+        customInput={TextField}
+        format={phoneFormat}
+        mask="_"
         fullWidth
         label="Telefone"
+        value={registration.phone}
+        onValueChange={(values) => {
+          const { value } = values;
+          handleFieldChange("phone", value);
+        }}
+        onBlur={() => {
+          const validation = validatePhone(registration.phone || "");
+          setPhoneError(validation);
+          
+          // Ajustar formato baseado no número de dígitos
+          const numericPhone = (registration.phone || "").replace(/\D/g, '');
+          if (numericPhone.length === 10) {
+            setPhoneFormat("(##) ####-####");
+          } else {
+            setPhoneFormat("(##) #####-####");
+          }
+        }}
+        onFocus={() => {
+          // Resetar para formato que permite 11 dígitos ao focar
+          setPhoneFormat("(##) #####-####");
+        }}
         variant="outlined"
         size="medium"
         required
-        value={registration.phone}
-        onChange={(e) => handleFieldChange("phone", e.target.value)}
-        error={phoneError}
-        helperText={phoneError ? "Telefone deve ter entre 10 e 13 dígitos" : "Apenas números"}
+        error={!!phoneError}
+        helperText={phoneError || "Digite o telefone para validação"}
+        placeholder="(00) 00000-0000"
       />
 
       <FormControlLabel
@@ -193,16 +218,27 @@ export default function RegistrationForm({
         label="Este telefone é WhatsApp"
       />
 
-      <TextField
+      <PatternFormat
+        customInput={TextField}
+        format="###.###.###-##"
+        mask="_"
         fullWidth
         label="CPF"
+        value={registration.cpf}
+        onValueChange={(values) => {
+          const { value } = values;
+          handleFieldChange("cpf", value);
+        }}
+        onBlur={() => {
+          const validation = validateCPF(registration.cpf || "");
+          setCpfError(validation);
+        }}
         variant="outlined"
         size="medium"
         required
-        value={registration.cpf}
-        onChange={(e) => handleFieldChange("cpf", e.target.value)}
-        error={cpfError}
-        helperText={cpfError ? "CPF inválido" : "Apenas números"}
+        error={!!cpfError}
+        helperText={cpfError || "Digite o CPF para validação"}
+        placeholder="000.000.000-00"
       />
 
       <TextField
@@ -235,7 +271,7 @@ export default function RegistrationForm({
       <FormControl fullWidth required>
         <InputLabel>Como você ficou sabendo deste evento?</InputLabel>
         <Select
-          value={registration.howDidYouHearAboutUs}
+          value={selectedSource}
           label="Como você ficou sabendo deste evento?"
           onChange={(e) =>
             handleFieldChange("howDidYouHearAboutUs", e.target.value)
@@ -250,14 +286,13 @@ export default function RegistrationForm({
         </Select>
       </FormControl>
 
-      {registration.howDidYouHearAboutUs === "outro" && (
+      {selectedSource === "outro" && (
       <TextField
         fullWidth
         label="Especifique como ficou sabendo"
         value={otherSource}
         onChange={(e) => {
-          setOtherSource(e.target.value);
-          handleFieldChange("howDidYouHearAboutUs", e.target.value);
+          handleOtherSourceChange(e.target.value);
         }}
         variant="outlined"
         size="medium"

@@ -18,12 +18,16 @@ import {
   Card,
   Stack,
 } from "@mui/material";
+import { PatternFormat } from "react-number-format";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import {
   BillingDetailsPF,
   BillingDetailsPJ,
   LegalEntity,
 } from "../../api/checkouts/checkout.types";
+import { validateCNPJ } from "../../utils/cnpj-utils";
+import { validatePhone } from "../../utils/phone-utils";
+import { validateCEP, fetchCEPInfo } from "../../utils/cep-utils";
 
 export default function BillingDetails() {
   const {
@@ -48,15 +52,28 @@ export default function BillingDetails() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
+  
+  // Estados para validação dos telefones
+  const [phonePFError, setPhonePFError] = useState<string | null>(null);
+  const [phoneOrgError, setPhoneOrgError] = useState<string | null>(null);
+  const [phoneRespError, setPhoneRespError] = useState<string | null>(null);
+  
+  const [phonePFFormat, setPhonePFFormat] = useState<string>("(##) #####-####");
+  const [phoneOrgFormat, setPhoneOrgFormat] = useState<string>("(##) #####-####");
+  const [phoneRespFormat, setPhoneRespFormat] = useState<string>("(##) #####-####");
+  
+  // Estado para validação do CEP
+  const [cepError, setCepError] = useState<string | null>(null);
+  const [cepLoading, setCepLoading] = useState<boolean>(false);
+  const [cepSuccess, setCepSuccess] = useState<boolean>(false);
 
-  // Estados para pessoa física
   const [billingDetailsPF, setBillingDetailsPF] = useState<BillingDetailsPF>({
     email: user?.email || "",
     fullName: "",
     phone: "",
   });
 
-  // Estados para pessoa jurídica
   const [billingDetailsPJ, setBillingDetailsPJ] = useState<BillingDetailsPJ>({
     orgPhone: "",
     orgName: "",
@@ -68,15 +85,12 @@ export default function BillingDetails() {
     responsibleEmail: user?.email || "",
   });
 
-  // Estados locais para controlar valores dos inputs
   const [localRegistrationsAmount, setLocalRegistrationsAmount] = useState(registrationsAmount || 1);
   const [localLegalEntity, setLocalLegalEntity] = useState<LegalEntity | null>(legalEntity);
   const [localRegistrateMyself, setLocalRegistrateMyself] = useState(registrateMyself || false);
 
-  // Verificar se já existe um checkout
   const hasExistingCheckout = checkout && checkout.status !== 'deleted';
 
-  // Atualizar emails quando o usuário mudar
   useEffect(() => {
     const userEmail = user?.email || "";
     setBillingDetailsPF((prev) => ({ ...prev, email: userEmail }));
@@ -106,31 +120,37 @@ export default function BillingDetails() {
     }
   }, [legalEntity, billingDetails, user?.email]);
 
-  // Garantir que os campos sempre tenham valores definidos quando trocar de tipo
   useEffect(() => {
     if (localLegalEntity === "pf") {
-      // Limpar campos PJ quando trocar para PF
-      setBillingDetailsPJ({
-        orgPhone: "",
-        orgName: "",
-        orgCnpj: "",
-        orgAddress: "",
-        orgZip: "",
-        responsibleName: "",
-        responsiblePhone: "",
-        responsibleEmail: user?.email || "",
-      });
+        setBillingDetailsPJ({
+          orgPhone: "",
+          orgName: "",
+          orgCnpj: "",
+          orgAddress: "",
+          orgZip: "",
+          responsibleName: "",
+          responsiblePhone: "",
+          responsibleEmail: user?.email || "",
+        });
+        setCnpjError(null);
+        setPhoneOrgError(null);
+        setPhoneRespError(null);
+        setPhoneOrgFormat("(##) #####-####");
+        setPhoneRespFormat("(##) #####-####");
+        setCepError(null);
+        setCepLoading(false);
+        setCepSuccess(false);
     } else if (localLegalEntity === "pj") {
-      // Limpar campos PF quando trocar para PJ
       setBillingDetailsPF({
         email: user?.email || "",
         fullName: "",
         phone: "",
       });
+      setPhonePFError(null);
+      setPhonePFFormat("(##) #####-####");
     }
   }, [localLegalEntity, user?.email]);
 
-  // Sincronizar estados locais com o contexto
   useEffect(() => {
     setLocalRegistrationsAmount(registrationsAmount || 1);
   }, [registrationsAmount]);
@@ -210,14 +230,75 @@ export default function BillingDetails() {
     setCurrentStep("overview");
   };
 
+  // Função para validar CEP com a API dos Correios
+  const validateCEPWithAPI = async (cep: string) => {
+    const numericCEP = cep.replace(/\D/g, '');
+    
+    if (numericCEP.length !== 8) {
+      setCepError(null);
+      setCepSuccess(false);
+      return;
+    }
+
+    setCepLoading(true);
+    setCepError(null);
+    setCepSuccess(false);
+
+    try {
+      const cepInfo = await fetchCEPInfo(cep);
+      
+      // CEP válido e encontrado na API
+      setCepSuccess(true);
+      setCepError(null);
+      
+      // Mostrar snackbar de sucesso
+      setSnackbarMessage(`CEP válido: ${cepInfo.logradouro}, ${cepInfo.localidade} - ${cepInfo.uf}`);
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      
+    } catch (error) {
+      setCepError("CEP não encontrado nos Correios");
+      setCepSuccess(false);
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
   const isFormValid = (): boolean => {
     if (localLegalEntity === "pf") {
+      // Validar telefone PF
+      const phonePFValidation = validatePhone(billingDetailsPF.phone || "");
+      if (billingDetailsPF.phone?.trim() && phonePFValidation) {
+        return false;
+      }
+      
       return Boolean(
         billingDetailsPF.email?.trim() &&
         billingDetailsPF.fullName?.trim() &&
         billingDetailsPF.phone?.trim()
       );
     } else if (localLegalEntity === "pj") {
+      // Validar CNPJ
+      const cnpjValidation = validateCNPJ(billingDetailsPJ.orgCnpj || "");
+      if (billingDetailsPJ.orgCnpj?.trim() && cnpjValidation) {
+        return false;
+      }
+      
+      // Validar telefones PJ
+      const phoneOrgValidation = validatePhone(billingDetailsPJ.orgPhone || "");
+      const phoneRespValidation = validatePhone(billingDetailsPJ.responsiblePhone || "");
+      
+      if ((billingDetailsPJ.orgPhone?.trim() && phoneOrgValidation) ||
+          (billingDetailsPJ.responsiblePhone?.trim() && phoneRespValidation)) {
+        return false;
+      }
+      
+      // Validar CEP
+      const cepValidation = validateCEP(billingDetailsPJ.orgZip || "");
+      if (billingDetailsPJ.orgZip?.trim() && cepValidation) {
+        return false;
+      }
+      
       return Boolean(
         billingDetailsPJ.orgName?.trim() &&
         billingDetailsPJ.orgCnpj?.trim() &&
@@ -315,17 +396,44 @@ export default function BillingDetails() {
                   helperText="Email do usuário autenticado"
                 />
 
-                <TextField
+                <PatternFormat
+                  customInput={TextField}
+                  format={phonePFFormat}
+                  mask="_"
                   fullWidth
                   label="Telefone"
                   value={billingDetailsPF.phone || ""}
-                  onChange={(e) =>
-                    handleBillingDetailsPFChange("phone", e.target.value)
-                  }
+                  onValueChange={(values) => {
+                    const { value } = values;
+                    handleBillingDetailsPFChange("phone", value);
+                    
+                    if (value && (value.length === 10 || value.length === 11)) {
+                      const validation = validatePhone(value);
+                      setPhonePFError(validation);
+                    } else {
+                      setPhonePFError(null);
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validatePhone(billingDetailsPF.phone || "");
+                    setPhonePFError(validation);
+                    
+                    const numericPhone = (billingDetailsPF.phone || "").replace(/\D/g, '');
+                    if (numericPhone.length === 10) {
+                      setPhonePFFormat("(##) ####-####");
+                    } else {
+                      setPhonePFFormat("(##) #####-####");
+                    }
+                  }}
+                  onFocus={() => {
+                    setPhonePFFormat("(##) #####-####");
+                  }}
                   variant="outlined"
                   size="medium"
                   required
-                  helperText="Apenas números"
+                  error={!!phonePFError}
+                  helperText={phonePFError || ""}
+                  placeholder="(00) 00000-0000"
                 />
               </Box>
             ) : (
@@ -343,30 +451,74 @@ export default function BillingDetails() {
                   required
                 />
 
-                <TextField
+                <PatternFormat
+                  customInput={TextField}
+                  format="##.###.###/####-##"
+                  mask="_"
                   fullWidth
                   label="CNPJ"
                   value={billingDetailsPJ.orgCnpj || ""}
-                  onChange={(e) =>
-                    handleBillingDetailsPJChange("orgCnpj", e.target.value)
-                  }
+                  onValueChange={(values) => {
+                    const { value } = values;
+                    handleBillingDetailsPJChange("orgCnpj", value);
+                    
+                    if (value && value.length === 14) {
+                      const validation = validateCNPJ(value);
+                      setCnpjError(validation);
+                    } else {
+                      setCnpjError(null);
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validateCNPJ(billingDetailsPJ.orgCnpj || "");
+                    setCnpjError(validation);
+                  }}
                   variant="outlined"
                   size="medium"
                   required
-                  helperText="Apenas números"
+                  error={!!cnpjError}
+                  helperText={cnpjError || ""}
+                  placeholder="00.000.000/0000-00"
                 />
 
-                <TextField
+                <PatternFormat
+                  customInput={TextField}
+                  format={phoneOrgFormat}
+                  mask="_"
                   fullWidth
                   label="Telefone da organização"
                   value={billingDetailsPJ.orgPhone || ""}
-                  onChange={(e) =>
-                    handleBillingDetailsPJChange("orgPhone", e.target.value)
-                  }
+                  onValueChange={(values) => {
+                    const { value } = values;
+                    handleBillingDetailsPJChange("orgPhone", value);
+                    
+                    if (value && (value.length === 10 || value.length === 11)) {
+                      const validation = validatePhone(value);
+                      setPhoneOrgError(validation);
+                    } else {
+                      setPhoneOrgError(null);
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validatePhone(billingDetailsPJ.orgPhone || "");
+                    setPhoneOrgError(validation);
+                    
+                    const numericPhone = (billingDetailsPJ.orgPhone || "").replace(/\D/g, '');
+                    if (numericPhone.length === 10) {
+                      setPhoneOrgFormat("(##) ####-####");
+                    } else {
+                      setPhoneOrgFormat("(##) #####-####");
+                    }
+                  }}
+                  onFocus={() => {
+                    setPhoneOrgFormat("(##) #####-####");
+                  }}
                   variant="outlined"
                   size="medium"
                   required
-                  helperText="Apenas números"
+                  error={!!phoneOrgError}
+                  helperText={phoneOrgError || ""}
+                  placeholder="(00) 00000-0000"
                 />
 
                 <TextField
@@ -383,17 +535,69 @@ export default function BillingDetails() {
                   rows={2}
                 />
 
-                <TextField
+                <PatternFormat
+                  customInput={TextField}
+                  format="#####-###"
+                  mask="_"
                   fullWidth
                   label="CEP"
                   value={billingDetailsPJ.orgZip || ""}
-                  onChange={(e) =>
-                    handleBillingDetailsPJChange("orgZip", e.target.value)
-                  }
+                  onValueChange={(values) => {
+                    const { value } = values;
+                    handleBillingDetailsPJChange("orgZip", value);
+                    
+                    // Validar CEP em tempo real
+                    if (value && value.length === 8) {
+                      const validation = validateCEP(value);
+                      if (!validation) {
+                        validateCEPWithAPI(value);
+                      } else {
+                        setCepError(validation);
+                        setCepSuccess(false);
+                      }
+                    } else {
+                      setCepError(null);
+                      setCepSuccess(false);
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validateCEP(billingDetailsPJ.orgZip || "");
+                    setCepError(validation);
+                  }}
                   variant="outlined"
                   size="medium"
                   required
-                  helperText="Apenas números"
+                  error={!!cepError}
+                  helperText={
+                    cepLoading 
+                      ? "Validando CEP..." 
+                      : cepSuccess 
+                        ? "CEP válido" 
+                        : cepError || "Sujeito a validação com os Correios"
+                  }
+                  placeholder="00000-000"
+                  InputProps={{
+                    endAdornment: cepLoading ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                        <Box
+                          sx={{
+                            width: 16,
+                            height: 16,
+                            border: '2px solid #f3f3f3',
+                            borderTop: '2px solid #1976d2',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite',
+                            '@keyframes spin': {
+                              '0%': { transform: 'rotate(0deg)' },
+                              '100%': { transform: 'rotate(360deg)' }
+                            }
+                          }}
+                        />
+                      </Box>
+                    ) : cepSuccess ? (
+                      <Box sx={{ color: 'success.main', mr: 1 }}>✓</Box>
+                    ) : null
+                  }}
                 />
 
                 <Divider />
@@ -428,20 +632,44 @@ export default function BillingDetails() {
                   helperText="Email do usuário autenticado"
                 />
 
-                <TextField
+                <PatternFormat
+                  customInput={TextField}
+                  format={phoneRespFormat}
+                  mask="_"
                   fullWidth
                   label="Telefone do responsável"
                   value={billingDetailsPJ.responsiblePhone || ""}
-                  onChange={(e) =>
-                    handleBillingDetailsPJChange(
-                      "responsiblePhone",
-                      e.target.value
-                    )
-                  }
+                  onValueChange={(values) => {
+                    const { value } = values;
+                    handleBillingDetailsPJChange("responsiblePhone", value);
+                    
+                    if (value && (value.length === 10 || value.length === 11)) {
+                      const validation = validatePhone(value);
+                      setPhoneRespError(validation);
+                    } else {
+                      setPhoneRespError(null);
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validatePhone(billingDetailsPJ.responsiblePhone || "");
+                    setPhoneRespError(validation);
+                    
+                    const numericPhone = (billingDetailsPJ.responsiblePhone || "").replace(/\D/g, '');
+                    if (numericPhone.length === 10) {
+                      setPhoneRespFormat("(##) ####-####");
+                    } else {
+                      setPhoneRespFormat("(##) #####-####");
+                    }
+                  }}
+                  onFocus={() => {
+                    setPhoneRespFormat("(##) #####-####");
+                  }}
                   variant="outlined"
                   size="medium"
                   required
-                  helperText="Apenas números"
+                  error={!!phoneRespError}
+                  helperText={phoneRespError || ""}
+                  placeholder="(00) 00000-0000"
                 />
               </Box>
             )}
@@ -459,7 +687,7 @@ export default function BillingDetails() {
                     }}
                   />
                 }
-                label="Esta inscrição é para mim"
+                label="Desejo me inscrever através desta compra"
               />
             )}
           </>
@@ -501,7 +729,7 @@ export default function BillingDetails() {
           open={snackbarOpen}
           autoHideDuration={6000}
           onClose={() => setSnackbarOpen(false)}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
           <Alert 
             onClose={() => setSnackbarOpen(false)} 
