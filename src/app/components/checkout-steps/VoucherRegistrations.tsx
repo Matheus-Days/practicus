@@ -30,7 +30,10 @@ import {
   Pending as PendingIcon,
 } from "@mui/icons-material";
 import { useCheckout } from "../../contexts/CheckoutContext";
-import { useRegistrationAPI } from "../../hooks/registrationAPI";
+import {
+  RegistrationMinimal,
+  useRegistrationAPI,
+} from "../../hooks/registrationAPI";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
 
 export default function VoucherRegistrations() {
@@ -49,15 +52,10 @@ export default function VoucherRegistrations() {
     "success" | "error" | "info"
   >("success");
 
-  // Calcular vouchers disponíveis (mesmo cálculo do VoucherStatistics)
-  const totalRegistrations = checkout?.registrateMyself
-    ? registrationsAmount - 1
-    : registrationsAmount;
   const usedRegistrations = checkoutRegistrations.filter(
-    (reg) =>
-      (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
+    (reg) => reg.status === "ok" || reg.status === "pending"
   ).length;
-  const availableRegistrations = totalRegistrations - usedRegistrations;
+  const availableRegistrations = registrationsAmount - usedRegistrations;
 
   const handleActivateRegistration = async (registrationId: string) => {
     try {
@@ -112,7 +110,7 @@ export default function VoucherRegistrations() {
   };
 
   // Função para verificar se o botão "Ativar inscrição" deve estar habilitado
-  const canActivateRegistration = (registration: any) => {
+  const canActivateRegistration = (registration: RegistrationMinimal) => {
     if (!checkout) return false;
 
     // Não pode ativar se o checkout for deleted ou refunded
@@ -120,8 +118,8 @@ export default function VoucherRegistrations() {
       return false;
     }
 
-    // Não pode ativar se a inscrição já estiver ok
-    if (registration.status === "ok") {
+    // Não pode ativar se a inscrição já estiver ok ou pendente
+    if (registration.status === "ok" || registration.status === "pending") {
       return false;
     }
 

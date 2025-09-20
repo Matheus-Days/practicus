@@ -11,6 +11,7 @@ import {
   Stack,
   Alert,
   Snackbar,
+  Tooltip,
 } from "@mui/material";
 import {
   Person as PersonIcon,
@@ -32,12 +33,20 @@ export default function MyRegistration() {
     updateRegistrationStatus,
     refreshRegistration,
     checkout,
+    checkoutRegistrations,
+    registrationsAmount,
   } = useCheckout();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     "success" | "error" | "info"
   >("success");
+
+  const usedRegistrations = checkoutRegistrations.filter(
+    (reg) =>
+      (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
+  ).length;
+  const availableRegistrations = registrationsAmount - usedRegistrations;
 
   const handleActivateMyRegistration = async () => {
     try {
@@ -253,17 +262,28 @@ export default function MyRegistration() {
                     startIcon={<CancelIcon />}
                     onClick={handleCancelMyRegistration}
                   >
-                    Desativar inscrição
+                    Desistir da inscrição
                   </Button>
                 ) : canActivateMyRegistration() ? (
-                  <Button
-                    variant="outlined"
-                    color="success"
-                    startIcon={<RefreshIcon />}
-                    onClick={handleActivateMyRegistration}
+                  <Tooltip
+                    title={
+                      availableRegistrations <= 0
+                        ? "Não há ingressos disponíveis"
+                        : "Reativar inscrição"
+                    }
                   >
-                    Ativar inscrição
-                  </Button>
+                    <span>
+                      <Button
+                        variant="outlined"
+                        color="success"
+                        disabled={availableRegistrations <= 0}
+                        startIcon={<RefreshIcon />}
+                        onClick={handleActivateMyRegistration}
+                      >
+                        Reativar inscrição
+                      </Button>
+                    </span>
+                  </Tooltip>
                 ) : null}
               </Stack>
               {checkout && checkout.checkoutType === "voucher" && (
@@ -300,8 +320,8 @@ export default function MyRegistration() {
               {checkout && checkout.status === "pending" && (
                 <Typography variant="body1" color="text.secondary">
                   O pagamento ou aprovação de sua vaga no evento ainda está
-                  pendente,<br /> porém você já pode preencher seus dados de
-                  inscrição.
+                  pendente,
+                  <br /> porém você já pode preencher seus dados de inscrição.
                 </Typography>
               )}
               <div className="my-4"></div>

@@ -81,7 +81,7 @@ export default function CheckoutStatus() {
           color: "error" as const,
           icon: <CancelIcon color="error" />,
           description:
-            "Inscrição desativada e voucher liberado para outra pessoa utilizar. Caso queira reativar sua inscrição, entre em contato com o responsável pela compra.",
+            "Inscrição desativada e voucher liberado para outra pessoa utilizar. <b>Caso queira reativar sua inscrição, entre em contato com o responsável pela compra.</b>",
         };
       case "pending":
         return {
@@ -118,9 +118,7 @@ export default function CheckoutStatus() {
             : <span className="uppercase">{statusInfo.label}</span>
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary">
-          {statusInfo.description}
-        </Typography>
+        <Typography variant="body2" color="text.secondary" dangerouslySetInnerHTML={{ __html: statusInfo.description }} />
       </CardContent>
     </Card>
   );
