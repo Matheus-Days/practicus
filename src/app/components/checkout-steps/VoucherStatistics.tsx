@@ -14,8 +14,7 @@ export default function VoucherStatistics() {
   }
 
   const registratedMyself = registration && ["ok", "pending"].includes(registration.status);
-  console.log(registratedMyself);
-  // Calcular estatísticas
+
   const totalRegistrations = registratedMyself
     ? registrationsAmount - 1
     : registrationsAmount;
