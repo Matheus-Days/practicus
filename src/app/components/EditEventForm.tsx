@@ -35,7 +35,6 @@ export default function EditEventForm({ isOpen, onClose, event, onEventUpdated }
     try {
       const client = createClient();
       const prismicEventData = await client.getByUID('evento', event.id);
-      console.log('Prismic event data:', prismicEventData);
       setPrismicEvent(prismicEventData);
     } catch (err) {
       console.error('Error fetching Prismic event:', err);

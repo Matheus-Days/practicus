@@ -66,7 +66,6 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  console.log("Deleting checkout:", params.id);
   try {
     let authenticatedUser: DecodedIdToken;
 
