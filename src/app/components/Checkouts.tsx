@@ -158,7 +158,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
     return (
       <CheckoutProvider user={user} eventId={eventId}>
         <Stack spacing={2}>
-          <Alert severity="info" icon={<CheckCircle />}>
+          <Alert severity="success" icon={<CheckCircle />}>
             <Typography variant="body2">
               Autenticado como: <strong>{user.email}</strong>
             </Typography>

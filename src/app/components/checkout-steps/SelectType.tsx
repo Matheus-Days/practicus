@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardActionArea,
-  Chip,
   ChipOwnProps,
 } from "@mui/material";
 import {
@@ -28,33 +27,36 @@ export default function SelectType() {
     }
   };
 
-  const checkoutTypes: { color: ChipOwnProps["color"]; features: string[]; [key: string]: any }[] =
-    [
-      {
-        type: "acquire" as const,
-        title: "Adquirir inscrição",
-        description: "Comprar uma ou mais inscrições",
-        icon: ShoppingCartIcon,
-        color: "primary",
-        features: [
-          "Inscreva-se ou adquira para outros",
-          "Pessoas físicas ou jurídicas",
-          "Inscrições liberadas após aprovação",
-        ],
-      },
-      {
-        type: "voucher" as const,
-        title: "Usar voucher",
-        description: "Alguém já reservou minha vaga e quero me inscrever",
-        icon: VoucherIcon,
-        color: "secondary" as const,
-        features: [
-          "Sem custos adicionais",
-          "Código de voucher",
-          "Validação instantânea",
-        ],
-      },
-    ];
+  const checkoutTypes: {
+    color: ChipOwnProps["color"];
+    features: string[];
+    [key: string]: any;
+  }[] = [
+    {
+      type: "acquire" as const,
+      title: "Adquirir inscrição",
+      description: "Comprar uma ou mais inscrições",
+      icon: ShoppingCartIcon,
+      color: "primary",
+      features: [
+        "Inscreva-se ou adquira para outros",
+        "Pessoas físicas ou jurídicas",
+        "Inscrições liberadas após aprovação",
+      ],
+    },
+    {
+      type: "voucher" as const,
+      title: "Usar voucher",
+      description: "Alguém já reservou meu ingresso",
+      icon: VoucherIcon,
+      color: "secondary" as const,
+      features: [
+        "Sem custos adicionais",
+        "Código de voucher",
+        "Validação instantânea",
+      ],
+    },
+  ];
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -67,25 +69,27 @@ export default function SelectType() {
         </Typography>
       </Box>
 
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: { xs: 'column', md: 'row' },
-        gap: 3,
-        width: '100%'
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 3,
+          width: "100%",
+        }}
+      >
         {checkoutTypes.map((option) => {
           const IconComponent = option.icon;
           return (
-            <Box 
+            <Box
               key={option.type}
-              sx={{ 
-                flex: '1 1 50%',
-                minWidth: 0
+              sx={{
+                flex: "1 1 50%",
+                minWidth: 0,
               }}
             >
               <Card
                 sx={{
-                  width: '100%',
+                  width: "100%",
                   height: "100%",
                   transition: "all 0.3s ease",
                   "&:hover": {
@@ -98,7 +102,7 @@ export default function SelectType() {
                   onClick={() => handleSelectType(option.type)}
                   sx={{ height: "100%", p: 3 }}
                 >
-                  <CardContent sx={{ textAlign: "center" }}>
+                  <CardContent sx={{ textAlign: "center", height: "100%" }}>
                     <Box sx={{ mb: 2 }}>
                       <IconComponent
                         sx={{
@@ -114,32 +118,27 @@ export default function SelectType() {
                     </Typography>
 
                     <Typography
-                      variant="body1"
+                      variant="body2"
                       color="text.secondary"
-                      sx={{ 
+                      sx={{
                         mb: 3,
-                        wordWrap: 'break-word',
-                        overflowWrap: 'break-word',
-                        hyphens: 'auto'
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                        hyphens: "auto",
                       }}
                     >
                       {option.description}
                     </Typography>
 
-                    <Box
-                      sx={{ display: "flex", flexDirection: "column", gap: 1 }}
-                    >
-                      {option.features.map((feature, index) => (
-                        <Chip
-                          key={index}
-                          label={feature}
-                          size="small"
-                          variant="outlined"
-                          color={option.color}
-                          sx={{ alignSelf: "center" }}
-                        />
-                      ))}
-                    </Box>
+                    <div className="flex justify-center">
+                      <ul className="font-[Helvetica] text-base list-disc text-left">
+                        {option.features.map((feature, index) => (
+                          <li key={index} className="mb-2">
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </CardContent>
                 </CardActionArea>
               </Card>
