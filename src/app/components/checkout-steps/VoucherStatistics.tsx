@@ -3,26 +3,16 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import { ConfirmationNumber as TicketIcon } from "@mui/icons-material";
 import { useCheckout } from "../../contexts/CheckoutContext";
+import { useVoucherCalculations } from "../../hooks/useVoucherCalculations";
 
 export default function VoucherStatistics() {
-  const { checkout, checkoutRegistrations, registration, registrationsAmount } =
-    useCheckout();
+  const { checkout } = useCheckout();
+  const { totalRegistrations, usedRegistrations, availableRegistrations } = useVoucherCalculations();
 
   // Não mostrar o componente se não há checkout ou se é um checkout de voucher
   if (!checkout || checkout.checkoutType === "voucher") {
     return null;
   }
-
-  const registratedMyself = registration && ["ok", "pending"].includes(registration.status);
-
-  const totalRegistrations = registratedMyself
-    ? registrationsAmount - 1
-    : registrationsAmount;
-  const usedRegistrations = checkoutRegistrations.filter(
-    (reg) =>
-      (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
-  ).length;
-  const availableRegistrations = totalRegistrations - usedRegistrations;
 
   if (totalRegistrations === 0) {
     return null;

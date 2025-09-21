@@ -35,15 +35,12 @@ import {
   useRegistrationAPI,
 } from "../../hooks/registrationAPI";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
+import { useVoucherCalculations } from "../../hooks/useVoucherCalculations";
 
 export default function VoucherRegistrations() {
-  const {
-    checkout,
-    checkoutRegistrations,
-    refreshCheckoutRegistrations,
-    registrationsAmount,
-  } = useCheckout();
+  const { checkout, checkoutRegistrations } = useCheckout();
   const { updateRegistrationStatus } = useRegistrationAPI();
+  const { availableRegistrations } = useVoucherCalculations();
 
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -51,11 +48,6 @@ export default function VoucherRegistrations() {
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     "success" | "error" | "info"
   >("success");
-
-  const usedRegistrations = checkoutRegistrations.filter(
-    (reg) => reg.status === "ok" || reg.status === "pending"
-  ).length;
-  const availableRegistrations = registrationsAmount - usedRegistrations;
 
   const handleActivateRegistration = async (registrationId: string) => {
     try {
@@ -71,9 +63,6 @@ export default function VoucherRegistrations() {
       ) as RegistrationStatus;
 
       await updateRegistrationStatus(registrationId, newStatus);
-
-      // Recarregar lista
-      await refreshCheckoutRegistrations();
 
       setSnackbarMessage("Inscrição ativada com sucesso");
       setSnackbarSeverity("success");
@@ -93,9 +82,6 @@ export default function VoucherRegistrations() {
 
       // Atualizar status para cancelled
       await updateRegistrationStatus(registrationId, "cancelled");
-
-      // Recarregar lista
-      await refreshCheckoutRegistrations();
 
       setSnackbarMessage("Inscrição cancelada com sucesso");
       setSnackbarSeverity("success");
@@ -147,16 +133,11 @@ export default function VoucherRegistrations() {
   const getRegistrationStatusInfo = (status: string) => {
     switch (status) {
       case "ok":
+      case "pending":
         return {
           label: "Ativa",
           color: "success" as const,
           icon: <CheckCircleIcon fontSize="small" color="success" />,
-        };
-      case "pending":
-        return {
-          label: "Pendente",
-          color: "warning" as const,
-          icon: <PendingIcon fontSize="small" color="warning" />,
         };
       case "invalid":
         return {
@@ -196,17 +177,6 @@ export default function VoucherRegistrations() {
               Inscritos via voucher
             </Typography>
             {loading && <CircularProgress size={20} sx={{ ml: 1 }} />}
-            <Box sx={{ flexGrow: 1 }} />
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<RefreshIcon />}
-              onClick={refreshCheckoutRegistrations}
-              disabled={loading}
-              sx={{ ml: "auto" }}
-            >
-              Atualizar lista
-            </Button>
           </Box>
 
           {loading ? (

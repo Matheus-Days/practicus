@@ -216,7 +216,8 @@ export function CheckoutProvider({
     listenersRef.current.checkoutRegistrations = onSnapshot(q, (snapshot) => {
       const registrations = snapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
+        isMyRegistration: doc.id === checkout.id
       })) as Array<RegistrationMinimal>;
       setCheckoutRegistrations(registrations);
     }, (error) => {
