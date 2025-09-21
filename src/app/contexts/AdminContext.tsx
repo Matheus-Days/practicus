@@ -6,8 +6,16 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import { User } from "firebase/auth";
+import {
+  onSnapshot,
+  collection,
+  query,
+  where,
+  Unsubscribe,
+} from "firebase/firestore";
 import { useFirebase } from "../hooks/firebase";
 import { useCheckoutAPI } from "../hooks/checkoutAPI";
 import { useRegistrationAPI } from "../hooks/registrationAPI";
@@ -53,11 +61,6 @@ interface AdminContextType {
   navigateToEventsList: () => void;
   navigateToEventDetails: (event: EventData) => void;
 
-  // Funções de dados
-  refreshEvents: () => Promise<void>;
-  refreshEventData: () => Promise<void>;
-  refreshDashboardData: () => Promise<void>;
-
   // Funções de checkout
   updateCheckoutStatus: (
     checkoutId: string,
@@ -89,12 +92,16 @@ interface AdminProviderProps {
   user: User;
 }
 
-export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
+export const AdminProvider: React.FC<AdminProviderProps> = ({ children, user }) => {
   const { firestore } = useFirebase();
-  const { listCheckoutsByEvent, changeCheckoutStatus, getCheckoutById } =
-    useCheckoutAPI();
-  const { listRegistrationsByEvent, updateRegistrationStatus } =
-    useRegistrationAPI();
+  const { changeCheckoutStatus, getCheckoutById } = useCheckoutAPI();
+  const { updateRegistrationStatus } = useRegistrationAPI();
+
+  const listenersRef = useRef<{
+    events?: Unsubscribe;
+    checkouts?: Unsubscribe;
+    registrations?: Unsubscribe;
+  }>({});
 
   // Estados de navegação
   const [currentView, setCurrentView] = useState<AdminView>("events-list");
@@ -118,60 +125,85 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   // Estado de erro
   const [error, setError] = useState<string | null>(null);
 
-  // Buscar eventos - versão simplificada que funciona
-  const fetchEvents = useCallback(async () => {
-    try {
-      setLoadingEvents(true);
-      setError(null);
+  // Função para limpar todos os listeners
+  const cleanupListeners = useCallback(() => {
+    Object.values(listenersRef.current).forEach(unsubscribe => {
+      if (unsubscribe) unsubscribe();
+    });
+    listenersRef.current = {};
+  }, []);
 
-      // Buscar eventos do Firebase de forma simples
-      const { collection, getDocs } = await import("firebase/firestore");
-      const eventsRef = collection(firestore, "events");
-      const querySnapshot = await getDocs(eventsRef);
+  const setupEventsListener = useCallback(() => {
+    if (!user) return;
 
-      const eventsData: EventData[] = querySnapshot.docs.map(
-        (doc) =>
-          ({
-            id: doc.id,
-            ...doc.data(),
-            registrationsCount: 0, // Valor padrão - pode ser calculado depois se necessário
-          }) as EventData
-      );
-
-      setEvents(eventsData);
-    } catch (err) {
-      setError("Erro ao carregar eventos");
-      console.error("Error fetching events:", err);
-    } finally {
-      setLoadingEvents(false);
+    const eventsRef = collection(firestore, "events");
+    
+    if (listenersRef.current.events) {
+      listenersRef.current.events();
     }
+
+    listenersRef.current.events = onSnapshot(eventsRef, (snapshot) => {
+      const eventsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        registrationsCount: 0, // Valor padrão - pode ser calculado depois se necessário
+      })) as EventData[];
+      setEvents(eventsData);
+      setLoadingEvents(false);
+    }, (error) => {
+      console.error("Erro no listener de eventos:", error);
+      setError("Erro ao carregar eventos");
+      setLoadingEvents(false);
+    });
+  }, [user, firestore]);
+
+  const setupCheckoutsListener = useCallback((eventId: string) => {
+    if (!eventId) return;
+
+    const checkoutsRef = collection(firestore, "checkouts");
+    const q = query(checkoutsRef, where("eventId", "==", eventId), where("checkoutType", "==", "acquire"));
+
+    if (listenersRef.current.checkouts) {
+      listenersRef.current.checkouts();
+    }
+
+    listenersRef.current.checkouts = onSnapshot(q, (snapshot) => {
+      const checkoutsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as CheckoutData[];
+      setEventCheckouts(checkoutsData);
+      setLoadingCheckouts(false);
+    }, (error) => {
+      console.error("Erro no listener de checkouts:", error);
+      setError("Erro ao carregar checkouts");
+      setLoadingCheckouts(false);
+    });
   }, [firestore]);
 
-  // Buscar dados do evento selecionado
-  const fetchEventData = useCallback(async () => {
-    if (!selectedEvent) return;
+  const setupRegistrationsListener = useCallback((eventId: string) => {
+    if (!eventId) return;
 
-    try {
-      setLoadingCheckouts(true);
-      setLoadingRegistrations(true);
-      setError(null);
+    const registrationsRef = collection(firestore, "registrations");
+    const q = query(registrationsRef, where("eventId", "==", eventId));
 
-      // Buscar checkouts e registrations em paralelo
-      const [checkouts, registrations] = await Promise.all([
-        listCheckoutsByEvent(selectedEvent.id),
-        listRegistrationsByEvent(selectedEvent.id),
-      ]);
-
-      setEventCheckouts(checkouts);
-      setEventRegistrations(registrations);
-    } catch (err) {
-      setError("Erro ao carregar dados do evento");
-      console.error("Error fetching event data:", err);
-    } finally {
-      setLoadingCheckouts(false);
-      setLoadingRegistrations(false);
+    if (listenersRef.current.registrations) {
+      listenersRef.current.registrations();
     }
-  }, [selectedEvent, listCheckoutsByEvent, listRegistrationsByEvent]);
+
+    listenersRef.current.registrations = onSnapshot(q, (snapshot) => {
+      const registrationsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as RegistrationData[];
+      setEventRegistrations(registrationsData);
+      setLoadingRegistrations(false);
+    }, (error) => {
+      console.error("Erro no listener de registrations:", error);
+      setError("Erro ao carregar registrations");
+      setLoadingRegistrations(false);
+    });
+  }, [firestore]);
 
   // Calcular dados do dashboard
   const calculateDashboardData = useCallback(() => {
@@ -216,58 +248,60 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     setEventCheckouts([]);
     setEventRegistrations([]);
     setEventDashboardData(null);
+
+    if (listenersRef.current.checkouts) {
+      listenersRef.current.checkouts();
+      listenersRef.current.checkouts = undefined;
+    }
+    if (listenersRef.current.registrations) {
+      listenersRef.current.registrations();
+      listenersRef.current.registrations = undefined;
+    }
   }, []);
 
   const navigateToEventDetails = useCallback((event: EventData) => {
     setSelectedEvent(event);
     setCurrentView("event-details");
-  }, []);
+    setupCheckoutsListener(event.id);
+    setupRegistrationsListener(event.id);
+  }, [setupCheckoutsListener, setupRegistrationsListener]);
 
-  // Funções de refresh
-  const refreshEvents = useCallback(async () => {
-    await fetchEvents();
-  }, [fetchEvents]);
-
-  const refreshEventData = useCallback(async () => {
-    await fetchEventData();
-  }, [fetchEventData]);
-
-  const refreshDashboardData = useCallback(async () => {
-    await fetchEventData();
-  }, [fetchEventData]);
 
   // Funções de atualização
   const handleUpdateCheckoutStatus = useCallback(
     async (checkoutId: string, status: CheckoutStatus) => {
       try {
         await changeCheckoutStatus(checkoutId, status);
-        await refreshEventData();
+        // Dados serão atualizados automaticamente via listener
       } catch (err) {
         setError("Erro ao atualizar status do checkout");
         console.error("Error updating checkout status:", err);
       }
     },
-    [changeCheckoutStatus, refreshEventData]
+    [changeCheckoutStatus]
   );
 
   const handleUpdateRegistrationStatus = useCallback(
     async (registrationId: string, status: RegistrationStatus) => {
-      await updateRegistrationStatus(registrationId, status);
-      await refreshEventData();
+      try {
+        await updateRegistrationStatus(registrationId, status);
+        // Dados serão atualizados automaticamente via listener
+      } catch (err) {
+        setError("Erro ao atualizar status da inscrição");
+        console.error("Error updating registration status:", err);
+      }
     },
-    [updateRegistrationStatus, refreshEventData]
+    [updateRegistrationStatus]
   );
 
   // Efeitos
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
-
-  useEffect(() => {
-    if (selectedEvent) {
-      fetchEventData();
-    }
-  }, [selectedEvent, fetchEventData]);
+    setupEventsListener();
+    
+    return () => {
+      cleanupListeners();
+    };
+  }, [setupEventsListener, cleanupListeners]);
 
   useEffect(() => {
     if (
@@ -298,9 +332,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     error,
     navigateToEventsList,
     navigateToEventDetails,
-    refreshEvents,
-    refreshEventData,
-    refreshDashboardData,
     updateCheckoutStatus: handleUpdateCheckoutStatus,
     getCheckoutById,
     updateRegistrationStatus: handleUpdateRegistrationStatus,

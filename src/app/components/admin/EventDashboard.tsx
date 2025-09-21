@@ -16,7 +16,6 @@ import {
   CheckCircle as CheckCircleIcon,
   Description as DescriptionIcon,
   Payments as PaymentsIcon,
-  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { useAdminContext } from "../../contexts/AdminContext";
 
@@ -25,21 +24,7 @@ export default function EventDashboard() {
     selectedEvent,
     eventDashboardData,
     loadingDashboard,
-    refreshDashboardData,
   } = useAdminContext();
-
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
-
-  const handleRefresh = async () => {
-    try {
-      setIsRefreshing(true);
-      await refreshDashboardData();
-    } catch (error) {
-      console.error("Erro ao atualizar dados:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   if (!selectedEvent || !eventDashboardData) {
     return null;
@@ -74,36 +59,9 @@ export default function EventDashboard() {
 
   return (
     <Box display="flex" flexDirection="column" gap={3} sx={{ mb: 3 }}>
-      <Box display="flex" alignItems="center" gap={2}>
-        <Typography variant="h5" gutterBottom sx={{ flexGrow: 1 }}>
-          Painel do evento: {selectedEvent.title}
-        </Typography>
-        <Button
-          onClick={handleRefresh}
-          disabled={loadingDashboard || isRefreshing}
-          variant="outlined"
-          color="primary"
-          startIcon={
-            <RefreshIcon
-              sx={{
-                animation: isRefreshing ? "spin 1s linear infinite" : "none",
-                "@keyframes spin": {
-                  "0%": { transform: "rotate(0deg)" },
-                  "100%": { transform: "rotate(360deg)" },
-                },
-              }}
-            />
-          }
-          sx={{
-            "&:hover": {
-              backgroundColor: "primary.light",
-              color: "primary.contrastText",
-            },
-          }}
-        >
-          Atualizar dados
-        </Button>
-      </Box>
+      <Typography variant="h5" gutterBottom>
+        Painel do evento: {selectedEvent.title}
+      </Typography>
 
       {/* Primeira linha: Cards sobre checkouts */}
       <Box

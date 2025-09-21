@@ -37,7 +37,6 @@ export default function EventsList() {
     loadingEvents,
     error,
     navigateToEventDetails,
-    refreshEvents,
   } = useAdminContext();
 
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -68,11 +67,11 @@ export default function EventsList() {
   };
 
   const handleEventUpdated = (updatedEvent: EventData) => {
-    refreshEvents();
+    // Dados serão atualizados automaticamente via listeners
   };
 
   const handleEventCreated = () => {
-    refreshEvents();
+    // Dados serão atualizados automaticamente via listeners
   };
 
   if (loadingEvents) {
@@ -87,9 +86,6 @@ export default function EventsList() {
     return (
       <Alert severity="error" sx={{ mb: 2 }}>
         {error}
-        <Button onClick={refreshEvents} sx={{ ml: 2 }}>
-          Tentar novamente
-        </Button>
       </Alert>
     );
   }
