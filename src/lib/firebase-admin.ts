@@ -30,6 +30,7 @@ class FirebaseAdmin {
     this._firestore = admin.firestore();
     this._firestore.settings({
       ignoreUndefinedProperties: true,
+      timeout: 10000,
     });
   }
 
