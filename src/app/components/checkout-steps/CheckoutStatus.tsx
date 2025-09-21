@@ -84,6 +84,13 @@ export default function CheckoutStatus() {
           description:
             "Inscrição desativada e voucher liberado para outra pessoa utilizar. <b>Caso queira reativar sua inscrição, entre em contato com o responsável pela compra.</b>",
         };
+      case "invalid":
+        return {
+          label: "inválida",
+          color: "default" as const,
+          icon: <CancelIcon color="error" />,
+          description: "<b>O comprador cancelou a compra desta inscrição.</b> Seus dados foram preservados, mas sua vaga não está mais garantida.",
+        }
       default:
         return {
           label: "desconhecida",
