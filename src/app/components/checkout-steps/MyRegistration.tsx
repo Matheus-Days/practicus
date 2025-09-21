@@ -117,8 +117,8 @@ export default function MyRegistration() {
   const canCancelMyRegistration = () => {
     if (!registration) return false;
 
-    // Não pode desativar se a inscrição já estiver cancelada
-    if (registration.status === "cancelled") {
+    // Não pode desativar se a inscrição já estiver cancelada ou for inválida
+    if (registration.status === "cancelled" || registration.status === "invalid") {
       return false;
     }
 
