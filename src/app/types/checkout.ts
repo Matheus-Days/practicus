@@ -55,7 +55,6 @@ export interface CheckoutContextType {
   // Funções de checkout
   createCheckout: () => Promise<void>;
   createVoucherCheckout: (voucherCode: string, registrationData: RegistrationFormData) => Promise<void>;
-  refreshCheckout: () => Promise<void>;
   updateCheckout: (updateData: UpdateCheckoutRequest) => Promise<void>;
   deleteCheckout: () => Promise<void>;
   // Funções de registration
@@ -65,8 +64,6 @@ export interface CheckoutContextType {
   ) => Promise<void>;
   updateRegistration: (updateData: Partial<RegistrationFormData>) => Promise<void>;
   updateRegistrationStatus: (registrationId: string, status: RegistrationData["status"]) => Promise<RegistrationResponse>;
-  refreshRegistration: () => Promise<void>;
-  refreshCheckoutRegistrations: () => Promise<void>;
   // Funções de voucher
   toggleVoucherActiveStatus: (active: boolean) => Promise<void>;
   // Funções de navegação

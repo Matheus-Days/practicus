@@ -7,8 +7,17 @@ import React, {
   useEffect,
   ReactNode,
   useCallback,
+  useRef,
 } from "react";
 import { User } from "firebase/auth";
+import {
+  doc,
+  onSnapshot,
+  collection,
+  query,
+  where,
+  Unsubscribe,
+} from "firebase/firestore";
 import {
   CheckoutContextType,
   CheckoutData,
@@ -31,6 +40,9 @@ import {
 } from "../hooks/registrationAPI";
 import { RegistrationFormData } from "../api/registrations/registration.types";
 import { useVoucherAPI, VoucherData } from "../hooks/voucherAPI";
+import { useFirebase } from "../hooks/firebase";
+import { createCheckoutDocumentId } from "../api/checkouts/utils";
+import { generateRegistrationDocumentId } from "../api/registrations/utils";
 
 const CheckoutContext = createContext<CheckoutContextType | undefined>(
   undefined
@@ -47,17 +59,15 @@ export function CheckoutProvider({
   user,
   eventId,
 }: CheckoutProviderProps) {
+  const { firestore } = useFirebase();
   const {
     createCheckout: createCheckoutDocument,
     updateCheckout: updateCheckoutDocument,
     deleteCheckout,
-    getCheckout,
   } = useCheckoutAPI();
   const {
     createRegistration: createRegistrationAPI,
-    getRegistration: getRegistrationAPI,
     updateRegistration: updateRegistrationAPI,
-    getCheckoutRegistrations,
     updateRegistrationStatus: updateRegistrationStatusAPI,
   } = useRegistrationAPI();
   const {
@@ -65,6 +75,13 @@ export function CheckoutProvider({
     getVoucher,
     changeVoucherActiveStatus,
   } = useVoucherAPI();
+
+  // Refs para armazenar os listeners
+  const listenersRef = useRef<{
+    checkout?: Unsubscribe;
+    registration?: Unsubscribe;
+    checkoutRegistrations?: Unsubscribe;
+  }>({});
 
   const [checkout, setCheckout] = useState<CheckoutData | null>(null);
   const [registration, setRegistration] = useState<RegistrationData | null>(
@@ -89,74 +106,7 @@ export function CheckoutProvider({
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
   const [formData, setFormData] = useState<Partial<RegistrationFormData>>({});
 
-  // Função para buscar dados do voucher
-  const fetchVoucherData = useCallback(async () => {
-    if (
-      !voucher ||
-      checkout?.checkoutType === "voucher" ||
-      checkout?.status === "deleted"
-    ) {
-      setVoucherData(null);
-      return;
-    }
-
-    try {
-      setVoucherLoading(true);
-      const voucherInfo = await getVoucher(voucher);
-      setVoucherData(voucherInfo);
-    } catch (error) {
-      console.error("Erro ao carregar dados do voucher:", error);
-      setVoucherData(null);
-    } finally {
-      setVoucherLoading(false);
-    }
-  }, [checkout, voucher, getVoucher]);
-
-  // Função para alterar o status ativo do voucher
-  const toggleVoucherActiveStatus = useCallback(
-    async (active: boolean) => {
-      if (!voucherData?.id) {
-        throw new Error("Voucher não encontrado");
-      }
-
-      try {
-        setVoucherLoading(true);
-        await changeVoucherActiveStatus(voucherData.id, active);
-
-        // Atualizar o estado local do voucher
-        setVoucherData((prev) => (prev ? { ...prev, active } : null));
-      } catch (error) {
-        console.error("Erro ao alterar status do voucher:", error);
-        throw error;
-      } finally {
-        setVoucherLoading(false);
-      }
-    },
-    [voucherData?.id, changeVoucherActiveStatus]
-  );
-
-  // Função para buscar inscrições do checkout
-  const fetchCheckoutRegistrations = useCallback(async () => {
-    if (!checkout?.id) return;
-
-    try {
-      const registrations = await getCheckoutRegistrations(checkout.id);
-      setCheckoutRegistrations(registrations);
-    } catch (error) {
-      console.error("Erro ao carregar inscrições do checkout:", error);
-    }
-  }, [checkout?.id, getCheckoutRegistrations]);
-
-  // Função para buscar checkout do usuário
-  const fetchUserCheckout = useCallback(async () => {
-    if (!user || !eventId) throw new Error("Usuário ou evento não encontrado");
-    const checkoutRes = await getCheckout(eventId, user.uid);
-    if (checkoutRes) {
-      fillCheckoutContext(checkoutRes.documentId, checkoutRes.document);
-    }
-  }, [user, eventId, getCheckout]);
-
-  const fillCheckoutContext = (
+  const fillCheckoutContext = useCallback((
     checkoutId: string,
     checkoutDoc: CheckoutDocument
   ) => {
@@ -175,35 +125,157 @@ export function CheckoutProvider({
     if (checkoutDoc.status !== "deleted") {
       setCurrentStep("overview");
     }
-  };
+  }, []);
 
-  // Função para buscar registration do usuário
-  const fetchUserRegistration = useCallback(async () => {
+  // Função para limpar todos os listeners
+  const cleanupListeners = useCallback(() => {
+    Object.values(listenersRef.current).forEach(unsubscribe => {
+      if (unsubscribe) unsubscribe();
+    });
+    listenersRef.current = {};
+  }, []);
+
+  // Função para configurar listener do checkout do usuário
+  const setupCheckoutListener = useCallback(() => {
     if (!user || !eventId) return;
 
-    try {
-      const registration = await getRegistrationAPI(eventId, user.uid);
-      if (registration) {
-        setRegistration(registration);
+    const checkoutId = createCheckoutDocumentId(eventId, user.uid);
+    const checkoutRef = doc(firestore, "checkouts", checkoutId);
+
+    // Limpar listener anterior se existir
+    if (listenersRef.current.checkout) {
+      listenersRef.current.checkout();
+    }
+
+    listenersRef.current.checkout = onSnapshot(checkoutRef, (doc) => {
+      if (doc.exists()) {
+        const checkoutDoc = doc.data() as CheckoutDocument;
+        fillCheckoutContext(doc.id, checkoutDoc);
+      } else {
+        setCheckout(null);
+      }
+    }, (error) => {
+      console.error("Erro no listener do checkout:", error);
+    });
+  }, [user, eventId, firestore, fillCheckoutContext]);
+
+  // Função para configurar listener da registration do usuário
+  const setupRegistrationListener = useCallback(() => {
+    if (!user || !eventId) return;
+
+    const registrationId = generateRegistrationDocumentId(eventId, user.uid);
+    const registrationRef = doc(firestore, "registrations", registrationId);
+
+    // Limpar listener anterior se existir
+    if (listenersRef.current.registration) {
+      listenersRef.current.registration();
+    }
+
+    listenersRef.current.registration = onSnapshot(registrationRef, (doc) => {
+      if (doc.exists()) {
+        const registrationData = { id: doc.id, ...doc.data() } as RegistrationData;
+        setRegistration(registrationData);
+        
         // Preencher formData com os dados da registration existente
         setFormData({
-          fullName: registration.fullName,
-          email: registration.email,
-          phone: registration.phone,
-          cpf: registration.cpf,
-          isPhoneWhatsapp: registration.isPhoneWhatsapp,
-          credentialName: registration.credentialName,
-          occupation: registration.occupation,
-          employer: registration.employer,
-          city: registration.city,
-          useImage: registration.useImage,
-          howDidYouHearAboutUs: registration.howDidYouHearAboutUs,
+          fullName: registrationData.fullName,
+          email: registrationData.email,
+          phone: registrationData.phone,
+          cpf: registrationData.cpf,
+          isPhoneWhatsapp: registrationData.isPhoneWhatsapp,
+          credentialName: registrationData.credentialName,
+          occupation: registrationData.occupation,
+          employer: registrationData.employer,
+          city: registrationData.city,
+          useImage: registrationData.useImage,
+          howDidYouHearAboutUs: registrationData.howDidYouHearAboutUs,
         });
+      } else {
+        setRegistration(null);
       }
-    } catch (error) {
-      console.error("Erro ao buscar registration:", error);
+    }, (error) => {
+      console.error("Erro no listener da registration:", error);
+    });
+  }, [user, eventId, firestore]);
+
+  // Função para configurar listener das inscrições do checkout
+  const setupCheckoutRegistrationsListener = useCallback(() => {
+    if (!checkout?.id) return;
+
+    const registrationsRef = collection(firestore, "registrations");
+    const q = query(
+      registrationsRef,
+      where("checkoutId", "==", checkout.id)
+    );
+
+    // Limpar listener anterior se existir
+    if (listenersRef.current.checkoutRegistrations) {
+      listenersRef.current.checkoutRegistrations();
     }
-  }, [user, eventId, getRegistrationAPI]);
+
+    listenersRef.current.checkoutRegistrations = onSnapshot(q, (snapshot) => {
+      const registrations = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Array<RegistrationMinimal>;
+      setCheckoutRegistrations(registrations);
+    }, (error) => {
+      console.error("Erro no listener das inscrições do checkout:", error);
+    });
+  }, [checkout?.id, firestore]);
+
+
+  // Função para configurar listener dos dados do voucher
+  const setupVoucherDataListener = useCallback(() => {
+    if (
+      !voucher ||
+      checkout?.checkoutType === "voucher" ||
+      checkout?.status === "deleted"
+    ) {
+      setVoucherData(null);
+      return;
+    }
+
+    const voucherRef = doc(firestore, "vouchers", voucher);
+    
+    setVoucherLoading(true);
+    
+    const unsubscribe = onSnapshot(voucherRef, (doc) => {
+      if (doc.exists()) {
+        const voucherData = { id: doc.id, ...doc.data() } as VoucherData;
+        setVoucherData(voucherData);
+      } else {
+        setVoucherData(null);
+      }
+      setVoucherLoading(false);
+    }, (error) => {
+      console.error("Erro no listener do voucher:", error);
+      setVoucherData(null);
+      setVoucherLoading(false);
+    });
+
+    return unsubscribe;
+  }, [checkout, voucher, firestore]);
+
+  // Função para alterar o status ativo do voucher
+  const toggleVoucherActiveStatus = useCallback(
+    async (active: boolean) => {
+      if (!voucherData?.id) {
+        throw new Error("Voucher não encontrado");
+      }
+
+      try {
+        setVoucherLoading(true);
+        await changeVoucherActiveStatus(voucherData.id, active);
+      } catch (error) {
+        console.error("Erro ao alterar status do voucher:", error);
+        throw error;
+      } finally {
+        setVoucherLoading(false);
+      }
+    },
+    [voucherData?.id, changeVoucherActiveStatus]
+  );
 
   // Função para criar novo checkout
   const createCheckout = async () => {
@@ -433,15 +505,6 @@ export function CheckoutProvider({
     }
   };
 
-  // Função para atualizar checkout
-  const refreshCheckout = async () => {
-    await fetchUserCheckout();
-  };
-
-  // Função para atualizar registration
-  const refreshRegistration = async () => {
-    await fetchUserRegistration();
-  };
 
   // Função para definir etapa atual
   const setCurrentStepHandler = (step: CheckoutStep) => {
@@ -466,21 +529,29 @@ export function CheckoutProvider({
     setVoucherData(null);
   };
 
-  // Buscar checkout e registration quando user ou eventId mudar
+  // Configurar listeners quando user ou eventId mudar
   useEffect(() => {
-    fetchUserCheckout();
-    fetchUserRegistration();
-  }, [fetchUserCheckout, fetchUserRegistration]);
+    if (user && eventId) {
+      setupCheckoutListener();
+      setupRegistrationListener();
+    }
+    
+    return () => {
+      cleanupListeners();
+    };
+  }, [user, eventId, setupCheckoutListener, setupRegistrationListener, cleanupListeners]);
 
-  // Buscar inscrições do checkout quando o checkout mudar
+  // Configurar listener das inscrições do checkout quando o checkout mudar
   useEffect(() => {
-    fetchCheckoutRegistrations();
-  }, [fetchCheckoutRegistrations]);
+    setupCheckoutRegistrationsListener();
+  }, [setupCheckoutRegistrationsListener]);
 
-  // Buscar dados do voucher quando o voucher mudar
+
+  // Configurar listener dos dados do voucher quando o voucher mudar
   useEffect(() => {
-    fetchVoucherData();
-  }, [voucher, fetchVoucherData]);
+    const unsubscribe = setupVoucherDataListener();
+    return unsubscribe;
+  }, [setupVoucherDataListener]);
 
   const value: CheckoutContextType = {
     user,
@@ -511,14 +582,11 @@ export function CheckoutProvider({
     // Funções de checkout
     createCheckout,
     createVoucherCheckout,
-    refreshCheckout,
     updateCheckout: updateCheckoutData,
     deleteCheckout: deleteCheckoutData,
     createRegistration,
     updateRegistration: updateRegistrationData,
     updateRegistrationStatus: updateRegistrationStatusAPI,
-    refreshRegistration,
-    refreshCheckoutRegistrations: fetchCheckoutRegistrations,
     setCurrentStep: setCurrentStepHandler,
     updateFormData: updateFormDataHandler,
     resetCheckout,
