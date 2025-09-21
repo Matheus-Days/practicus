@@ -14,7 +14,6 @@ import {
   CheckoutStatus,
   UpdateCheckoutStatusRequest,
 } from "../../checkout.types";
-import { VoucherDocument } from "../../../voucher/voucher.types";
 import { RegistrationDocument } from "../../../registrations/registration.types";
 
 // PATCH /api/checkouts/[id]/status - Alterar status da compra (apenas admin)
