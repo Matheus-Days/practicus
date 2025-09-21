@@ -31,7 +31,6 @@ export default function MyRegistration() {
     checkoutType,
     setCurrentStep,
     updateRegistrationStatus,
-    refreshRegistration,
     checkout,
     checkoutRegistrations,
     registrationsAmount,
@@ -63,7 +62,7 @@ export default function MyRegistration() {
         checkout.status === "pending" ? "pending" : "ok";
 
       await updateRegistrationStatus(registration.id, newStatus);
-      await refreshRegistration();
+
       setSnackbarMessage("Inscrição ativada com sucesso");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
@@ -81,7 +80,7 @@ export default function MyRegistration() {
       }
 
       await updateRegistrationStatus(registration.id, "cancelled");
-      await refreshRegistration();
+
       setSnackbarMessage("Inscrição cancelada com sucesso");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
@@ -151,9 +150,8 @@ export default function MyRegistration() {
       case "cancelled":
         return "error";
       case "ok":
-        return "success";
       case "pending":
-        return "warning";
+        return "success";
       default:
         return "warning";
     }

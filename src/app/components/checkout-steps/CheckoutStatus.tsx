@@ -69,11 +69,12 @@ export default function CheckoutStatus() {
     const status = registration ? registration.status : "invalid";
     switch (status) {
       case "ok":
+      case "pending":
         return {
           label: "ativa",
           color: "success" as const,
           icon: <CheckCircleIcon color="success" />,
-          description: "Inscrição realizada e vaga garantida no evento.",
+          description: "Inscrição realizada. Você não precisa tomar mais nenhuma ação.",
         };
       case "cancelled":
         return {
@@ -82,14 +83,6 @@ export default function CheckoutStatus() {
           icon: <CancelIcon color="error" />,
           description:
             "Inscrição desativada e voucher liberado para outra pessoa utilizar. <b>Caso queira reativar sua inscrição, entre em contato com o responsável pela compra.</b>",
-        };
-      case "pending":
-        return {
-          label: "ativa",
-          color: "warning" as const,
-          icon: <PendingIcon color="warning" />,
-          description:
-            "Inscrição realizada, porém sua vaga no evento só será garantida após a aprovação do pagamento do responsável pela compra.",
         };
       default:
         return {

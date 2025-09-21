@@ -8,7 +8,6 @@ import {
   Box,
   LinearProgress,
   Chip,
-  Button,
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -16,6 +15,7 @@ import {
   CheckCircle as CheckCircleIcon,
   Description as DescriptionIcon,
   Payments as PaymentsIcon,
+  ConfirmationNumber as VoucherIcon,
 } from "@mui/icons-material";
 import { useAdminContext } from "../../contexts/AdminContext";
 
@@ -100,7 +100,7 @@ export default function EventDashboard() {
             >
               <Box>
                 <Typography color="textSecondary" gutterBottom>
-                  Aquisições concluídas
+                  Aquisições pagas
                 </Typography>
                 <Typography variant="h4" color="success.main">
                   {completedCheckouts}
@@ -120,13 +120,13 @@ export default function EventDashboard() {
             >
               <Box>
                 <Typography color="textSecondary" gutterBottom>
-                  Ingressos adquiridos (pendentes ou pagos)
+                  Ingressos negociados (pendentes ou pagos)
                 </Typography>
                 <Typography variant="h4" color="primary.main">
                   {totalAmountInCheckouts}
                 </Typography>
               </Box>
-              <PeopleIcon color="primary" sx={{ fontSize: 40 }} />
+              <VoucherIcon color="primary" sx={{ fontSize: 40 }} />
             </Box>
           </CardContent>
         </Card>
@@ -156,7 +156,7 @@ export default function EventDashboard() {
             </Box>
           </CardContent>
         </Card>
-        {/* Inscrições pagas */}
+        {/* Ingressos pagos */}
         <Card>
           <CardContent>
             <Box
@@ -166,7 +166,7 @@ export default function EventDashboard() {
             >
               <Box>
                 <Typography color="textSecondary" gutterBottom>
-                  Inscrições pagas
+                  Ingressos pagos
                 </Typography>
                 <Typography variant="h4" color="success.main">
                   {acquiredSlots}
@@ -292,7 +292,7 @@ export default function EventDashboard() {
                 mb={2}
               >
                 <Typography variant="h6">
-                  Ingressos adquiridos X Ocupação
+                  Ingressos negociados X Ocupação
                 </Typography>
                 <Chip
                   label={`${((totalAmountInCheckouts / totalSlots) * 100).toFixed(1)}%`}
