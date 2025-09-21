@@ -7,8 +7,13 @@ import {
 } from "../utils";
 import { CheckoutDocument, UpdateCheckoutRequest } from "../checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { createErrorResponse, createSuccessResponse } from "../../utils";
+import { 
+  createErrorResponse, 
+  createSuccessResponse,
+  getRegistrationStatusFromCheckoutStatusChange 
+} from "../../utils";
 import { NextResponse } from "next/server";
+import { RegistrationDocument } from "../../registrations/registration.types";
 
 // PUT /api/checkouts/[id] - Atualizar checkout específico
 export async function PUT(
@@ -87,17 +92,23 @@ export async function DELETE(
       return createErrorResponse("Usuário não tem permissão para deletar esta aquisição", 403);
     }
 
-    const registrationDoc = await firestore
-      .collection("registrations")
-      .doc(id)
-      .get();
-    
-    await registrationDoc.ref.delete();
-
     await firestore.collection("checkouts").doc(id).update({
       status: "deleted",
       deletedAt: new Date(),
     });
+
+    const registrationsQuery = await firestore
+      .collection("registrations")
+      .where("checkoutId", "==", checkoutDoc.id)
+      .get();
+
+    const batch = firestore.batch();
+    registrationsQuery.forEach((doc) => {
+      const registrationData = doc.data() as RegistrationDocument;
+      const newStatus = getRegistrationStatusFromCheckoutStatusChange("deleted", registrationData.status);
+      batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
+    });
+    await batch.commit();
 
     return new NextResponse(undefined, { status: 204 });
   } catch (error) {
