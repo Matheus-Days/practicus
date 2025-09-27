@@ -23,6 +23,8 @@ interface RegistrationFormProps {
   onValidationChange?: (isValid: boolean) => void;
 }
 
+const VALID_SOURCE_OPTIONS = ["INSTAGRAM", "WEBSITE", "INDICACAO"];
+
 
 export default function RegistrationForm({
   initialData = {},
@@ -30,6 +32,27 @@ export default function RegistrationForm({
   onValidationChange,
 }: RegistrationFormProps) {
   const { user } = useCheckout();
+
+  // Função para detectar se o valor inicial é personalizado
+  const getInitialSourceState = () => {
+    const initialValue = initialData.howDidYouHearAboutUs || "";
+    
+    // Se o valor inicial é uma das opções válidas, usar ele
+    if (VALID_SOURCE_OPTIONS.includes(initialValue)) {
+      return {
+        selectedSource: initialValue,
+        otherSource: ""
+      };
+    }
+    
+    // Se o valor inicial não é uma opção válida, tratar como "outro"
+    return {
+      selectedSource: "outro",
+      otherSource: initialValue
+    };
+  };
+
+  const initialSourceState = getInitialSourceState();
 
   const [registration, setRegistration] = useState<Partial<RegistrationFormData>>({
     fullName: initialData.fullName || "",
@@ -45,8 +68,8 @@ export default function RegistrationForm({
     howDidYouHearAboutUs: initialData.howDidYouHearAboutUs || "",
   });
 
-  const [otherSource, setOtherSource] = useState(initialData.howDidYouHearAboutUs === "outro" ? initialData.howDidYouHearAboutUs : "");
-  const [selectedSource, setSelectedSource] = useState(initialData.howDidYouHearAboutUs || "");
+  const [otherSource, setOtherSource] = useState(initialSourceState.otherSource);
+  const [selectedSource, setSelectedSource] = useState(initialSourceState.selectedSource);
   
   const [credNameCounter, setCredNameCounter] = useState(0);
 
@@ -147,6 +170,11 @@ export default function RegistrationForm({
         size="medium"
         required
         helperText="Esse nome será usado para emissão do certificado."
+        sx={{
+          '& input': {
+            textTransform: 'uppercase'
+          }
+        }}
       />
 
       <TextField
@@ -158,6 +186,11 @@ export default function RegistrationForm({
         size="medium"
         slotProps={{ htmlInput: { maxLength: 15 }}}
         helperText={`${credNameCounter}/15 caracteres`}
+        sx={{
+          '& input': {
+            textTransform: 'uppercase'
+          }
+        }}
       />
 
       <TextField
@@ -248,6 +281,11 @@ export default function RegistrationForm({
         onChange={(e) => handleFieldChange("occupation", e.target.value)}
         variant="outlined"
         size="medium"
+        sx={{
+          '& input': {
+            textTransform: 'uppercase'
+          }
+        }}
       />
 
       <TextField
@@ -257,6 +295,11 @@ export default function RegistrationForm({
         onChange={(e) => handleFieldChange("employer", e.target.value)}
         variant="outlined"
         size="medium"
+        sx={{
+          '& input': {
+            textTransform: 'uppercase'
+          }
+        }}
       />
 
       <TextField
@@ -266,6 +309,11 @@ export default function RegistrationForm({
         onChange={(e) => handleFieldChange("city", e.target.value)}
         variant="outlined"
         size="medium"
+        sx={{
+          '& input': {
+            textTransform: 'uppercase'
+          }
+        }}
       />
 
       <FormControl fullWidth required>
@@ -279,10 +327,10 @@ export default function RegistrationForm({
           required
           size="medium"
         >
-          <MenuItem value="instagram">Instagram</MenuItem>
-          <MenuItem value="website">Website Practicus</MenuItem>
-          <MenuItem value="indicacao">Indicação</MenuItem>
-          <MenuItem value="outro">Outro</MenuItem>
+          <MenuItem value="INSTAGRAM">INSTAGRAM</MenuItem>
+          <MenuItem value="WEBSITE">WEBSITE PRACTICUS</MenuItem>
+          <MenuItem value="INDICACAO">INDICAÇÃO</MenuItem>
+          <MenuItem value="OUTRO">OUTRO</MenuItem>
         </Select>
       </FormControl>
 
@@ -297,6 +345,11 @@ export default function RegistrationForm({
         variant="outlined"
         size="medium"
         required
+        sx={{
+          '& input': {
+            textTransform: 'uppercase'
+          }
+        }}
         />
       )}
 

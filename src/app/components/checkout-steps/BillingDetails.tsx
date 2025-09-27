@@ -382,6 +382,11 @@ export default function BillingDetails() {
                   variant="outlined"
                   size="medium"
                   required
+                  sx={{
+                    '& input': {
+                      textTransform: 'uppercase'
+                    }
+                  }}
                 />
 
                 <TextField
@@ -449,6 +454,11 @@ export default function BillingDetails() {
                   variant="outlined"
                   size="medium"
                   required
+                  sx={{
+                    '& input': {
+                      textTransform: 'uppercase'
+                    }
+                  }}
                 />
 
                 <PatternFormat
@@ -533,6 +543,11 @@ export default function BillingDetails() {
                   required
                   multiline
                   rows={2}
+                  sx={{
+                    '& textarea': {
+                      textTransform: 'uppercase'
+                    }
+                  }}
                 />
 
                 <PatternFormat
@@ -618,6 +633,11 @@ export default function BillingDetails() {
                   variant="outlined"
                   size="medium"
                   required
+                  sx={{
+                    '& input': {
+                      textTransform: 'uppercase'
+                    }
+                  }}
                 />
 
                 <TextField

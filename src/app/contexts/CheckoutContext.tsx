@@ -292,6 +292,20 @@ export function CheckoutProvider({
       );
     }
 
+    const processedBillingDetails = billingDetails ? (
+      legalEntity === "pf" 
+        ? {
+            ...billingDetails as BillingDetailsPF,
+            fullName: (billingDetails as BillingDetailsPF).fullName?.toUpperCase() || "",
+          }
+        : {
+            ...billingDetails as BillingDetailsPJ,
+            orgName: (billingDetails as BillingDetailsPJ).orgName?.toUpperCase() || "",
+            orgAddress: (billingDetails as BillingDetailsPJ).orgAddress?.toUpperCase() || "",
+            responsibleName: (billingDetails as BillingDetailsPJ).responsibleName?.toUpperCase() || "",
+          }
+    ) : null;
+
     const checkoutData: CreateCheckoutRequest = {
       checkoutType,
       eventId,
@@ -300,7 +314,7 @@ export function CheckoutProvider({
     };
 
     if (legalEntity) checkoutData.legalEntity = legalEntity;
-    if (billingDetails) checkoutData.billingDetails = billingDetails;
+    if (processedBillingDetails) checkoutData.billingDetails = processedBillingDetails;
     if (registrateMyself) checkoutData.registrateMyself = registrateMyself;
 
     try {
@@ -336,11 +350,21 @@ export function CheckoutProvider({
     try {
       setLoading(true);
 
+      const processedRegistrationData = {
+        ...registrationData,
+        fullName: registrationData.fullName?.toUpperCase() || "",
+        credentialName: registrationData.credentialName?.toUpperCase() || "",
+        occupation: registrationData.occupation?.toUpperCase() || "",
+        employer: registrationData.employer?.toUpperCase() || "",
+        city: registrationData.city?.toUpperCase() || "",
+        howDidYouHearAboutUs: registrationData.howDidYouHearAboutUs?.toUpperCase() || "",
+      };
+
       const result = await createRegistrationAPI({
         eventId,
         userId: user.uid,
         checkoutId: checkout.id,
-        ...registrationData,
+        ...processedRegistrationData,
       });
 
       setRegistration({
@@ -384,18 +408,18 @@ export function CheckoutProvider({
         eventId,
         userId: user.uid,
         registration: {
-          fullName: registrationData.fullName,
+          fullName: registrationData.fullName?.toUpperCase() || "",
           email: registrationData.email || "",
           phone: registrationData.phone,
           cpf: registrationData.cpf,
           isPhoneWhatsapp: registrationData.isPhoneWhatsapp || false,
           credentialName:
-            registrationData.credentialName || registrationData.fullName,
-          occupation: registrationData.occupation || "",
-          employer: registrationData.employer || "",
-          city: registrationData.city || "",
+            (registrationData.credentialName || registrationData.fullName)?.toUpperCase() || "",
+          occupation: registrationData.occupation?.toUpperCase() || "",
+          employer: registrationData.employer?.toUpperCase() || "",
+          city: registrationData.city?.toUpperCase() || "",
           useImage: registrationData.useImage || false,
-          howDidYouHearAboutUs: registrationData.howDidYouHearAboutUs || "",
+          howDidYouHearAboutUs: registrationData.howDidYouHearAboutUs?.toUpperCase() || "",
         },
       };
 
@@ -436,9 +460,28 @@ export function CheckoutProvider({
       throw new Error("Checkout não encontrado para atualização");
     }
 
+    const processedUpdateData = { ...updateData };
+    if (updateData.billingDetails) {
+      if (updateData.legalEntity === "pf") {
+        const pfDetails = updateData.billingDetails as BillingDetailsPF;
+        processedUpdateData.billingDetails = {
+          ...pfDetails,
+          fullName: pfDetails.fullName?.toUpperCase() || "",
+        };
+      } else if (updateData.legalEntity === "pj") {
+        const pjDetails = updateData.billingDetails as BillingDetailsPJ;
+        processedUpdateData.billingDetails = {
+          ...pjDetails,
+          orgName: pjDetails.orgName?.toUpperCase() || "",
+          orgAddress: pjDetails.orgAddress?.toUpperCase() || "",
+          responsibleName: pjDetails.responsibleName?.toUpperCase() || "",
+        };
+      }
+    }
+
     try {
       setLoading(true);
-      const result = await updateCheckoutDocument(checkout.id, updateData);
+      const result = await updateCheckoutDocument(checkout.id, processedUpdateData);
 
       // Atualizar o checkout e todos os estados relacionados
       fillCheckoutContext(result.documentId, result.document);
