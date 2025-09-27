@@ -14,6 +14,7 @@ import {
 } from "../../utils";
 import { NextResponse } from "next/server";
 import { RegistrationDocument } from "../../registrations/registration.types";
+import { VoucherDocument } from "../../voucher/voucher.types";
 
 // PUT /api/checkouts/[id] - Atualizar checkout específico
 export async function PUT(
@@ -108,6 +109,17 @@ export async function DELETE(
       const newStatus = getRegistrationStatusFromCheckoutStatusChange("deleted", registrationData.status);
       batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
     });
+
+    if (checkoutData.voucher) {
+      const voucherDoc = await firestore.collection("vouchers").doc(checkoutData.voucher).get();
+      if (voucherDoc.exists) {
+        batch.update(voucherDoc.ref, { 
+          active: false, 
+          updatedAt: new Date() 
+        });
+      }
+    }
+
     await batch.commit();
 
     return new NextResponse(undefined, { status: 204 });

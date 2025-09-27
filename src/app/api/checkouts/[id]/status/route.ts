@@ -15,6 +15,7 @@ import {
   UpdateCheckoutStatusRequest,
 } from "../../checkout.types";
 import { RegistrationDocument } from "../../../registrations/registration.types";
+import { VoucherDocument } from "../../../voucher/voucher.types";
 
 // PATCH /api/checkouts/[id]/status - Alterar status da compra (apenas admin)
 export async function PATCH(
@@ -91,6 +92,17 @@ export async function PATCH(
       const newStatus = getRegistrationStatusFromCheckoutStatusChange(body.status, registrationData.status);
       batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
     });
+
+    if (body.status === "deleted" && checkoutData.voucher) {
+      const voucherDoc = await firestore.collection("vouchers").doc(checkoutData.voucher).get();
+      if (voucherDoc.exists) {
+        batch.update(voucherDoc.ref, { 
+          active: false, 
+          updatedAt: new Date() 
+        });
+      }
+    }
+
     await batch.commit();
 
     return createSuccessResponse<CheckoutResponse>({
