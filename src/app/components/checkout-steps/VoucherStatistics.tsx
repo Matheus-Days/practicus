@@ -7,7 +7,12 @@ import { useVoucherCalculations } from "../../hooks/useVoucherCalculations";
 
 export default function VoucherStatistics() {
   const { checkout } = useCheckout();
-  const { totalRegistrations, usedRegistrations, availableRegistrations } = useVoucherCalculations();
+  const {
+    totalRegistrations,
+    usedRegistrations,
+    availableRegistrations,
+    hasOwnValidRegistration,
+  } = useVoucherCalculations();
 
   // Não mostrar o componente se não há checkout ou se é um checkout de voucher
   if (!checkout || checkout.checkoutType === "voucher") {
@@ -27,6 +32,12 @@ export default function VoucherStatistics() {
             Acompanhe as inscrições via voucher
           </Typography>
         </Box>
+
+        {hasOwnValidRegistration && (
+          <Typography variant="body2" color="text.secondary" mb={3}>
+            Você tem uma inscrição válida para si, logo o número de vouchers é igual ao número de inscrições adquiridas menos 1.
+          </Typography>
+        )}
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
           <Box sx={{ flex: "1 1 200px" }}>

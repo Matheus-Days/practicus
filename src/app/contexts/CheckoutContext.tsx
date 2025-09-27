@@ -214,7 +214,7 @@ export function CheckoutProvider({
     }
 
     listenersRef.current.checkoutRegistrations = onSnapshot(q, (snapshot) => {
-      const registrations = snapshot.docs.map(doc => ({
+      const registrations = snapshot.docs.filter(doc => doc.data().status !== "invalid").map(doc => ({
         id: doc.id,
         ...doc.data(),
         isMyRegistration: doc.id === checkout.id

@@ -89,7 +89,7 @@ export default function CheckoutStatus() {
           label: "inválida",
           color: "default" as const,
           icon: <CancelIcon color="error" />,
-          description: "<b>O comprador cancelou a compra desta inscrição.</b> Seus dados foram preservados, mas sua vaga não está mais garantida.",
+          description: "<b>O comprador cancelou a compra desta inscrição.</b> Delete sua inscrição e use um novo voucher.",
         }
       default:
         return {
