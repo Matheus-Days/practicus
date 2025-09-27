@@ -7,10 +7,10 @@ import {
 } from "../utils";
 import { CheckoutDocument, UpdateCheckoutRequest } from "../checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { 
-  createErrorResponse, 
+import {
+  createErrorResponse,
   createSuccessResponse,
-  getRegistrationStatusFromCheckoutStatusChange 
+  getRegistrationStatusFromCheckoutStatusChange,
 } from "../../utils";
 import { NextResponse } from "next/server";
 import { RegistrationDocument } from "../../registrations/registration.types";
@@ -90,13 +90,27 @@ export async function DELETE(
     const checkoutData = checkoutDoc.data() as CheckoutDocument;
 
     if (checkoutData.userId !== authenticatedUser.uid) {
-      return createErrorResponse("Usuário não tem permissão para deletar esta aquisição", 403);
+      return createErrorResponse(
+        "Usuário não tem permissão para deletar esta aquisição",
+        403
+      );
     }
 
     await firestore.collection("checkouts").doc(id).update({
       status: "deleted",
       deletedAt: new Date(),
     });
+
+    const checkoutsOwnRegistration = await firestore
+      .collection("registrations")
+      .doc(checkoutDoc.id)
+      .get();
+    if (checkoutsOwnRegistration.exists) {
+      await checkoutsOwnRegistration.ref.update({
+        status: "invalid",
+        updatedAt: new Date(),
+      });
+    }
 
     const registrationsQuery = await firestore
       .collection("registrations")
@@ -106,16 +120,22 @@ export async function DELETE(
     const batch = firestore.batch();
     registrationsQuery.forEach((doc) => {
       const registrationData = doc.data() as RegistrationDocument;
-      const newStatus = getRegistrationStatusFromCheckoutStatusChange("deleted", registrationData.status);
+      const newStatus = getRegistrationStatusFromCheckoutStatusChange(
+        "deleted",
+        registrationData.status
+      );
       batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
     });
 
     if (checkoutData.voucher) {
-      const voucherDoc = await firestore.collection("vouchers").doc(checkoutData.voucher).get();
+      const voucherDoc = await firestore
+        .collection("vouchers")
+        .doc(checkoutData.voucher)
+        .get();
       if (voucherDoc.exists) {
-        batch.update(voucherDoc.ref, { 
-          active: false, 
-          updatedAt: new Date() 
+        batch.update(voucherDoc.ref, {
+          active: false,
+          updatedAt: new Date(),
         });
       }
     }
