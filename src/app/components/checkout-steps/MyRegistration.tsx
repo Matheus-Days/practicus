@@ -20,6 +20,7 @@ import {
   Refresh as RefreshIcon,
   Cancel as CancelIcon,
 } from "@mui/icons-material";
+import { CircularProgress } from "@mui/material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
 
@@ -40,6 +41,8 @@ export default function MyRegistration() {
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     "success" | "error" | "info"
   >("success");
+  const [isDeletingVoucher, setIsDeletingVoucher] = useState(false);
+  const [isCancellingRegistration, setIsCancellingRegistration] = useState(false);
 
   const usedRegistrations = checkoutRegistrations.filter(
     (reg) =>
@@ -75,6 +78,7 @@ export default function MyRegistration() {
 
   const handleCancelMyRegistration = async () => {
     try {
+      setIsCancellingRegistration(true);
       if (!registration) {
         throw new Error("Nenhuma inscrição encontrada");
       }
@@ -88,6 +92,8 @@ export default function MyRegistration() {
       setSnackbarMessage("Erro ao desativar inscrição");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setIsCancellingRegistration(false);
     }
   };
 
@@ -165,6 +171,7 @@ export default function MyRegistration() {
 
   const handleDeleteVoucherCheckout = async () => {
     try {
+      setIsDeletingVoucher(true);
       await deleteCheckout();
       setSnackbarMessage("Inscrição deletada com sucesso");
       setSnackbarSeverity("success");
@@ -173,6 +180,8 @@ export default function MyRegistration() {
       setSnackbarMessage((error as Error).message);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setIsDeletingVoucher(false);
     }
   };
 
@@ -257,10 +266,11 @@ export default function MyRegistration() {
                   <Button
                     variant="outlined"
                     color="error"
-                    startIcon={<CancelIcon />}
+                    startIcon={isCancellingRegistration ? <CircularProgress size={20} color="inherit" /> : <CancelIcon />}
                     onClick={handleCancelMyRegistration}
+                    disabled={isCancellingRegistration}
                   >
-                    Desistir da inscrição
+                    {isCancellingRegistration ? "Processando..." : "Desistir da inscrição"}
                   </Button>
                 ) : canActivateMyRegistration() ? (
                   <Tooltip
@@ -298,10 +308,11 @@ export default function MyRegistration() {
                     <Button
                       variant="contained"
                       color="error"
-                      startIcon={<DeleteIcon />}
+                      startIcon={isDeletingVoucher ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
                       onClick={handleDeleteVoucherCheckout}
+                      disabled={isDeletingVoucher}
                     >
-                      Deletar inscrição
+                      {isDeletingVoucher ? "Deletando..." : "Deletar inscrição"}
                     </Button>
                   </div>
                 </Stack>
