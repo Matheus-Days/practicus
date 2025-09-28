@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -19,6 +19,10 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
+  FormControl,
+  InputLabel,
+  Select,
+  Button,
 } from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
@@ -26,13 +30,16 @@ import {
   Pending as PendingIcon,
   Cancel as CancelIcon,
   Visibility as VisibilityIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { useAdminContext } from "../../contexts/AdminContext";
 import { CheckoutData } from "../../types/checkout";
 import { CheckoutStatus } from "../../api/checkouts/checkout.types";
 import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
-import CheckoutDetailsDialog from './CheckoutDetailsDialog';
+import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
+import { useXlsxExport } from "../../hooks/useXlsxExport";
+import { formatCheckoutForExport } from "../../utils/export-utils";
 
 export default function CheckoutsTable() {
   const {
@@ -49,7 +56,11 @@ export default function CheckoutsTable() {
   const [selectedCheckout, setSelectedCheckout] =
     React.useState<CheckoutData | null>(null);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState(false);
-  const [selectedCheckoutForDialog, setSelectedCheckoutForDialog] = React.useState<CheckoutData | null>(null);
+  const [selectedCheckoutForDialog, setSelectedCheckoutForDialog] =
+    React.useState<CheckoutData | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("valid");
+
+  const { exportToXlsx, isLoading: isExporting } = useXlsxExport();
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLElement>,
@@ -74,17 +85,74 @@ export default function CheckoutsTable() {
     setSelectedCheckoutForDialog(null);
   };
 
+  const handleStatusFilterChange = (event: any) => {
+    setStatusFilter(event.target.value);
+  };
+
+  const handleExportToXlsx = async () => {
+    try {
+      const exportData = filteredCheckouts.map((checkout) =>
+        formatCheckoutForExport(checkout, selectedEvent!)
+      );
+      let statusDisplay: string;
+      switch (statusFilter) {
+        case "valid":
+          statusDisplay = "Válidas";
+          break;
+        case "all":
+          statusDisplay = "Todas";
+          break;
+        case "pending":
+          statusDisplay = "Pendentes";
+          break;
+        case "completed":
+          statusDisplay = "Concluídas";
+          break;
+        case "deleted":
+          statusDisplay = "Canceladas";
+          break;
+        default:
+          statusDisplay = "Inválidas";
+      }
+      await exportToXlsx(exportData, {
+        filename: `aquisicoes-${statusDisplay}_${selectedEvent?.title || "evento"}_${new Date().toISOString().split("T")[0]}.xlsx`,
+        sheetName: `Aquisições - ${statusDisplay}`,
+      });
+    } catch (error) {
+      console.error("Erro ao exportar checkouts:", error);
+    }
+  };
+
+  // Filtrar checkouts baseado no status selecionado
+  const filteredCheckouts = useMemo(() => {
+    if (statusFilter === "all") {
+      return eventCheckouts;
+    }
+    if (statusFilter === "valid") {
+      return eventCheckouts.filter((checkout) => checkout.status !== "deleted");
+    }
+    return eventCheckouts.filter(
+      (checkout) => checkout.status === statusFilter
+    );
+  }, [eventCheckouts, statusFilter]);
+
   const handleStatusChange = async (status: CheckoutStatus) => {
-    if (status === 'deleted') {
-      const confirmed = window.confirm("Ao cancelar uma compra que já foi aprovada antes, todas as inscrições confirmadas associadas a ela serão invalidadas. Tem certeza que deseja continuar?");
+    if (status === "deleted") {
+      const confirmed = window.confirm(
+        "Ao cancelar uma compra que já foi aprovada antes, todas as inscrições confirmadas associadas a ela serão invalidadas. Tem certeza que deseja continuar?"
+      );
       if (!confirmed) return;
     }
-    if (status === 'pending') {
-      const confirmed = window.confirm("Ao marcar uma compra como pendente, todas as inscrições não canceladas associadas a ela serão marcadas como pendentes. Tem certeza que deseja continuar?");
+    if (status === "pending") {
+      const confirmed = window.confirm(
+        "Ao marcar uma compra como pendente, todas as inscrições não canceladas associadas a ela serão marcadas como pendentes. Tem certeza que deseja continuar?"
+      );
       if (!confirmed) return;
     }
-    if (status === 'completed') {
-      const confirmed = window.confirm("Ao marcar uma compra como concluída, todas as inscrições não canceladas associadas a ela serão marcadas como concluídas. Tem certeza que deseja continuar?");
+    if (status === "completed") {
+      const confirmed = window.confirm(
+        "Ao marcar uma compra como concluída, todas as inscrições não canceladas associadas a ela serão marcadas como concluídas. Tem certeza que deseja continuar?"
+      );
       if (!confirmed) return;
     }
     if (selectedCheckout) {
@@ -169,25 +237,65 @@ export default function CheckoutsTable() {
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Aquisições ({eventCheckouts.length})
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Typography variant="h6">
+          Aquisições ({filteredCheckouts.length})
+        </Typography>
+
+        <Box display="flex" gap={2} alignItems="center">
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel id="status-filter-label">Situação</InputLabel>
+            <Select
+              labelId="status-filter-label"
+              value={statusFilter}
+              label="Situação"
+              onChange={handleStatusFilterChange}
+            >
+              <MenuItem value="valid">Válidas</MenuItem>
+              <MenuItem value="all">Todas</MenuItem>
+              <MenuItem value="pending">Pendentes</MenuItem>
+              <MenuItem value="completed">Concluídas</MenuItem>
+              <MenuItem value="deleted">Canceladas</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Button
+            onClick={handleExportToXlsx}
+            disabled={isExporting || filteredCheckouts.length === 0}
+            color="primary"
+            variant="contained"
+            size="small"
+            startIcon={
+              isExporting ? <CircularProgress size={16} /> : <DownloadIcon />
+            }
+          >
+            {isExporting ? "Exportando..." : "Baixar planilha da tabela atual"}
+          </Button>
+        </Box>
+      </Box>
 
       <TableContainer component={Paper} variant="outlined">
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Pessoa</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Adquirido por</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Valor</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Data de criação</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="center">Ações</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Pessoa</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Adquirido por</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Valor</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Data de criação</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }} align="center">
+                Ações
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {eventCheckouts.map((checkout) => {
+            {filteredCheckouts.map((checkout) => {
               const statusDisplay = getStatusDisplay(checkout.status);
               return (
                 <TableRow key={checkout.id} hover>
@@ -267,10 +375,14 @@ export default function CheckoutsTable() {
         </Table>
       </TableContainer>
 
-      {eventCheckouts.length === 0 && (
+      {filteredCheckouts.length === 0 && (
         <Box textAlign="center" py={4}>
           <Typography variant="body1" color="textSecondary">
-            Nenhuma aquisição encontrada para este evento.
+            {statusFilter === "all"
+              ? "Nenhuma aquisição encontrada para este evento."
+              : statusFilter === "valid"
+                ? "Nenhuma aquisição válida encontrada."
+                : `Nenhuma aquisição com situação "${getStatusDisplay(statusFilter).text}" encontrada.`}
           </Typography>
         </Box>
       )}
@@ -281,7 +393,7 @@ export default function CheckoutsTable() {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem 
+        <MenuItem
           onClick={() => handleStatusChange("completed")}
           disabled={loadingCheckoutStatusUpdate}
         >
@@ -294,7 +406,7 @@ export default function CheckoutsTable() {
           </ListItemIcon>
           Marcar como pago
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={() => handleStatusChange("pending")}
           disabled={loadingCheckoutStatusUpdate}
         >
@@ -307,7 +419,7 @@ export default function CheckoutsTable() {
           </ListItemIcon>
           Marcar como pagamento pendente
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={() => handleStatusChange("deleted")}
           disabled={loadingCheckoutStatusUpdate}
         >
