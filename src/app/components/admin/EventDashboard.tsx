@@ -16,6 +16,7 @@ import {
   Description as DescriptionIcon,
   Payments as PaymentsIcon,
   ConfirmationNumber as VoucherIcon,
+  LocalActivity as LocalActivityIcon,
 } from "@mui/icons-material";
 import { useAdminContext } from "../../contexts/AdminContext";
 
@@ -44,6 +45,7 @@ export default function EventDashboard() {
     completedCheckouts,
     totalRegistrations,
     totalAmountInCheckouts,
+    totalComplimentaryTickets,
     registrationPercentage,
     acquiredSlots,
   } = eventDashboardData;
@@ -120,13 +122,33 @@ export default function EventDashboard() {
             >
               <Box>
                 <Typography color="textSecondary" gutterBottom>
-                  Ingressos negociados (pendentes ou pagos)
+                  Ingressos de aquisições
                 </Typography>
                 <Typography variant="h4" color="primary.main">
                   {totalAmountInCheckouts}
                 </Typography>
               </Box>
               <VoucherIcon color="primary" sx={{ fontSize: 40 }} />
+            </Box>
+          </CardContent>
+        </Card>
+        {/* Ingressos de cortesia */}
+        <Card>
+          <CardContent>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Box>
+                <Typography color="textSecondary" gutterBottom>
+                  Ingressos de cortesia
+                </Typography>
+                <Typography variant="h4" color="primary.main">
+                  {totalComplimentaryTickets}
+                </Typography>
+              </Box>
+              <LocalActivityIcon color="primary" sx={{ fontSize: 40 }} />
             </Box>
           </CardContent>
         </Card>

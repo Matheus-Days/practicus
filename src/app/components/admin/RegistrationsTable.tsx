@@ -22,21 +22,19 @@ import {
   FormControl,
   InputLabel,
   Select,
-  Snackbar,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Block as BlockIcon,
-  Close as CloseIcon,
   Pending as PendingIcon,
   ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
 import { useAdminContext } from '../../contexts/AdminContext';
 import { RegistrationData } from '../../hooks/registrationAPI';
 import { RegistrationStatus } from '../../api/registrations/registration.types';
-import { CheckoutStatus } from '../../api/checkouts/checkout.types';
 import CheckoutDetailsDialog from './CheckoutDetailsDialog';
 
 export default function RegistrationsTable() {
@@ -47,15 +45,12 @@ export default function RegistrationsTable() {
     updateRegistrationStatus,
     selectedEvent,
     getCheckoutById,
+    loadingRegistrationStatusUpdate,
   } = useAdminContext();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedRegistration, setSelectedRegistration] = React.useState<RegistrationData | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'error' | 'success'>('error');
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedCheckoutId, setSelectedCheckoutId] = useState<string | null>(null);
 
@@ -70,22 +65,9 @@ export default function RegistrationsTable() {
   };
 
   const handleStatusChange = async (status: RegistrationStatus) => {
-    if (selectedRegistration && !isUpdatingStatus) {
-      setIsUpdatingStatus(true);
+    if (selectedRegistration && !loadingRegistrationStatusUpdate) {
       handleMenuClose();
-      try {
-        await updateRegistrationStatus(selectedRegistration.id, status);
-        setSnackbarMessage('Status da inscrição atualizado com sucesso!');
-        setSnackbarSeverity('success');
-        setSnackbarOpen(true);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar status da inscrição';
-        setSnackbarMessage(errorMessage);
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-      } finally {
-        setIsUpdatingStatus(false);
-      }
+      await updateRegistrationStatus(selectedRegistration.id, status);
     }
   };
 
@@ -96,9 +78,6 @@ export default function RegistrationsTable() {
     const checkout = eventCheckouts.find(c => c.id === selectedRegistration.checkoutId);
     
     if (!checkout) {
-      setSnackbarMessage('Checkout associado não encontrado');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
       return;
     }
     
@@ -150,10 +129,6 @@ export default function RegistrationsTable() {
 
   const handleStatusFilterChange = (event: any) => {
     setStatusFilter(event.target.value);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
   };
 
   const handleViewCheckout = (checkoutId: string) => {
@@ -328,49 +303,31 @@ export default function RegistrationsTable() {
       >
         <MenuItem 
           onClick={handleActivateRegistration}
-          disabled={isUpdatingStatus || !selectedRegistration || !canActivateRegistration(selectedRegistration)}
+          disabled={loadingRegistrationStatusUpdate || !selectedRegistration || !canActivateRegistration(selectedRegistration)}
         >
           <ListItemIcon>
-            <CheckCircleIcon color="success" />
+            {loadingRegistrationStatusUpdate ? (
+              <CircularProgress size={20} />
+            ) : (
+              <CheckCircleIcon color="success" />
+            )}
           </ListItemIcon>
           Ativar inscrição
         </MenuItem>
         <MenuItem 
           onClick={handleCancelRegistration}
-          disabled={isUpdatingStatus || !selectedRegistration || !canCancelRegistration(selectedRegistration)}
+          disabled={loadingRegistrationStatusUpdate || !selectedRegistration || !canCancelRegistration(selectedRegistration)}
         >
           <ListItemIcon>
-            <CancelIcon color="error" />
+            {loadingRegistrationStatusUpdate ? (
+              <CircularProgress size={20} />
+            ) : (
+              <CancelIcon color="error" />
+            )}
           </ListItemIcon>
           Desativar inscrição
         </MenuItem>
       </Menu>
-
-      {/* Snackbar para notificações */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbarSeverity}
-          sx={{ width: '100%' }}
-          action={
-            <IconButton
-              aria-label="close"
-              color="inherit"
-              size="small"
-              onClick={handleSnackbarClose}
-            >
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
-          }
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
 
       {/* Dialog de detalhes do checkout */}
       <CheckoutDetailsDialog
