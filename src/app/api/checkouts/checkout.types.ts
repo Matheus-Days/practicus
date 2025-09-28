@@ -32,6 +32,7 @@ export type CheckoutDocument = {
   status: CheckoutStatus;
   userId: string;
   amount?: number;
+  complimentary?: number;
   billingDetails?: BillingDetailsPF | BillingDetailsPJ;
   deletedAt?: Date;
   legalEntity?: LegalEntity;

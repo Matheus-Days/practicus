@@ -15,6 +15,8 @@ import {
   Divider,
   IconButton,
   Snackbar,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -22,6 +24,8 @@ import {
   Cancel as CancelIcon,
   Close as CloseIcon,
   ContentCopy as ContentCopyIcon,
+  Check as CheckIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import { CheckoutData } from '../../types/checkout';
 import { calculateTotalPurchasePrice } from '@/lib/checkout-utils';
@@ -35,6 +39,8 @@ interface CheckoutDetailsDialogProps {
   checkoutData?: CheckoutData;
   eventData?: EventDocument;
   onFetchCheckout?: (checkoutId: string) => Promise<CheckoutData>;
+  onUpdateComplimentaryTickets?: (checkout: CheckoutData, val: number) => Promise<void>;
+  loadingComplimentaryUpdate?: boolean;
 }
 
 // Subcomponente para dados de pessoa física
@@ -136,11 +142,18 @@ export default function CheckoutDetailsDialog({
   checkoutData,
   eventData,
   onFetchCheckout,
+  onUpdateComplimentaryTickets,
+  loadingComplimentaryUpdate = false,
 }: CheckoutDetailsDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkout, setCheckout] = useState<CheckoutData | null>(checkoutData || null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  
+  // Estados para edição de cortesias
+  const [complimentaryValue, setComplimentaryValue] = useState<number>(0);
+  const [isEditingComplimentary, setIsEditingComplimentary] = useState(false);
 
   const fetchCheckout = useCallback(async () => {
     if (!checkoutId || !onFetchCheckout) return;
@@ -166,6 +179,14 @@ export default function CheckoutDetailsDialog({
     }
   }, [open, checkoutId, checkoutData, onFetchCheckout, fetchCheckout]);
 
+  // Sincronizar valor de cortesias quando checkout mudar
+  useEffect(() => {
+    if (checkout) {
+      setComplimentaryValue(checkout.complimentary || 0);
+      setIsEditingComplimentary(false);
+    }
+  }, [checkout]);
+
   const handleClose = () => {
     setCheckout(null);
     setError(null);
@@ -177,6 +198,7 @@ export default function CheckoutDetailsDialog({
     if (checkout?.id) {
       try {
         await navigator.clipboard.writeText(checkout.id);
+        setSnackbarMessage('ID copiado para a área de transferência!');
         setSnackbarOpen(true);
       } catch (err) {
         console.error('Erro ao copiar ID:', err);
@@ -186,6 +208,36 @@ export default function CheckoutDetailsDialog({
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
+  };
+
+  // Funções para edição de cortesias
+  const handleComplimentaryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value) || 0;
+    setComplimentaryValue(value);
+    setIsEditingComplimentary(value !== (checkout?.complimentary || 0));
+  };
+
+  const handleConfirmComplimentary = async () => {
+    if (!checkout?.id || !onUpdateComplimentaryTickets) return;
+    
+    try {
+      await onUpdateComplimentaryTickets(checkout, complimentaryValue);
+      
+      setCheckout(prevCheckout => 
+        prevCheckout ? { ...prevCheckout, complimentary: complimentaryValue } : null
+      );
+      
+      setIsEditingComplimentary(false);
+      setSnackbarMessage('Cortesias atualizadas com sucesso!');
+      setSnackbarOpen(true);
+    } catch (err) {
+      console.error('Erro ao atualizar cortesias:', err);
+    }
+  };
+
+  const handleCancelComplimentary = () => {
+    setComplimentaryValue(checkout?.complimentary || 0);
+    setIsEditingComplimentary(false);
   };
 
   const getStatusDisplay = (status: string) => {
@@ -278,7 +330,7 @@ export default function CheckoutDetailsDialog({
               {/* Status */}
               <Box mb={3}>
                 <Typography variant="h6" gutterBottom>
-                  Status da aquisição
+                  Situação da aquisição
                 </Typography>
                 <Chip
                   icon={getStatusDisplay(checkout.status).icon}
@@ -379,6 +431,57 @@ export default function CheckoutDetailsDialog({
                 </Box>
               </Box>
 
+              {/* Seção de Cortesias */}
+              <Divider sx={{ my: 3 }} />
+              <Box mb={3}>
+                <Typography variant="h6" gutterBottom color="primary">
+                  Cortesias
+                </Typography>
+                <Box display="flex" alignItems="center" gap={2}>
+                  <TextField
+                    type="number"
+                    value={complimentaryValue}
+                    onChange={handleComplimentaryChange}
+                    size="small"
+                    sx={{ width: 100 }}
+                    inputProps={{ 
+                      min: 0,
+                      style: { textAlign: 'center' }
+                    }}
+                    disabled={loadingComplimentaryUpdate}
+                    label="Quantidade"
+                  />
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={handleConfirmComplimentary}
+                    disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
+                    sx={{ 
+                      bgcolor: 'success.main', 
+                      color: 'white',
+                      '&:hover': { bgcolor: 'success.dark' },
+                      '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                    }}
+                  >
+                    <CheckIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="secondary"
+                    onClick={handleCancelComplimentary}
+                    disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
+                    sx={{ 
+                      bgcolor: 'secondary.main', 
+                      color: 'white',
+                      '&:hover': { bgcolor: 'secondary.dark' },
+                      '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                    }}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </Box>
+              </Box>
+
               {/* Informações Adicionais */}
               {checkout.registrateMyself !== undefined && (
                 <>
@@ -403,7 +506,7 @@ export default function CheckoutDetailsDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Snackbar para notificação de cópia */}
+      {/* Snackbar para notificações */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
@@ -415,7 +518,7 @@ export default function CheckoutDetailsDialog({
           severity="success"
           sx={{ width: '100%' }}
         >
-          ID copiado para a área de transferência!
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </>

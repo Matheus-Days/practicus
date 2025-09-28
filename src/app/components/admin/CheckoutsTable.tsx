@@ -27,6 +27,7 @@ import {
   Cancel as CancelIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import { CircularProgress } from "@mui/material";
 import { useAdminContext } from "../../contexts/AdminContext";
 import { CheckoutData } from "../../types/checkout";
 import { CheckoutStatus } from "../../api/checkouts/checkout.types";
@@ -37,9 +38,11 @@ export default function CheckoutsTable() {
   const {
     eventCheckouts,
     loadingCheckouts,
-    error,
     selectedEvent,
     updateCheckoutStatus,
+    updateComplimentaryTickets,
+    loadingComplimentaryUpdate,
+    loadingCheckoutStatusUpdate,
   } = useAdminContext();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -164,10 +167,6 @@ export default function CheckoutsTable() {
     );
   }
 
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
-
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
@@ -282,21 +281,42 @@ export default function CheckoutsTable() {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleStatusChange("completed")}>
+        <MenuItem 
+          onClick={() => handleStatusChange("completed")}
+          disabled={loadingCheckoutStatusUpdate}
+        >
           <ListItemIcon>
-            <CheckCircleIcon color="success" />
+            {loadingCheckoutStatusUpdate ? (
+              <CircularProgress size={20} />
+            ) : (
+              <CheckCircleIcon color="success" />
+            )}
           </ListItemIcon>
           Marcar como pago
         </MenuItem>
-        <MenuItem onClick={() => handleStatusChange("pending")}>
+        <MenuItem 
+          onClick={() => handleStatusChange("pending")}
+          disabled={loadingCheckoutStatusUpdate}
+        >
           <ListItemIcon>
-            <PendingIcon color="warning" />
+            {loadingCheckoutStatusUpdate ? (
+              <CircularProgress size={20} />
+            ) : (
+              <PendingIcon color="warning" />
+            )}
           </ListItemIcon>
           Marcar como pagamento pendente
         </MenuItem>
-        <MenuItem onClick={() => handleStatusChange("deleted")}>
+        <MenuItem 
+          onClick={() => handleStatusChange("deleted")}
+          disabled={loadingCheckoutStatusUpdate}
+        >
           <ListItemIcon>
-            <CancelIcon color="error" />
+            {loadingCheckoutStatusUpdate ? (
+              <CircularProgress size={20} />
+            ) : (
+              <CancelIcon color="error" />
+            )}
           </ListItemIcon>
           Cancelar compra
         </MenuItem>
@@ -308,6 +328,8 @@ export default function CheckoutsTable() {
         onClose={handleCheckoutDialogClose}
         checkoutData={selectedCheckoutForDialog || undefined}
         eventData={selectedEvent || undefined}
+        onUpdateComplimentaryTickets={updateComplimentaryTickets}
+        loadingComplimentaryUpdate={loadingComplimentaryUpdate}
       />
     </Box>
   );
