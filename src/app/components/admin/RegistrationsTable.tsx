@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { ReactElement, useState, useMemo } from 'react';
+import React, { ReactElement, useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -15,14 +15,14 @@ import {
   Tooltip,
   Box,
   LinearProgress,
-  Alert,
   Menu,
   MenuItem,
   ListItemIcon,
   FormControl,
   InputLabel,
   Select,
-} from '@mui/material';
+  Button,
+} from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
   CheckCircle as CheckCircleIcon,
@@ -30,12 +30,15 @@ import {
   Block as BlockIcon,
   Pending as PendingIcon,
   ShoppingCart as ShoppingCartIcon,
-} from '@mui/icons-material';
-import { CircularProgress } from '@mui/material';
-import { useAdminContext } from '../../contexts/AdminContext';
-import { RegistrationData } from '../../hooks/registrationAPI';
-import { RegistrationStatus } from '../../api/registrations/registration.types';
-import CheckoutDetailsDialog from './CheckoutDetailsDialog';
+  Download as DownloadIcon,
+} from "@mui/icons-material";
+import { CircularProgress } from "@mui/material";
+import { useAdminContext } from "../../contexts/AdminContext";
+import { RegistrationData } from "../../hooks/registrationAPI";
+import { RegistrationStatus } from "../../api/registrations/registration.types";
+import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
+import { useXlsxExport } from "../../hooks/useXlsxExport";
+import { formatRegistrationForExport } from "../../utils/export-utils";
 
 export default function RegistrationsTable() {
   const {
@@ -49,12 +52,20 @@ export default function RegistrationsTable() {
   } = useAdminContext();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedRegistration, setSelectedRegistration] = React.useState<RegistrationData | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedRegistration, setSelectedRegistration] =
+    React.useState<RegistrationData | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("valid");
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
-  const [selectedCheckoutId, setSelectedCheckoutId] = useState<string | null>(null);
+  const [selectedCheckoutId, setSelectedCheckoutId] = useState<string | null>(
+    null
+  );
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, registration: RegistrationData) => {
+  const { exportToXlsx, isLoading: isExporting } = useXlsxExport();
+
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    registration: RegistrationData
+  ) => {
     setAnchorEl(event.currentTarget);
     setSelectedRegistration(registration);
   };
@@ -73,62 +84,106 @@ export default function RegistrationsTable() {
 
   const handleActivateRegistration = async () => {
     if (!selectedRegistration) return;
-    
+
     // Buscar o checkout associado à inscrição
-    const checkout = eventCheckouts.find(c => c.id === selectedRegistration.checkoutId);
-    
+    const checkout = eventCheckouts.find(
+      (c) => c.id === selectedRegistration.checkoutId
+    );
+
     if (!checkout) {
       return;
     }
-    
+
     // Determinar o novo status baseado no status do checkout
-    const newStatus: RegistrationStatus = checkout.status === 'pending' ? 'pending' : 'ok';
-    
+    const newStatus: RegistrationStatus =
+      checkout.status === "pending" ? "pending" : "ok";
+
     await handleStatusChange(newStatus);
   };
 
   const handleCancelRegistration = async () => {
-    await handleStatusChange('cancelled');
+    await handleStatusChange("cancelled");
   };
 
   // Função para verificar se o botão "Ativar inscrição" deve estar habilitado
   const canActivateRegistration = (registration: RegistrationData) => {
-    const checkout = eventCheckouts.find(c => c.id === registration.checkoutId);
-    
+    const checkout = eventCheckouts.find(
+      (c) => c.id === registration.checkoutId
+    );
+
     if (!checkout) return false;
-    
+
     // Não pode ativar se o checkout for deleted ou refunded
-    if (checkout.status === 'deleted' || checkout.status === 'refunded') {
+    if (checkout.status === "deleted" || checkout.status === "refunded") {
       return false;
     }
-    
+
     // Não pode ativar se a inscrição já estiver pending ou ok
-    if (registration.status === 'pending' || registration.status === 'ok') {
+    if (registration.status === "pending" || registration.status === "ok") {
       return false;
     }
-    
+
     return true;
   };
 
   // Função para verificar se o botão "Desativar inscrição" deve estar habilitado
   const canCancelRegistration = (registration: RegistrationData) => {
-    const checkout = eventCheckouts.find(c => c.id === registration.checkoutId);
-    
+    const checkout = eventCheckouts.find(
+      (c) => c.id === registration.checkoutId
+    );
+
     // Não pode desativar se a inscrição já estiver cancelada
-    if (registration.status === 'cancelled') {
+    if (registration.status === "cancelled") {
       return false;
     }
-    
+
     // Não pode desativar se o checkout for deleted ou refunded
-    if (checkout && (checkout.status === 'deleted' || checkout.status === 'refunded')) {
+    if (
+      checkout &&
+      (checkout.status === "deleted" || checkout.status === "refunded")
+    ) {
       return false;
     }
-    
+
     return true;
   };
 
   const handleStatusFilterChange = (event: any) => {
     setStatusFilter(event.target.value);
+  };
+
+  const handleExportToXlsx = async () => {
+    try {
+      const exportData = filteredRegistrations.map((registration) =>
+        formatRegistrationForExport(registration)
+      );
+      let statusDisplay: string;
+      switch (statusFilter) {
+        case "valid":
+          statusDisplay = "Válidas";
+          break;
+        case "all":
+          statusDisplay = "Todas";
+          break;
+        case "ok":
+          statusDisplay = "Confirmadas";
+          break;
+        case "cancelled":
+          statusDisplay = "Canceladas";
+          break;
+        case "pending":
+          statusDisplay = "Pendentes";
+          break;
+        default:
+          statusDisplay = "Inválidas";
+      }
+      await exportToXlsx(exportData, {
+        filename: `inscricoes-${statusDisplay}_${selectedEvent?.title || "evento"}_${new Date().toISOString().split("T")[0]}.xlsx`,
+        sheetName: `Inscrições - ${statusDisplay}`,
+      });
+    } catch (error) {
+      console.error("Erro ao exportar inscrições:", error);
+    }
   };
 
   const handleViewCheckout = (checkoutId: string) => {
@@ -141,44 +196,66 @@ export default function RegistrationsTable() {
     setSelectedCheckoutId(null);
   };
 
-  // Filtrar inscrições baseado no status selecionado
   const filteredRegistrations = useMemo(() => {
-    if (statusFilter === 'all') {
+    if (statusFilter === "all") {
       return eventRegistrations;
     }
-    return eventRegistrations.filter(registration => registration.status === statusFilter);
+    if (statusFilter === "valid") {
+      return eventRegistrations.filter(
+        (registration) => registration.status !== "invalid"
+      );
+    }
+    return eventRegistrations.filter(
+      (registration) => registration.status === statusFilter
+    );
   }, [eventRegistrations, statusFilter]);
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
-      case 'ok':
-        return { text: 'Confirmada', color: 'success' as const, icon: <CheckCircleIcon /> };
-      case 'cancelled':
-        return { text: 'Cancelada', color: 'error' as const, icon: <CancelIcon /> };
-      case 'invalid':
-        return { text: 'Inválida', color: 'error' as const, icon: <BlockIcon /> };
-      case 'pending':
-        return { text: 'Pendente', color: 'warning' as const, icon: <PendingIcon /> };
+      case "ok":
+        return {
+          text: "Confirmada",
+          color: "success" as const,
+          icon: <CheckCircleIcon />,
+        };
+      case "cancelled":
+        return {
+          text: "Cancelada",
+          color: "error" as const,
+          icon: <CancelIcon />,
+        };
+      case "invalid":
+        return {
+          text: "Inválida",
+          color: "error" as const,
+          icon: <BlockIcon />,
+        };
+      case "pending":
+        return {
+          text: "Pendente",
+          color: "warning" as const,
+          icon: <PendingIcon />,
+        };
       default:
-        return { text: 'Desconhecido', color: 'default' as const, icon: null };
+        return { text: "Desconhecido", color: "default" as const, icon: null };
     }
   };
 
   const formatDate = (date: any) => {
-    if (!date) return '-';
+    if (!date) return "-";
     const dateObj = date.toDate ? date.toDate() : new Date(date);
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(dateObj);
   };
 
   if (loadingRegistrations) {
     return (
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{ width: "100%" }}>
         <LinearProgress />
       </Box>
     );
@@ -186,38 +263,63 @@ export default function RegistrationsTable() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h6">
           Inscrições ({filteredRegistrations.length})
         </Typography>
-        
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel id="status-filter-label">Situação</InputLabel>
-          <Select
-            labelId="status-filter-label"
-            value={statusFilter}
-            label="Situação"
-            onChange={handleStatusFilterChange}
+
+        <Box display="flex" gap={2} alignItems="center">
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel id="status-filter-label">Situação</InputLabel>
+            <Select
+              labelId="status-filter-label"
+              value={statusFilter}
+              label="Situação"
+              onChange={handleStatusFilterChange}
+            >
+              <MenuItem value="valid">Válidas</MenuItem>
+              <MenuItem value="all">Todas</MenuItem>
+              <MenuItem value="ok">Confirmadas</MenuItem>
+              <MenuItem value="cancelled">Canceladas</MenuItem>
+              <MenuItem value="invalid">Inválidas</MenuItem>
+              <MenuItem value="pending">Pendentes</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Button
+            onClick={handleExportToXlsx}
+            disabled={isExporting || filteredRegistrations.length === 0}
+            color="primary"
+            variant="outlined"
+            size="small"
+            startIcon={
+              isExporting ? <CircularProgress size={16} /> : <DownloadIcon />
+            }
           >
-            <MenuItem value="all">Todas</MenuItem>
-            <MenuItem value="ok">Confirmadas</MenuItem>
-            <MenuItem value="cancelled">Canceladas</MenuItem>
-            <MenuItem value="invalid">Inválidas</MenuItem>
-            <MenuItem value="pending">Pendentes</MenuItem>
-          </Select>
-        </FormControl>
+            {isExporting ? "Exportando..." : "Baixar planilha da tabela atual"}
+          </Button>
+        </Box>
       </Box>
 
       <TableContainer component={Paper} variant="outlined">
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Nome completo</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Nome completo</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
               <TableCell>Telefone</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Situação</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Data de inscrição</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="center">Ações</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Situação</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>
+                Data de inscrição
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold" }} align="center">
+                Ações
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -237,7 +339,7 @@ export default function RegistrationsTable() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {registration.phone || '-'}
+                      {registration.phone || "-"}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -260,7 +362,9 @@ export default function RegistrationsTable() {
                         <Tooltip title="Ver aquisição">
                           <IconButton
                             size="small"
-                            onClick={() => handleViewCheckout(registration.checkoutId!)}
+                            onClick={() =>
+                              handleViewCheckout(registration.checkoutId!)
+                            }
                             color="primary"
                           >
                             <ShoppingCartIcon />
@@ -287,10 +391,11 @@ export default function RegistrationsTable() {
       {filteredRegistrations.length === 0 && (
         <Box textAlign="center" py={4}>
           <Typography variant="body1" color="textSecondary">
-            {statusFilter === 'all' 
-              ? 'Nenhuma inscrição encontrada para este evento.'
-              : `Nenhuma inscrição com situação "${getStatusDisplay(statusFilter).text}" encontrada.`
-            }
+            {statusFilter === "all"
+              ? "Nenhuma inscrição encontrada para este evento."
+              : statusFilter === "valid"
+                ? "Nenhuma inscrição válida encontrada."
+                : `Nenhuma inscrição com situação "${getStatusDisplay(statusFilter).text}" encontrada.`}
           </Typography>
         </Box>
       )}
@@ -301,9 +406,13 @@ export default function RegistrationsTable() {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem 
+        <MenuItem
           onClick={handleActivateRegistration}
-          disabled={loadingRegistrationStatusUpdate || !selectedRegistration || !canActivateRegistration(selectedRegistration)}
+          disabled={
+            loadingRegistrationStatusUpdate ||
+            !selectedRegistration ||
+            !canActivateRegistration(selectedRegistration)
+          }
         >
           <ListItemIcon>
             {loadingRegistrationStatusUpdate ? (
@@ -314,9 +423,13 @@ export default function RegistrationsTable() {
           </ListItemIcon>
           Ativar inscrição
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={handleCancelRegistration}
-          disabled={loadingRegistrationStatusUpdate || !selectedRegistration || !canCancelRegistration(selectedRegistration)}
+          disabled={
+            loadingRegistrationStatusUpdate ||
+            !selectedRegistration ||
+            !canCancelRegistration(selectedRegistration)
+          }
         >
           <ListItemIcon>
             {loadingRegistrationStatusUpdate ? (
