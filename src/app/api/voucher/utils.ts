@@ -52,20 +52,21 @@ export async function validateVoucher(firestore: Firestore, voucherData: Voucher
     return { valid: false, message: "Evento cancelado e não está mais disponível para inscrições." };
   }
 
-  const registrationsSnapshot = await firestore
-    .collection("registrations")
-    .where("checkoutId", "==", voucherData.checkoutId)
-    .where("status", "==", "ok")
-    .get();
-
-  const validRegistrations = registrationsSnapshot.docs.map((doc) => ({...doc.data() as RegistrationDocument, id: doc.id})).filter((reg) => reg.checkoutId !== reg.id);
-
   if (!buyerCheckoutData.amount) {
     return { valid: false, message: "Compra do voucher não tem um número válido de inscrições." };
   }
 
-  const maxRegistrations = buyerCheckoutData.registrateMyself ? buyerCheckoutData.amount - 1 : buyerCheckoutData.amount;
-  
+  const registrationsSnapshot = await firestore
+    .collection("registrations")
+    .where("checkoutId", "==", voucherData.checkoutId)
+    .where("status", "in", ["ok", "pending"])
+    .get();
+
+  const validRegistrations = registrationsSnapshot.docs.map((doc) => ({...doc.data() as RegistrationDocument, id: doc.id}))/* .filter((reg) => reg.checkoutId !== reg.id) */;
+
+  const complimentary = buyerCheckoutData.complimentary || 0;
+  const maxRegistrations = buyerCheckoutData.amount + complimentary;
+
   if (validRegistrations.length >= maxRegistrations) {
     return { valid: false, message: "Número máximo de inscrições já atingido para este voucher." };
   }

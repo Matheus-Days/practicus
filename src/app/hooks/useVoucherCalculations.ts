@@ -12,14 +12,18 @@ export interface VoucherCalculations {
  * Centraliza a lógica de cálculo de registrations disponíveis, utilizadas e totais
  */
 export function useVoucherCalculations(): VoucherCalculations {
-  const { checkoutRegistrations, registrationsAmount } = useCheckout();
+  const { checkoutRegistrations, checkout } = useCheckout();
+
+  const registrationsAmount = checkout?.amount || 1;
+  const complimentary = checkout?.complimentary || 0;
+  const maxRegistrations = complimentary + registrationsAmount;
 
   const hasOwnValidRegistration = checkoutRegistrations.some(
     (reg) =>
       (reg.status === "ok" || reg.status === "pending") && reg.isMyRegistration
   );
 
-  const totalRegistrations = hasOwnValidRegistration ? registrationsAmount - 1 : registrationsAmount;
+  const totalRegistrations = hasOwnValidRegistration ? maxRegistrations - 1 : maxRegistrations;
 
   const usedRegistrations = checkoutRegistrations.filter(
     (reg) => (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
