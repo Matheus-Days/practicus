@@ -50,6 +50,8 @@ export default function EventDashboard() {
     acquiredSlots,
   } = eventDashboardData;
 
+  const totalTickets = totalAmountInCheckouts + totalComplimentaryTickets;
+
   const getStatusColor = (percentage: number) => {
     if (percentage >= 75) return "error";
     if (percentage >= 50) return "warning";
@@ -314,11 +316,11 @@ export default function EventDashboard() {
                 mb={2}
               >
                 <Typography variant="h6">
-                  Ingressos negociados X Ocupação
+                  Ingressos totais X Ocupação
                 </Typography>
                 <Chip
-                  label={`${((totalAmountInCheckouts / totalSlots) * 100).toFixed(1)}%`}
-                  color={getStatusColor((totalAmountInCheckouts / totalSlots) * 100) as any}
+                  label={`${((totalTickets / totalSlots) * 100).toFixed(1)}%`}
+                  color={getStatusColor((totalTickets / totalSlots) * 100) as any}
                   variant="outlined"
                 />
               </Box>
