@@ -91,6 +91,7 @@ export default function Dashboard({
           registrateMyself={registrateMyself}
           billingDetails={billingDetails}
           checkoutStatus={checkout.status}
+          complimentary={checkout.complimentary}
           onEditBilling={handleEditBilling}
           onGoToPayment={handleGoToPayment}
           onCancelAcquisition={handleCancelAcquisition}

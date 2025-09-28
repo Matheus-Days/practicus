@@ -28,6 +28,7 @@ interface PurchaseSummaryProps {
   registrateMyself: boolean;
   billingDetails: BillingDetailsPF | BillingDetailsPJ | null;
   checkoutStatus: CheckoutStatus;
+  complimentary?: number;
   onEditBilling?: () => void;
   onGoToPayment?: () => void;
   onCancelAcquisition?: () => void;
@@ -40,6 +41,7 @@ export default function PurchaseSummary({
   registrateMyself,
   billingDetails,
   checkoutStatus,
+  complimentary,
   onEditBilling,
   onGoToPayment,
   onCancelAcquisition,
@@ -63,11 +65,22 @@ export default function PurchaseSummary({
             <Typography variant="h6">{registrationsAmount}</Typography>
           </Box>
 
+          {!!complimentary && (
+            <Box sx={{ flex: "1 1 300px" }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Quantidade de cortesias
+              </Typography>
+              <Typography variant="h6" color="primary">
+                {complimentary}
+              </Typography>
+            </Box>
+          )}
+
           <Box sx={{ flex: "1 1 300px" }}>
             <Typography variant="subtitle2" color="text.secondary">
               Tipo de pessoa
             </Typography>
-            <Typography variant="h6">
+            <Typography variant="body1">
               {legalEntity === "pf" ? "Pessoa física" : "Pessoa jurídica"}
             </Typography>
           </Box>
@@ -75,10 +88,10 @@ export default function PurchaseSummary({
           {registrateMyself && (
             <Box sx={{ flex: "1 1 100%" }}>
               <Typography variant="subtitle2" color="text.secondary">
-                Inscrição Própria
+                Inscrição própria
               </Typography>
-              <Typography variant="h6">
-                Sim - Esta inscrição é para mim
+              <Typography variant="body1">
+                Sim - Vou usar umas das inscrições para mim
               </Typography>
             </Box>
           )}
