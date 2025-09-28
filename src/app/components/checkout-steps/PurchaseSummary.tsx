@@ -21,6 +21,7 @@ import {
   LegalEntity,
   CheckoutStatus,
 } from "../../api/checkouts/checkout.types";
+import { formatCNPJ } from "../../utils/export-utils";
 
 interface PurchaseSummaryProps {
   registrationsAmount: number;
@@ -127,7 +128,7 @@ export default function PurchaseSummary({
             </Typography>
             <Typography variant="body2">
               <strong>CNPJ:</strong>{" "}
-              {(billingDetails as BillingDetailsPJ).orgCnpj}
+              {formatCNPJ((billingDetails as BillingDetailsPJ).orgCnpj)}
             </Typography>
             <Typography variant="body2">
               <strong>Responsável:</strong>{" "}

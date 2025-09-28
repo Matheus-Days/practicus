@@ -23,6 +23,7 @@ import {
 import { CircularProgress } from "@mui/material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
+import { formatCPF } from "../../utils/export-utils";
 
 export default function MyRegistration() {
   const {
@@ -233,7 +234,7 @@ export default function MyRegistration() {
                   <strong>Email:</strong> {registration.email}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>CPF:</strong> {registration.cpf}
+                  <strong>CPF:</strong> {formatCPF(registration.cpf)}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Nome para crachá:</strong>{" "}
