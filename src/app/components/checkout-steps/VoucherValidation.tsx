@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import { useVoucherAPI } from "../../hooks/voucherAPI";
 import RegistrationForm from "../RegistrationForm";
@@ -43,8 +43,9 @@ export default function VoucherValidation() {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const handleValidateVoucher = async () => {
-    if (!voucherCode.trim()) {
+  const handleValidateVoucher = useCallback(async (voucherToValidate?: string) => {
+    const codeToValidate = voucherToValidate || voucherCode.trim();
+    if (!codeToValidate) {
       return;
     }
 
@@ -52,17 +53,27 @@ export default function VoucherValidation() {
     setErrorMessage("");
 
     try {
-      await validateVoucher(voucherCode.trim());
+      await validateVoucher(codeToValidate);
 
       setValidationState("success");
-      setVoucher(voucherCode.trim());
+      setVoucher(codeToValidate);
     } catch (error) {
       setValidationState("error");
       setErrorMessage(
         error instanceof Error ? error.message : "Erro ao validar voucher"
       );
     }
-  };
+  }, [voucherCode, validateVoucher, setVoucher]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const voucherFromUrl = urlParams.get('voucher');
+    
+    if (voucherFromUrl && !voucherCode) {
+      setVoucherCode(voucherFromUrl);
+      handleValidateVoucher(voucherFromUrl);
+    }
+  }, [voucherCode, handleValidateVoucher]);
 
   const handleCreateRegistration = () => {
     setShowRegistrationForm(true);
@@ -261,7 +272,7 @@ export default function VoucherValidation() {
 
           <Button
             variant="contained"
-            onClick={handleValidateVoucher}
+            onClick={() => handleValidateVoucher()}
             disabled={!voucherCode.trim() || validationState === "validating"}
             startIcon={
               validationState === "validating" ? (
