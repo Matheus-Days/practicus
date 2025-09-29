@@ -157,7 +157,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
   if (user) {
     return (
       <CheckoutProvider user={user} eventId={eventId}>
-        <Stack spacing={2}>
+        <Stack sx={{ maxWidth: "100%" }} spacing={2}>
           <Alert severity="success" icon={<CheckCircle />}>
             <Typography variant="body2">
               Autenticado como: <strong>{user.email}</strong>
