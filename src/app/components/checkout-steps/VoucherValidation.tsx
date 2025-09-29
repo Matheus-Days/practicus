@@ -164,27 +164,32 @@ export default function VoucherValidation() {
   // Se o voucher foi validado com sucesso e o usuário clicou para criar inscrição
   if (showRegistrationForm) {
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-          <SuccessIcon sx={{ color: "success.main", fontSize: 32 }} />
-          <Typography variant="h4" component="h1">
-            Dados do participante
-          </Typography>
-        </Box>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: { xs: 2, sm: 3 } }}>
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          gutterBottom
+          sx={{ 
+            fontSize: { xs: "1.75rem", sm: "2.125rem" },
+            textAlign: { xs: "center", sm: "left" }
+          }}
+        >
+          Dados do participante
+        </Typography>
 
-        <Alert severity="success" sx={{ mb: 2 }}>
+        <Alert severity="success">
           Voucher <strong>{voucherCode}</strong> validado com sucesso! Agora
           preencha seus dados para completar a inscrição.
         </Alert>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error">
             {error}
           </Alert>
         )}
 
         <Card sx={{ boxShadow: 2 }}>
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <RegistrationForm
               initialData={formData || {}}
               onDataChange={updateFormData}
@@ -193,11 +198,20 @@ export default function VoucherValidation() {
           </CardContent>
         </Card>
 
-        <Box sx={{ display: "flex", gap: 2, justifyContent: "space-between" }}>
+        <Box sx={{ 
+          display: "flex", 
+          gap: 2, 
+          justifyContent: "space-between",
+          flexDirection: { xs: "column", sm: "row" }
+        }}>
           <Button
             variant="outlined"
             onClick={() => setShowRegistrationForm(false)}
             disabled={loading}
+            sx={{ 
+              width: { xs: "100%", sm: "auto" },
+              minWidth: { sm: "auto" }
+            }}
           >
             Voltar
           </Button>
@@ -209,6 +223,10 @@ export default function VoucherValidation() {
             }
             onClick={handleFinalizeRegistration}
             disabled={loading || !isFormValid}
+            sx={{ 
+              width: { xs: "100%", sm: "auto" },
+              minWidth: { sm: "auto" }
+            }}
           >
             {loading ? "Criando..." : "Finalizar inscrição"}
           </Button>
@@ -218,9 +236,14 @@ export default function VoucherValidation() {
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: { xs: 2, sm: 3 } }}>
       <Box sx={{ textAlign: "center", mb: 2 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          gutterBottom
+          sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}
+        >
           Validação de voucher
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -231,7 +254,7 @@ export default function VoucherValidation() {
       <Paper
         elevation={2}
         sx={{
-          p: 4,
+          p: { xs: 3, sm: 4 },
           maxWidth: 500,
           mx: "auto",
           width: "100%",
@@ -261,11 +284,20 @@ export default function VoucherValidation() {
           {getValidationMessage()}
         </Alert>
 
-        <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+        <Box sx={{ 
+          display: "flex", 
+          gap: 2, 
+          justifyContent: "center",
+          flexDirection: { xs: "column", sm: "row" }
+        }}>
           <Button
             variant="outlined"
             onClick={handleBackToSelectType}
             disabled={validationState === "validating"}
+            sx={{ 
+              width: { xs: "100%", sm: "auto" },
+              minWidth: { sm: "auto" }
+            }}
           >
             Voltar
           </Button>
@@ -281,6 +313,10 @@ export default function VoucherValidation() {
                 <VoucherIcon />
               )
             }
+            sx={{ 
+              width: { xs: "100%", sm: "auto" },
+              minWidth: { sm: "auto" }
+            }}
           >
             {validationState === "validating"
               ? "Validando..."
@@ -296,6 +332,10 @@ export default function VoucherValidation() {
               size="large"
               onClick={handleCreateRegistration}
               startIcon={<PersonAddIcon />}
+              sx={{ 
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { sm: "auto" }
+              }}
             >
               Criar inscrição
             </Button>

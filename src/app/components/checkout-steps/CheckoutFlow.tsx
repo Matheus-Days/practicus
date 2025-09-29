@@ -67,12 +67,20 @@ export default function CheckoutFlow() {
   if (currentStep === "registration-form") {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          gutterBottom
+          sx={{ 
+            fontSize: { xs: "1.75rem", sm: "2.125rem" },
+            textAlign: { xs: "center", sm: "left" }
+          }}
+        >
           {registration ? "Editar dados do participante" : "Dados da inscrição"}
         </Typography>
         
         <Card sx={{ boxShadow: 2 }}>
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <RegistrationForm
               initialData={formData || {}}
               onDataChange={updateFormData}
@@ -81,10 +89,19 @@ export default function CheckoutFlow() {
           </CardContent>
         </Card>
         
-        <Box sx={{ display: "flex", gap: 2, justifyContent: "space-between" }}>
+        <Box sx={{ 
+          display: "flex", 
+          gap: 2, 
+          justifyContent: "space-between",
+          flexDirection: { xs: "column", sm: "row" }
+        }}>
           <Button
             variant="outlined"
             onClick={() => setCurrentStep("overview")}
+            sx={{ 
+              width: { xs: "100%", sm: "auto" },
+              minWidth: { sm: "auto" }
+            }}
           >
             Voltar
           </Button>
@@ -92,6 +109,10 @@ export default function CheckoutFlow() {
             variant="contained"
             onClick={handleSaveRegistration}
             disabled={!isFormValid}
+            sx={{ 
+              width: { xs: "100%", sm: "auto" },
+              minWidth: { sm: "auto" }
+            }}
           >
             {registration ? "Atualizar e Continuar" : "Salvar e Continuar"}
           </Button>

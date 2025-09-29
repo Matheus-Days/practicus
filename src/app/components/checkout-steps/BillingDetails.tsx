@@ -314,11 +314,25 @@ export default function BillingDetails() {
   };
 
   return (
-    <Card sx={{ p: 4 }}>
+    <Card sx={{ p: { xs: 2, sm: 4 } }}>
       <Box
-        sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 600 }}
+        sx={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          gap: 3, 
+          maxWidth: 600,
+          width: "100%"
+        }}
       >
-        <Typography variant="h5" component="h2" gutterBottom>
+        <Typography 
+          variant="h5" 
+          component="h2" 
+          gutterBottom
+          sx={{ 
+            fontSize: { xs: "1.5rem", sm: "1.5rem" },
+            textAlign: { xs: "center", sm: "left" }
+          }}
+        >
           Informações da compra
         </Typography>
 
@@ -714,7 +728,17 @@ export default function BillingDetails() {
         )}
 
         {/* Botões de ação */}
-        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+        <Stack 
+          direction={{ xs: "column", sm: "row" }} 
+          spacing={2} 
+          sx={{ 
+            mt: 2,
+            "& > *": {
+              flex: { xs: "1 1 100%", sm: "0 1 auto" },
+              minWidth: { xs: "100%", sm: "auto" }
+            }
+          }}
+        >
           {/* Botão Voltar - apenas quando já existe um checkout */}
           {hasExistingCheckout && (
             <Button
@@ -722,6 +746,10 @@ export default function BillingDetails() {
               size="large"
               onClick={handleBackToDashboard}
               disabled={loading}
+              sx={{ 
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { sm: "auto" }
+              }}
             >
               Voltar
             </Button>
@@ -733,7 +761,11 @@ export default function BillingDetails() {
             size="large"
             onClick={handleCreateCheckout}
             disabled={loading || !isFormValid()}
-            sx={{ flex: 1 }}
+            sx={{ 
+              width: { xs: "100%", sm: "auto" },
+              flex: { xs: "1 1 100%", sm: 1 },
+              minWidth: { sm: "auto" }
+            }}
           >
             {loading 
               ? "Processando..." 

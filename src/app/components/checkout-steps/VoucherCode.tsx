@@ -143,16 +143,18 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
 
   return (
     <>
-      <Card>
-        <CardContent>
+      <Card sx={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 }, overflow: "hidden" }}>
           <Box
             sx={{
               display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: { xs: "flex-start", sm: "center" },
+              gap: { xs: 2, sm: 0 },
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: { xs: 0, sm: 2 } }}>
               <ReceiptIcon color="primary" />
               <Typography variant="h6" component="h3">
                 Código do voucher
@@ -160,7 +162,13 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
             </Box>
             {voucherData && (
               <Box
-                sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
+                sx={{ 
+                  mb: { xs: 2, sm: 2 }, 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 1,
+                  width: { xs: "100%", sm: "auto" }
+                }}
               >
                 <FormControlLabel
                   control={
@@ -191,7 +199,7 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
                 ? "primary.main"
                 : "warning.main",
               color: "white",
-              p: 2,
+              p: { xs: 2, sm: 3 },
               borderRadius: 1,
               textAlign: "center",
             }}
@@ -202,12 +210,17 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 1,
+                flexDirection: { xs: "column", sm: "row" },
               }}
             >
               <Typography
                 variant="h5"
                 component="div"
-                sx={{ fontFamily: "monospace" }}
+                sx={{ 
+                  fontFamily: "monospace",
+                  fontSize: { xs: "1.25rem", sm: "1.5rem" },
+                  wordBreak: "break-all"
+                }}
               >
                 {voucher}
               </Typography>
@@ -215,17 +228,30 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
                 onClick={handleCopyVoucher}
                 sx={{ color: "white" }}
                 title="Copiar código do voucher"
+                size="small"
               >
                 <CopyIcon />
               </IconButton>
             </Box>
-            <Typography variant="body2" sx={{ mt: 1, fontWeight: "bold" }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mt: 1, 
+                fontWeight: "bold",
+                fontSize: { xs: "0.75rem", sm: "0.875rem" }
+              }}
+            >
               Compartilhe este código para que outras pessoas possam se
               inscrever
             </Typography>
           </Box>
 
-          <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+          <Box sx={{ 
+            mt: 2, 
+            display: "flex", 
+            justifyContent: "center",
+            width: "100%"
+          }}>
             <IconButton
               onClick={handleSharePDF}
               disabled={pdfLoading || !checkout}
@@ -239,9 +265,11 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
                   backgroundColor: "grey.300",
                   color: "grey.500",
                 },
-                px: 3,
+                px: { xs: 2, sm: 3 },
                 py: 1,
                 borderRadius: 2,
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { xs: "auto", sm: "200px" }
               }}
               title={
                 isMobile()
@@ -254,7 +282,14 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
               ) : (
                 <ShareIcon />
               )}
-              <Typography variant="body2" sx={{ ml: 1, fontWeight: "bold" }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  ml: 1, 
+                  fontWeight: "bold",
+                  fontSize: { xs: "0.875rem", sm: "0.875rem" }
+                }}
+              >
                 {pdfLoading
                   ? "Gerando PDF..."
                   : isMobile()

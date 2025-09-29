@@ -188,14 +188,16 @@ export default function MyRegistration() {
 
   return (
     <>
-      <Card>
-        <CardContent>
+      <Card sx={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 }, overflow: "hidden" }}>
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               mb: 2,
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 2, sm: 0 }
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -210,6 +212,14 @@ export default function MyRegistration() {
                 color={getChipColor(registration?.status)}
                 size="medium"
                 variant="filled"
+                sx={{
+                  fontSize: { xs: "1rem", sm: "0.75rem" },
+                  height: { xs: 36, sm: 32 },
+                  "& .MuiChip-label": {
+                    fontSize: { xs: "1rem", sm: "0.75rem" },
+                    fontWeight: { xs: "bold", sm: "normal" }
+                  }
+                }}
               />
             )}
           </Box>
@@ -255,11 +265,25 @@ export default function MyRegistration() {
                 </Box>
               </Box>
 
-              <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+              <Stack 
+                direction={{ xs: "column", sm: "row" }} 
+                sx={{ 
+                  flexWrap: "wrap", 
+                  gap: 1,
+                  "& > *": {
+                    flex: { xs: "1 1 100%", sm: "0 1 auto" },
+                    minWidth: { xs: "100%", sm: "auto" }
+                  }
+                }}
+              >
                 <Button
                   variant="outlined"
                   startIcon={<EditIcon />}
                   onClick={() => setCurrentStep("registration-form")}
+                  sx={{ 
+                    width: { xs: "100%", sm: "auto" },
+                    minWidth: { sm: "auto" }
+                  }}
                 >
                   Editar meus dados de inscrição
                 </Button>
@@ -270,6 +294,10 @@ export default function MyRegistration() {
                     startIcon={isCancellingRegistration ? <CircularProgress size={20} color="inherit" /> : <CancelIcon />}
                     onClick={handleCancelMyRegistration}
                     disabled={isCancellingRegistration}
+                    sx={{ 
+                      width: { xs: "100%", sm: "auto" },
+                      minWidth: { sm: "auto" }
+                    }}
                   >
                     {isCancellingRegistration ? "Processando..." : "Desistir da inscrição"}
                   </Button>
@@ -288,6 +316,10 @@ export default function MyRegistration() {
                         disabled={availableRegistrations <= 0}
                         startIcon={<RefreshIcon />}
                         onClick={handleActivateMyRegistration}
+                        sx={{ 
+                          width: { xs: "100%", sm: "auto" },
+                          minWidth: { sm: "auto" }
+                        }}
                       >
                         Reativar inscrição
                       </Button>
@@ -305,17 +337,21 @@ export default function MyRegistration() {
                     Pressione o botão abaixo para deletar esta inscrição e
                     escolher outra opção:
                   </Typography>
-                  <div>
+                  <Box>
                     <Button
                       variant="contained"
                       color="error"
                       startIcon={isDeletingVoucher ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
                       onClick={handleDeleteVoucherCheckout}
                       disabled={isDeletingVoucher}
+                      sx={{ 
+                        width: { xs: "100%", sm: "auto" },
+                        minWidth: { sm: "auto" }
+                      }}
                     >
                       {isDeletingVoucher ? "Deletando..." : "Deletar inscrição"}
                     </Button>
-                  </div>
+                  </Box>
                 </Stack>
               )}
             </>
@@ -339,6 +375,10 @@ export default function MyRegistration() {
                 variant="contained"
                 startIcon={<PersonIcon />}
                 onClick={() => setCurrentStep("registration-form")}
+                sx={{ 
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: "auto" }
+                }}
               >
                 Preencher minha inscrição
               </Button>

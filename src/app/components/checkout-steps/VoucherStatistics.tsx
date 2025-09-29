@@ -24,8 +24,8 @@ export default function VoucherStatistics() {
   }
 
   return (
-    <Card>
-      <CardContent>
+    <Card sx={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 }, overflow: "hidden" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <TicketIcon color="primary" />
           <Typography variant="h6" component="h3">
@@ -39,8 +39,17 @@ export default function VoucherStatistics() {
           </Typography>
         )}
 
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-          <Box sx={{ flex: "1 1 200px" }}>
+        <Box sx={{ 
+          display: "flex", 
+          flexWrap: "wrap", 
+          gap: 2,
+          flexDirection: { xs: "column", sm: "row" }
+        }}>
+          <Box sx={{ 
+            flex: { xs: "0 0 64px", sm: "1 1 200px" }, 
+            minWidth: { xs: "100%", sm: "200px" },
+            textAlign: { xs: "center", sm: "left" }
+          }}>
             <Typography variant="subtitle2" color="text.secondary">
               Total de vouchers
             </Typography>
@@ -48,7 +57,11 @@ export default function VoucherStatistics() {
               {totalRegistrations}
             </Typography>
           </Box>
-          <Box sx={{ flex: "1 1 200px" }}>
+          <Box sx={{ 
+            flex: { xs: "0 0 64px", sm: "1 1 200px" }, 
+            minWidth: { xs: "100%", sm: "200px" },
+            textAlign: { xs: "center", sm: "left" }
+          }}>
             <Typography variant="subtitle2" color="text.secondary">
               Vouchers utilizados
             </Typography>
@@ -56,7 +69,11 @@ export default function VoucherStatistics() {
               {usedRegistrations}
             </Typography>
           </Box>
-          <Box sx={{ flex: "1 1 200px" }}>
+          <Box sx={{ 
+            flex: { xs: "0 0 64px", sm: "1 1 200px" }, 
+            minWidth: { xs: "100%", sm: "200px" },
+            textAlign: { xs: "center", sm: "left" }
+          }}>
             <Typography variant="subtitle2" color="text.secondary">
               Vouchers disponíveis
             </Typography>

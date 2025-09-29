@@ -59,9 +59,17 @@ export default function SelectType() {
   ];
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: { xs: 2, sm: 3 } }}>
       <Box sx={{ textAlign: "center", mb: 2 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          gutterBottom
+          sx={{ 
+            fontSize: { xs: "1.75rem", sm: "2.125rem" },
+            textAlign: { xs: "center", sm: "left" }
+          }}
+        >
           Como você gostaria de se inscrever?
         </Typography>
         <Typography variant="body1" color="text.secondary">

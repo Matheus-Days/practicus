@@ -49,8 +49,8 @@ export default function PurchaseSummary({
   onRequestCancellation,
 }: PurchaseSummaryProps) {
   return (
-    <Card>
-      <CardContent>
+    <Card sx={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 }, overflow: "hidden" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <ShoppingCartIcon color="primary" />
           <Typography variant="h6" component="h3">
@@ -58,8 +58,16 @@ export default function PurchaseSummary({
           </Typography>
         </Box>
 
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-          <Box sx={{ flex: "1 1 300px" }}>
+        <Box sx={{ 
+          display: "flex", 
+          flexWrap: "wrap", 
+          gap: 2,
+          flexDirection: { xs: "column", sm: "row" }
+        }}>
+          <Box sx={{ 
+            flex: { xs: "0 0 46px", sm: "1 1 300px" }, 
+            minWidth: { xs: "100%", sm: "200px" } 
+          }}>
             <Typography variant="subtitle2" color="text.secondary">
               Quantidade de Inscrições
             </Typography>
@@ -67,7 +75,10 @@ export default function PurchaseSummary({
           </Box>
 
           {!!complimentary && (
-            <Box sx={{ flex: "1 1 300px" }}>
+            <Box sx={{ 
+              flex: { xs: "0 0 46px", sm: "1 1 300px" }, 
+              minWidth: { xs: "100%", sm: "200px" } 
+            }}>
               <Typography variant="subtitle2" color="text.secondary">
                 Quantidade de cortesias
               </Typography>
@@ -77,7 +88,10 @@ export default function PurchaseSummary({
             </Box>
           )}
 
-          <Box sx={{ flex: "1 1 300px" }}>
+          <Box sx={{ 
+            flex: { xs: "0 0 46px", sm: "1 1 300px" }, 
+            minWidth: { xs: "100%", sm: "200px" } 
+          }}>
             <Typography variant="subtitle2" color="text.secondary">
               Tipo de pessoa
             </Typography>
@@ -87,7 +101,10 @@ export default function PurchaseSummary({
           </Box>
 
           {registrateMyself && (
-            <Box sx={{ flex: "1 1 100%" }}>
+            <Box sx={{ 
+              flex: { xs: "0 0 46px", sm: "1 1 100%" }, 
+              minWidth: { xs: "100%", sm: "200px" } 
+            }}>
               <Typography variant="subtitle2" color="text.secondary">
                 Inscrição própria
               </Typography>
@@ -147,13 +164,28 @@ export default function PurchaseSummary({
 
         {/* Botões de Ação */}
         <Divider sx={{ my: 3 }} />
-        <Stack direction="row" sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}>
+        <Stack 
+          direction={{ xs: "column", sm: "row" }} 
+          sx={{ 
+            mt: 2, 
+            flexWrap: "wrap", 
+            gap: 1,
+            "& > *": {
+              flex: { xs: "1 1 100%", sm: "0 1 auto" },
+              minWidth: { xs: "100%", sm: "auto" }
+            }
+          }}
+        >
           {checkoutStatus === "pending" && (
             <>
               <Button
                 variant="outlined"
                 startIcon={<EditIcon />}
                 onClick={onEditBilling}
+                sx={{ 
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: "auto" }
+                }}
               >
                 Editar dados de faturamento
               </Button>
@@ -161,6 +193,10 @@ export default function PurchaseSummary({
                 variant="contained"
                 startIcon={<PaymentIcon />}
                 onClick={onGoToPayment}
+                sx={{ 
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: "auto" }
+                }}
               >
                 Efetuar Pagamento
               </Button>
@@ -169,6 +205,10 @@ export default function PurchaseSummary({
                 color="error"
                 startIcon={<DeleteIcon />}
                 onClick={onCancelAcquisition}
+                sx={{ 
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: "auto" }
+                }}
               >
                 Cancelar Aquisição
               </Button>
@@ -181,6 +221,10 @@ export default function PurchaseSummary({
               color="error"
               startIcon={<DeleteIcon />}
               onClick={onRequestCancellation}
+              sx={{ 
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { sm: "auto" }
+              }}
             >
               Solicitar cancelamento
             </Button>

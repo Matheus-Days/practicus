@@ -107,18 +107,42 @@ export default function CheckoutStatus() {
       : getCheckoutStatusInfo();
 
   return (
-    <Card>
-      <CardContent>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-          <span className="text-green">{statusInfo.icon}</span>
-          <Typography variant="h6" component="h2">
+    <Card sx={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 }, overflow: "hidden" }}>
+        <Box sx={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: 2, 
+          mb: 2,
+          flexDirection: { xs: "column", sm: "row" },
+          textAlign: { xs: "center", sm: "left" }
+        }}>
+          <Box sx={{ 
+            display: "flex", 
+            alignItems: "center",
+            "& svg": {
+              fontSize: { xs: "3rem", sm: "1.5rem" }
+            }
+          }}>
+            {statusInfo.icon}
+          </Box>
+          <Typography 
+            variant="h6" 
+            component="h2"
+            sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem" } }}
+          >
             {checkout.checkoutType === "voucher"
               ? "Situação da inscrição"
               : "Situação da aquisição"}
             : <span className="uppercase">{statusInfo.label}</span>
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary" dangerouslySetInnerHTML={{ __html: statusInfo.description }} />
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          dangerouslySetInnerHTML={{ __html: statusInfo.description }}
+          sx={{ textAlign: { xs: "center", sm: "left" } }}
+        />
       </CardContent>
     </Card>
   );

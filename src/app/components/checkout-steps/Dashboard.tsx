@@ -70,8 +70,24 @@ export default function Dashboard({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+    <Box sx={{ 
+      display: "flex", 
+      flexDirection: "column", 
+      gap: 3, 
+      width: "100%",
+      maxWidth: "100%",
+      overflow: "hidden"
+    }}>
+      <Typography 
+        variant="h4" 
+        component="h1" 
+        gutterBottom
+        sx={{ 
+          fontSize: { xs: "1.75rem", sm: "2.125rem" },
+          textAlign: { xs: "center", sm: "left" },
+          wordBreak: "break-word"
+        }}
+      >
         Painel da inscrição
       </Typography>
 
