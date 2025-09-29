@@ -170,8 +170,15 @@ export default function VoucherRegistrations() {
   return (
     <>
       <Card>
-        <CardContent>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 }, overflow: "hidden" }}>
+          <Box sx={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: 1, 
+            mb: 2,
+            flexDirection: { xs: "column", sm: "row" },
+            textAlign: { xs: "center", sm: "left" }
+          }}>
             <GroupIcon color="primary" />
             <Typography variant="h6" component="h3">
               Inscritos via voucher
@@ -184,103 +191,169 @@ export default function VoucherRegistrations() {
               <CircularProgress />
             </Box>
           ) : (
-            <TableContainer component={Paper} variant="outlined">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: "bold" }}>
-                      Nome completo
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>E-mail</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Situação</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
-                      Ações
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {checkoutRegistrations
-                    .filter((reg) => !reg.isMyRegistration)
-                    .map((reg) => {
-                      const statusInfo = getRegistrationStatusInfo(reg.status);
-                      return (
-                        <TableRow key={reg.id}>
-                          <TableCell>{reg.fullName}</TableCell>
-                          <TableCell>{reg.email || "Não informado"}</TableCell>
-                          <TableCell>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
+            <Box sx={{ 
+              overflow: "auto",
+              width: "100%",
+              maxWidth: "100%"
+            }}>
+              <TableContainer 
+                component={Paper} 
+                variant="outlined"
+                sx={{ 
+                  minWidth: { xs: "100%", sm: "auto" },
+                  maxWidth: "100%"
+                }}
+              >
+                <Table sx={{ 
+                  minWidth: { xs: 600, sm: "auto" },
+                  tableLayout: { xs: "fixed", sm: "auto" }
+                }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell 
+                        sx={{ 
+                          fontWeight: "bold",
+                          minWidth: { xs: 150, sm: "auto" },
+                          maxWidth: { xs: 150, sm: "none" }
+                        }}
+                      >
+                        Nome completo
+                      </TableCell>
+                      <TableCell 
+                        sx={{ 
+                          fontWeight: "bold",
+                          minWidth: { xs: 120, sm: "auto" },
+                          maxWidth: { xs: 120, sm: "none" }
+                        }}
+                      >
+                        E-mail
+                      </TableCell>
+                      <TableCell 
+                        sx={{ 
+                          fontWeight: "bold",
+                          minWidth: { xs: 100, sm: "auto" }
+                        }}
+                      >
+                        Situação
+                      </TableCell>
+                      <TableCell 
+                        align="center" 
+                        sx={{ 
+                          fontWeight: "bold",
+                          minWidth: { xs: 120, sm: "auto" }
+                        }}
+                      >
+                        Ações
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {checkoutRegistrations
+                      .filter((reg) => !reg.isMyRegistration)
+                      .map((reg) => {
+                        const statusInfo = getRegistrationStatusInfo(reg.status);
+                        return (
+                          <TableRow key={reg.id}>
+                            <TableCell 
+                              sx={{ 
+                                wordBreak: "break-word",
+                                maxWidth: { xs: 150, sm: "none" }
                               }}
                             >
-                              {statusInfo.icon}
-                              <Chip
-                                label={statusInfo.label}
-                                color={statusInfo.color}
-                                size="small"
-                                variant="outlined"
-                              />
-                            </Box>
-                          </TableCell>
-                          <TableCell align="center">
-                            {reg.status === "invalid" ? (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ fontStyle: "italic" }}
+                              {reg.fullName}
+                            </TableCell>
+                            <TableCell 
+                              sx={{ 
+                                wordBreak: "break-word",
+                                maxWidth: { xs: 120, sm: "none" }
+                              }}
+                            >
+                              {reg.email || "Não informado"}
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                  flexDirection: { xs: "column", sm: "row" }
+                                }}
                               >
-                                Ação indisponível
-                              </Typography>
-                            ) : reg.status === "cancelled" ? (
-                              <Tooltip
-                                title={
-                                  availableRegistrations <= 0
-                                    ? "Não há vouchers disponíveis"
-                                    : ""
-                                }
-                              >
-                                <span>
-                                  <Button
-                                    variant="outlined"
-                                    color="success"
-                                    size="small"
-                                    startIcon={<RefreshIcon />}
-                                    onClick={() =>
-                                      handleActivateRegistration(reg.id)
-                                    }
-                                    disabled={
-                                      loading ||
-                                      availableRegistrations <= 0 ||
-                                      !canActivateRegistration(reg)
-                                    }
-                                  >
-                                    Ativar inscrição
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                            ) : (
-                              <Button
-                                variant="outlined"
-                                color="error"
-                                size="small"
-                                startIcon={<DeleteIcon />}
-                                onClick={() => handleCancelRegistration(reg.id)}
-                                disabled={
-                                  loading || !canCancelRegistration(reg)
-                                }
-                              >
-                                Desativar inscrição
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                                {statusInfo.icon}
+                                <Chip
+                                  label={statusInfo.label}
+                                  color={statusInfo.color}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              </Box>
+                            </TableCell>
+                            <TableCell align="center">
+                              {reg.status === "invalid" ? (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ fontStyle: "italic" }}
+                                >
+                                  Ação indisponível
+                                </Typography>
+                              ) : reg.status === "cancelled" ? (
+                                <Tooltip
+                                  title={
+                                    availableRegistrations <= 0
+                                      ? "Não há vouchers disponíveis"
+                                      : ""
+                                  }
+                                >
+                                  <span>
+                                    <Button
+                                      variant="outlined"
+                                      color="success"
+                                      size="small"
+                                      startIcon={<RefreshIcon />}
+                                      onClick={() =>
+                                        handleActivateRegistration(reg.id)
+                                      }
+                                      disabled={
+                                        loading ||
+                                        availableRegistrations <= 0 ||
+                                        !canActivateRegistration(reg)
+                                      }
+                                      sx={{
+                                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                        minWidth: { xs: "auto", sm: "auto" }
+                                      }}
+                                    >
+                                      Ativar inscrição
+                                    </Button>
+                                  </span>
+                                </Tooltip>
+                              ) : (
+                                <Button
+                                  variant="outlined"
+                                  color="error"
+                                  size="small"
+                                  startIcon={<DeleteIcon />}
+                                  onClick={() => handleCancelRegistration(reg.id)}
+                                  disabled={
+                                    loading || !canCancelRegistration(reg)
+                                  }
+                                  sx={{
+                                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                    minWidth: { xs: "auto", sm: "auto" }
+                                  }}
+                                >
+                                  Desativar inscrição
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
           )}
         </CardContent>
       </Card>
