@@ -18,7 +18,8 @@ export type CheckoutStep =
   | "billing-details" // Para PF ou PJ: preencher dados de faturamento, quantidade de inscrições e se é `registrateMyself`
   | "registration-form" // Quando `registrateMyself` é true ou checkoutType é "voucher": preencher dados do participante
   | "overview" // Visualizar dados do checkout (se checkoutType é "acquire") e dados de inscrição se `registrateMyself` é true ou checkoutType é "voucher", podendo voltar para editar
-  | "payment"; // Se checkoutType é "acquire": tela com vários estados de fluxo de pagamento, é chamada após o overview se o pagamento estiver pendente
+  | "payment" // Se checkoutType é "acquire": tela com vários estados de fluxo de pagamento, é chamada após o overview se o pagamento estiver pendente
+  | "commitment"; // Para pagamento por empenho: gerenciar dados do empenho
 
 export type CheckoutData = CheckoutDocument & {
   id: string;
