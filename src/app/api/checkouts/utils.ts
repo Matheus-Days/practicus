@@ -20,29 +20,6 @@ export function validateCreateCheckoutRequest(data: any): boolean {
   return true;
 }
 
-function validateBillingDetails(billingDetails: any): boolean {
-  if (!billingDetails) return false;
-
-  if (billingDetails.email & billingDetails.fullName & billingDetails.phone) {
-    return true;
-  }
-
-  if (
-    billingDetails.orgPhone &
-    billingDetails.orgName &
-    billingDetails.orgCnpj &
-    billingDetails.orgAddress &
-    billingDetails.orgZip &
-    billingDetails.responsibleName &
-    billingDetails.responsiblePhone &
-    billingDetails.responsibleEmail
-  ) {
-    return true;
-  }
-
-  return false;
-}
-
 // Validação de dados para atualização de checkout
 export function validateUpdateCheckoutRequest(data: any): boolean {
   // TODO: Implementar validação completa dos dados
@@ -122,5 +99,13 @@ export function createCheckoutDocumentId(
   userUid: string
 ): string {
   return `${eventId}_${userUid}`;
+}
+
+export function isPaymentByCommitment(checkout: CheckoutDocument): boolean {
+  if (!checkout.billingDetails) return false;
+  if ('paymentByCommitment' in checkout.billingDetails) {
+    return checkout.billingDetails.paymentByCommitment;
+  }
+  return false;
 }
 //#endregion

@@ -23,7 +23,33 @@ export type BillingDetailsPJ = {
   responsibleName: string;
   responsiblePhone: string;
   responsibleEmail: string;
+  paymentByCommitment: boolean;
 };
+
+export type Attachment = {
+  fileName: string;
+  contentType: string;
+  storagePath: string;
+  uploadedAt: Date;
+};
+
+export type CommitmentPayment = {
+  method: "empenho";
+  status: "pending" | "committed" | "paid";
+  value: number;
+  commitmentAttachment?: Attachment;
+  paymentAttachment?: Attachment;
+};
+
+export type CommomPayment = {
+  method: "card" | "boleto" | "pix";
+  status: "pending" | "paid" | "refunded";
+  value: number;
+  receiptAttachment?: Attachment;
+  externalData?: object;
+};
+
+export type Payment = CommitmentPayment | CommomPayment;
 
 export type CheckoutDocument = {
   checkoutType: CheckoutType;
@@ -39,6 +65,7 @@ export type CheckoutDocument = {
   registrateMyself?: boolean;
   updatedAt?: Date;
   voucher?: string;
+  payment?: Payment;
 };
 
 //#region Types for API requests/responses
@@ -71,9 +98,12 @@ export type CheckoutResponse = {
   document: CheckoutDocument;
 };
 
-export type UpdateCheckoutStatusRequest = Pick<
-  CheckoutDocument,
-  "status"
->;
+export type UpdateCheckoutStatusRequest = Pick<CheckoutDocument, "status">;
+
+export type DeleteCommitmentAttachmentRequest = {
+  attachmentType: "commitment" | "payment";
+};
+
+export type UpdateCommitmentStatusRequest = Pick<CommitmentPayment, "status">;
 
 //#endregion
