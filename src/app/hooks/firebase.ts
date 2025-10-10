@@ -12,6 +12,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL, getMetadata } from "firebase/storage";
 import { useMemo, useCallback } from "react";
 import { EventData } from "../types/events";
 
@@ -59,6 +60,7 @@ const generateRegistrationId = (userId: string, eventId: string): string => {
 export const useFirebase = () => {
   const auth = useMemo(() => getAuth(app), []);
   const firestore = useMemo(() => getFirestore(app), []);
+  const storage = useMemo(() => getStorage(app), []);
 
   const getUserData = useCallback(
     async (uid: string): Promise<UserData | null> => {
@@ -268,6 +270,7 @@ export const useFirebase = () => {
   return {
     auth,
     firestore,
+    storage,
     getIdToken,
     getUserData,
     getEventData,
