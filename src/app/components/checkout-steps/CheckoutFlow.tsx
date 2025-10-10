@@ -123,10 +123,6 @@ export default function CheckoutFlow() {
 
   // Caso contrário, mostrar Dashboard (incluindo quando currentStep === "overview")
   return (
-    <Dashboard
-      onEditBilling={() => setCurrentStep("billing-details")}
-      onGoToPayment={() => setCurrentStep("payment")}
-      onGoToRegistration={() => setCurrentStep("registration-form")}
-    />
+    <Dashboard />
   );
 } 

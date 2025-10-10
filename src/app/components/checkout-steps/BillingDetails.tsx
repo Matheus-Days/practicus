@@ -83,6 +83,7 @@ export default function BillingDetails() {
     responsibleName: "",
     responsiblePhone: "",
     responsibleEmail: user?.email || "",
+    paymentByCommitment: false,
   });
 
   const [localRegistrationsAmount, setLocalRegistrationsAmount] = useState(registrationsAmount || 1);
@@ -116,6 +117,7 @@ export default function BillingDetails() {
         responsibleName: pj.responsibleName || "",
         responsiblePhone: pj.responsiblePhone || "",
         responsibleEmail: pj.responsibleEmail || user?.email || "",
+        paymentByCommitment: pj.paymentByCommitment || false,
       });
     }
   }, [legalEntity, billingDetails, user?.email]);
@@ -131,6 +133,7 @@ export default function BillingDetails() {
           responsibleName: "",
           responsiblePhone: "",
           responsibleEmail: user?.email || "",
+          paymentByCommitment: false,
         });
         setCnpjError(null);
         setPhoneOrgError(null);
@@ -174,9 +177,9 @@ export default function BillingDetails() {
 
   const handleBillingDetailsPJChange = (
     field: keyof BillingDetailsPJ,
-    value: string
+    value: string | boolean
   ) => {
-    const updated = { ...billingDetailsPJ, [field]: value || "" };
+    const updated = { ...billingDetailsPJ, [field]: value };
     setBillingDetailsPJ(updated);
     setBillingDetails(updated);
   };
@@ -380,7 +383,7 @@ export default function BillingDetails() {
               Dados de cobrança
             </Typography>
             <Typography variant="body1" gutterBottom>
-              Os dados informados serão usados para a emissão do recibo de pagamento.
+              Os dados informados abaixo serão usados para a emissão do recibo de pagamento.
             </Typography>
 
             {localLegalEntity === "pf" ? (
@@ -705,6 +708,59 @@ export default function BillingDetails() {
                   helperText={phoneRespError || ""}
                   placeholder="(00) 00000-0000"
                 />
+
+                {/* Campo de Pagamento por Empenho - apenas para PJ */}
+                <Box 
+                  sx={{ 
+                    mt: 3, 
+                    p: 3, 
+                    border: '2px solid #1976d2', 
+                    borderRadius: 2, 
+                    backgroundColor: '#f3f8ff',
+                    borderStyle: 'dashed'
+                  }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={billingDetailsPJ.paymentByCommitment || false}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          handleBillingDetailsPJChange("paymentByCommitment", checked);
+                        }}
+                        sx={{
+                          '&.Mui-checked': {
+                            color: '#1976d2',
+                          },
+                          transform: 'scale(1.2)',
+                        }}
+                      />
+                    }
+                    label={
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 'bold',
+                          color: '#1976d2',
+                          fontSize: '1.1rem'
+                        }}
+                      >
+                        Pagamento por empenho
+                      </Typography>
+                    }
+                  />
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      mt: 1, 
+                      ml: 4.5,
+                      color: '#666',
+                      fontStyle: 'italic'
+                    }}
+                  >
+                    Marque esta opção se o pagamento será realizado através de empenho
+                  </Typography>
+                </Box>
               </Box>
             )}
 
