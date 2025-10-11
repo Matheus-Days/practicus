@@ -36,7 +36,10 @@ import {
 import { CircularProgress } from "@mui/material";
 import { useAdminContext } from "../../contexts/AdminContext";
 import { CheckoutData } from "../../types/checkout";
-import { CheckoutStatus, CommitmentPayment } from "../../api/checkouts/checkout.types";
+import {
+  CheckoutStatus,
+  CommitmentPayment,
+} from "../../api/checkouts/checkout.types";
 import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
 import Commitment from "../Commitment";
@@ -124,6 +127,9 @@ export default function CheckoutsTable() {
         case "completed":
           statusDisplay = "Concluídas";
           break;
+        case "refunded":
+          statusDisplay = "Reembolsadas";
+          break;
         case "deleted":
           statusDisplay = "Canceladas";
           break;
@@ -153,21 +159,21 @@ export default function CheckoutsTable() {
   }, [eventCheckouts, statusFilter]);
 
   const handleStatusChange = async (status: CheckoutStatus) => {
-    if (status === "deleted") {
+    if (status === "deleted" || status === "refunded") {
       const confirmed = window.confirm(
-        "Ao cancelar uma compra que já foi aprovada antes, todas as inscrições confirmadas associadas a ela serão invalidadas. Tem certeza que deseja continuar?"
+        "Ao cancelar uma aquisição, todas as inscrições confirmadas associadas a ela serão invalidadas. Tem certeza que deseja continuar?"
       );
       if (!confirmed) return;
     }
-    if (status === "pending") {
+    if (status === "pending" && selectedCheckout?.status === "deleted") {
       const confirmed = window.confirm(
-        "Ao marcar uma compra como pendente, todas as inscrições não canceladas associadas a ela serão marcadas como pendentes. Tem certeza que deseja continuar?"
+        "Ao reativar uma compra cancelada como pendente, todas as inscrições associadas a ela serão reativadas. Tem certeza que deseja continuar?"
       );
       if (!confirmed) return;
     }
-    if (status === "completed") {
+    if (status === "completed" && selectedCheckout?.status === "deleted") {
       const confirmed = window.confirm(
-        "Ao marcar uma compra como concluída, todas as inscrições não canceladas associadas a ela serão marcadas como concluídas. Tem certeza que deseja continuar?"
+        "Ao reativar uma compra cancelada de marcá-la como concluída, todas as inscrições associadas a ela serão reativadas. Tem certeza que deseja continuar?"
       );
       if (!confirmed) return;
     }
@@ -179,7 +185,7 @@ export default function CheckoutsTable() {
 
   const getStatusDisplay = (checkout: CheckoutData) => {
     if (isPaymentByCommitment(checkout)) {
-      const payment = checkout.payment as CommitmentPayment || undefined;
+      const payment = (checkout.payment as CommitmentPayment) || undefined;
       if (!payment) {
         return {
           text: "Empenho pendente",
@@ -188,14 +194,14 @@ export default function CheckoutsTable() {
         };
       }
       if (
-        payment.status === "pending" && payment.commitmentAttachment ||
-        payment.status === "committed" && payment.paymentAttachment
+        (payment.status === "pending" && payment.commitmentAttachment) ||
+        (payment.status === "committed" && payment.paymentAttachment)
       ) {
         return {
           text: "Aguardando validação",
           color: "warning" as const,
-          icon:  <WarningIcon />,
-        }
+          icon: <WarningIcon />,
+        };
       }
       if (payment.status === "pending") {
         return {
@@ -231,6 +237,12 @@ export default function CheckoutsTable() {
           text: "Concluído",
           color: "success" as const,
           icon: <CheckCircleIcon />,
+        };
+      case "refunded":
+        return {
+          text: "Reembolsado",
+          color: "info" as const,
+          icon: <CancelIcon />,
         };
       case "deleted":
         return {
@@ -317,6 +329,7 @@ export default function CheckoutsTable() {
               <MenuItem value="all">Todas</MenuItem>
               <MenuItem value="pending">Pendentes</MenuItem>
               <MenuItem value="completed">Concluídas</MenuItem>
+              <MenuItem value="refunded">Reembolsadas</MenuItem>
               <MenuItem value="deleted">Canceladas</MenuItem>
             </Select>
           </FormControl>
@@ -422,7 +435,7 @@ export default function CheckoutsTable() {
                           startIcon={<ReceiptIcon />}
                           onClick={() => handleOpenCommitmentDialog(checkout)}
                           color="secondary"
-                          sx={{ minWidth: 'auto' }}
+                          sx={{ minWidth: "auto" }}
                         >
                           Empenho
                         </Button>
@@ -463,45 +476,80 @@ export default function CheckoutsTable() {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem
-          onClick={() => handleStatusChange("completed")}
-          disabled={loadingCheckoutStatusUpdate}
-        >
-          <ListItemIcon>
-            {loadingCheckoutStatusUpdate ? (
-              <CircularProgress size={20} />
-            ) : (
-              <CheckCircleIcon color="success" />
-            )}
-          </ListItemIcon>
-          Marcar como pago
-        </MenuItem>
-        <MenuItem
-          onClick={() => handleStatusChange("pending")}
-          disabled={loadingCheckoutStatusUpdate}
-        >
-          <ListItemIcon>
-            {loadingCheckoutStatusUpdate ? (
-              <CircularProgress size={20} />
-            ) : (
-              <PendingIcon color="warning" />
-            )}
-          </ListItemIcon>
-          Marcar como pagamento pendente
-        </MenuItem>
-        <MenuItem
-          onClick={() => handleStatusChange("deleted")}
-          disabled={loadingCheckoutStatusUpdate}
-        >
-          <ListItemIcon>
-            {loadingCheckoutStatusUpdate ? (
-              <CircularProgress size={20} />
-            ) : (
-              <CancelIcon color="error" />
-            )}
-          </ListItemIcon>
-          Cancelar compra
-        </MenuItem>
+        {/* Marcar como pago / Cancelar reembolso / Reativar como pago - não mostrar se já for completed */}
+        {selectedCheckout?.status !== "completed" && (
+          <MenuItem
+            onClick={() => handleStatusChange("completed")}
+            disabled={loadingCheckoutStatusUpdate}
+          >
+            <ListItemIcon>
+              {loadingCheckoutStatusUpdate ? (
+                <CircularProgress size={20} />
+              ) : (
+                <CheckCircleIcon color="success" />
+              )}
+            </ListItemIcon>
+            {selectedCheckout?.status === "refunded"
+              ? "Cancelar reembolso"
+              : selectedCheckout?.status === "deleted"
+                ? "Reativar como pago"
+                : "Marcar como pago"}
+          </MenuItem>
+        )}
+
+        {/* Marcar como pagamento pendente / Reativar como pendente - ocultar se status for refunded ou pending */}
+        {selectedCheckout?.status !== "refunded" &&
+          selectedCheckout?.status !== "pending" && (
+            <MenuItem
+              onClick={() => handleStatusChange("pending")}
+              disabled={loadingCheckoutStatusUpdate}
+            >
+              <ListItemIcon>
+                {loadingCheckoutStatusUpdate ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  <PendingIcon color="warning" />
+                )}
+              </ListItemIcon>
+              {selectedCheckout?.status === "deleted"
+                ? "Reativar como pendente"
+                : "Marcar como pagamento pendente"}
+            </MenuItem>
+          )}
+
+        {/* Reembolsar - apenas para compras completed */}
+        {selectedCheckout?.status === "completed" && (
+          <MenuItem
+            onClick={() => handleStatusChange("refunded")}
+            disabled={loadingCheckoutStatusUpdate}
+          >
+            <ListItemIcon>
+              {loadingCheckoutStatusUpdate ? (
+                <CircularProgress size={20} />
+              ) : (
+                <CancelIcon color="error" />
+              )}
+            </ListItemIcon>
+            Reembolsar compra
+          </MenuItem>
+        )}
+
+        {/* Cancelar compra - apenas para compras pending */}
+        {selectedCheckout?.status === "pending" && (
+          <MenuItem
+            onClick={() => handleStatusChange("deleted")}
+            disabled={loadingCheckoutStatusUpdate}
+          >
+            <ListItemIcon>
+              {loadingCheckoutStatusUpdate ? (
+                <CircularProgress size={20} />
+              ) : (
+                <CancelIcon color="error" />
+              )}
+            </ListItemIcon>
+            Cancelar compra
+          </MenuItem>
+        )}
       </Menu>
 
       {/* Dialog de detalhes do checkout */}
@@ -517,7 +565,11 @@ export default function CheckoutsTable() {
       {/* Dialog de gerenciamento de empenho */}
       {selectedCheckoutForCommitment && (
         <Commitment
-          checkout={eventCheckouts.find(c => c.id === selectedCheckoutForCommitment.id) || selectedCheckoutForCommitment}
+          checkout={
+            eventCheckouts.find(
+              (c) => c.id === selectedCheckoutForCommitment.id
+            ) || selectedCheckoutForCommitment
+          }
           eventId={selectedEvent?.id || ""}
           isAdmin={true}
           open={commitmentDialogOpen}
