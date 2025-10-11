@@ -42,6 +42,8 @@ export default function VoucherValidation() {
   const [errorMessage, setErrorMessage] = useState("");
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [hasValidated, setHasValidated] = useState(false);
+  const [inputModified, setInputModified] = useState(false);
 
   const handleValidateVoucher = useCallback(async (voucherToValidate?: string) => {
     const codeToValidate = voucherToValidate || voucherCode.trim();
@@ -57,11 +59,15 @@ export default function VoucherValidation() {
 
       setValidationState("success");
       setVoucher(codeToValidate);
+      setHasValidated(true);
+      setInputModified(false);
     } catch (error) {
       setValidationState("error");
       setErrorMessage(
         error instanceof Error ? error.message : "Erro ao validar voucher"
       );
+      setHasValidated(true);
+      setInputModified(false);
     }
   }, [voucherCode, validateVoucher, setVoucher]);
 
@@ -110,6 +116,13 @@ export default function VoucherValidation() {
       setErrorMessage(
         error instanceof Error ? error.message : "Erro ao criar inscrição"
       );
+    }
+  };
+
+  const handleVoucherCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVoucherCode(e.target.value);
+    if (hasValidated) {
+      setInputModified(true);
     }
   };
 
@@ -271,7 +284,7 @@ export default function VoucherValidation() {
           fullWidth
           label="Digite o código do voucher"
           value={voucherCode}
-          onChange={(e) => setVoucherCode(e.target.value)}
+          onChange={handleVoucherCodeChange}
           disabled={validationState === "validating"}
           sx={{ mb: 3 }}
           placeholder="Ex: VOUCHER123"
@@ -305,7 +318,11 @@ export default function VoucherValidation() {
           <Button
             variant="contained"
             onClick={() => handleValidateVoucher()}
-            disabled={!voucherCode.trim() || validationState === "validating"}
+            disabled={
+              !voucherCode.trim() || 
+              validationState === "validating" ||
+              (hasValidated && !inputModified)
+            }
             startIcon={
               validationState === "validating" ? (
                 <CircularProgress size={20} />
