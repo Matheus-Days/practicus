@@ -16,6 +16,7 @@ import {
 } from "../../checkout.types";
 import { RegistrationDocument } from "../../../registrations/registration.types";
 import { VoucherDocument } from "../../../voucher/voucher.types";
+import { isPaymentByCommitment } from "../../utils";
 
 // PATCH /api/checkouts/[id]/status - Alterar status da compra (apenas admin)
 export async function PATCH(
@@ -73,34 +74,45 @@ export async function PATCH(
 
     const checkoutData = checkoutDoc.data() as CheckoutDocument;
 
+    if (isPaymentByCommitment(checkoutData) && body.status !== "deleted") {
+      return createErrorResponse(
+        "Não é possível alterar diretamente a situação da compra pois o pagamento é por empenho.",
+        400
+      );
+    }
+    
+    const registrationsQuery = await firestore
+    .collection("registrations")
+    .where("checkoutId", "==", checkoutDoc.id)
+    .get();
+    
+    const batch = firestore.batch();
+
     // Atualizar o status do checkout
     const updateData: Partial<CheckoutDocument> = {
       status: body.status,
       updatedAt: new Date(),
     };
+    batch.update(checkoutDoc.ref, updateData);
 
-    await firestore.collection("checkouts").doc(id).update(updateData);
-    
-    const registrationsQuery = await firestore
-      .collection("registrations")
-      .where("checkoutId", "==", checkoutDoc.id)
-      .get();
-
-    const batch = firestore.batch();
+    // Atualizar status das inscrições associadas a esta compra
     registrationsQuery.forEach((doc) => {
       const registrationData = doc.data() as RegistrationDocument;
-      const newStatus = getRegistrationStatusFromCheckoutStatusChange(body.status, registrationData.status);
+      const newStatus = getRegistrationStatusFromCheckoutStatusChange(
+        body.status,
+        registrationData.status
+      );
       batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
     });
 
-    if (body.status === "deleted" && checkoutData.voucher) {
-      const voucherDoc = await firestore.collection("vouchers").doc(checkoutData.voucher).get();
-      if (voucherDoc.exists) {
-        batch.update(voucherDoc.ref, { 
-          active: false, 
-          updatedAt: new Date() 
-        });
-      }
+    // Criar voucher se a compra estiver sendo marcada como concluída e não tiver voucher
+    if (body.status === "completed" && !checkoutData.voucher) {
+      const voucherDoc: VoucherDocument = {
+        active: true,
+        checkoutId: id,
+        createdAt: new Date(),
+      };
+      batch.set(firestore.collection("vouchers").doc(), voucherDoc);
     }
 
     await batch.commit();

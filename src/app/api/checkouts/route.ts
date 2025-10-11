@@ -6,6 +6,7 @@ import {
   extractCreateCheckoutDataFromRequestBody,
   createCheckoutDocument,
   createCheckoutDocumentId,
+  isPaymentByCommitment,
 } from "./utils";
 import { CreateCheckoutRequest } from "./checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
@@ -57,22 +58,22 @@ export async function POST(request: NextRequest) {
 
     const checkoutDoc = await firestore.collection("checkouts").doc(checkoutDocumentId).get();
     if (checkoutDoc.exists && checkoutDoc.data()?.status !== "deleted") {
-      return createErrorResponse("Uma outra compra de inscrições já existe para esse email.", 400);
+      return createErrorResponse("Uma outra aquisição de inscrições já existe para esse email.", 400);
     }
 
     await checkoutDoc.ref.set(checkoutDocument);
 
-    const voucherDoc: VoucherDocument = {
-      active: true,
-      checkoutId: checkoutDocumentId,
-      createdAt: new Date(),
-    };
-    const voucherRes = await firestore.collection("vouchers").add(voucherDoc);
-
-    await firestore
-      .collection("checkouts")
-      .doc(checkoutDocumentId)
-      .update({ voucher: voucherRes.id });
+    if (isPaymentByCommitment(checkoutDocument)) {
+      const voucherDoc: VoucherDocument = {
+        active: true,
+        checkoutId: checkoutDocumentId,
+        createdAt: new Date(),
+      };
+      const voucherRes = await firestore.collection("vouchers").add(voucherDoc);
+  
+      await checkoutDoc.ref
+        .update({ voucher: voucherRes.id });
+    }
 
     return createSuccessResponse(
       {

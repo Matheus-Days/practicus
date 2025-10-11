@@ -15,7 +15,6 @@ import {
   Tooltip,
   Box,
   LinearProgress,
-  Alert,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -28,18 +27,22 @@ import {
   MoreVert as MoreVertIcon,
   CheckCircle as CheckCircleIcon,
   Pending as PendingIcon,
+  Warning as WarningIcon,
   Cancel as CancelIcon,
   Visibility as VisibilityIcon,
   Download as DownloadIcon,
+  Receipt as ReceiptIcon,
 } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { useAdminContext } from "../../contexts/AdminContext";
 import { CheckoutData } from "../../types/checkout";
-import { CheckoutStatus } from "../../api/checkouts/checkout.types";
+import { CheckoutStatus, CommitmentPayment } from "../../api/checkouts/checkout.types";
 import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
+import Commitment from "../Commitment";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
 import { formatCheckoutForExport } from "../../utils/export-utils";
+import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function CheckoutsTable() {
   const {
@@ -57,6 +60,9 @@ export default function CheckoutsTable() {
     React.useState<CheckoutData | null>(null);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState(false);
   const [selectedCheckoutForDialog, setSelectedCheckoutForDialog] =
+    React.useState<CheckoutData | null>(null);
+  const [commitmentDialogOpen, setCommitmentDialogOpen] = React.useState(false);
+  const [selectedCheckoutForCommitment, setSelectedCheckoutForCommitment] =
     React.useState<CheckoutData | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("valid");
 
@@ -83,6 +89,16 @@ export default function CheckoutsTable() {
   const handleCheckoutDialogClose = () => {
     setCheckoutDialogOpen(false);
     setSelectedCheckoutForDialog(null);
+  };
+
+  const handleOpenCommitmentDialog = (checkout: CheckoutData) => {
+    setSelectedCheckoutForCommitment(checkout);
+    setCommitmentDialogOpen(true);
+  };
+
+  const handleCommitmentDialogClose = () => {
+    setCommitmentDialogOpen(false);
+    setSelectedCheckoutForCommitment(null);
   };
 
   const handleStatusFilterChange = (event: any) => {
@@ -161,8 +177,49 @@ export default function CheckoutsTable() {
     }
   };
 
-  const getStatusDisplay = (status: string) => {
-    switch (status) {
+  const getStatusDisplay = (checkout: CheckoutData) => {
+    if (isPaymentByCommitment(checkout)) {
+      const payment = checkout.payment as CommitmentPayment || undefined;
+      if (!payment) {
+        return {
+          text: "Empenho pendente",
+          color: "warning" as const,
+          icon: <PendingIcon />,
+        };
+      }
+      if (
+        payment.status === "pending" && payment.commitmentAttachment ||
+        payment.status === "committed" && payment.paymentAttachment
+      ) {
+        return {
+          text: "Aguardando validação",
+          color: "warning" as const,
+          icon:  <WarningIcon />,
+        }
+      }
+      if (payment.status === "pending") {
+        return {
+          text: "Empenho pendente",
+          color: "warning" as const,
+          icon: <PendingIcon />,
+        };
+      }
+      if (payment.status === "committed") {
+        return {
+          text: "Empenhado",
+          color: "info" as const,
+          icon: <CheckCircleIcon />,
+        };
+      }
+      if (payment.status === "paid") {
+        return {
+          text: "Empenho pago",
+          color: "success" as const,
+          icon: <CheckCircleIcon />,
+        };
+      }
+    }
+    switch (checkout.status) {
       case "pending":
         return {
           text: "Pendente",
@@ -209,12 +266,12 @@ export default function CheckoutsTable() {
     }).format(dateObj);
   };
 
-  const extractCheckoutEmail = (checkout: CheckoutData): string => {
+  const extractCheckoutPhone = (checkout: CheckoutData): string => {
     if (!checkout.billingDetails) return "Não informado";
-    if ("email" in checkout.billingDetails)
-      return checkout.billingDetails.email;
-    if ("responsibleEmail" in checkout.billingDetails)
-      return checkout.billingDetails.responsibleEmail;
+    if ("phone" in checkout.billingDetails)
+      return checkout.billingDetails.phone;
+    if ("responsiblePhone" in checkout.billingDetails)
+      return checkout.billingDetails.responsiblePhone;
     return "Não informado";
   };
 
@@ -285,9 +342,9 @@ export default function CheckoutsTable() {
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Pessoa</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Adquirido por</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Telefone</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Valor</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Situação</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Data de criação</TableCell>
               <TableCell sx={{ fontWeight: "bold" }} align="center">
                 Ações
@@ -296,7 +353,7 @@ export default function CheckoutsTable() {
           </TableHead>
           <TableBody>
             {filteredCheckouts.map((checkout) => {
-              const statusDisplay = getStatusDisplay(checkout.status);
+              const statusDisplay = getStatusDisplay(checkout);
               return (
                 <TableRow key={checkout.id} hover>
                   <TableCell>
@@ -318,7 +375,7 @@ export default function CheckoutsTable() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {extractCheckoutEmail(checkout)}
+                      {extractCheckoutPhone(checkout)}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -347,8 +404,8 @@ export default function CheckoutsTable() {
                       {formatDate(checkout.createdAt)}
                     </Typography>
                   </TableCell>
-                  <TableCell align="center">
-                    <Box display="flex" gap={1} justifyContent="center">
+                  <TableCell align="right">
+                    <Box display="flex" gap={1} justifyContent="flex-end">
                       <Tooltip title="Ver detalhes">
                         <IconButton
                           size="small"
@@ -358,14 +415,27 @@ export default function CheckoutsTable() {
                           <VisibilityIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Mais ações">
-                        <IconButton
+                      {isPaymentByCommitment(checkout) ? (
+                        <Button
                           size="small"
-                          onClick={(e) => handleMenuOpen(e, checkout)}
+                          variant="contained"
+                          startIcon={<ReceiptIcon />}
+                          onClick={() => handleOpenCommitmentDialog(checkout)}
+                          color="secondary"
+                          sx={{ minWidth: 'auto' }}
                         >
-                          <MoreVertIcon />
-                        </IconButton>
-                      </Tooltip>
+                          Empenho
+                        </Button>
+                      ) : (
+                        <Tooltip title="Mais ações">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleMenuOpen(e, checkout)}
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -382,7 +452,7 @@ export default function CheckoutsTable() {
               ? "Nenhuma aquisição encontrada para este evento."
               : statusFilter === "valid"
                 ? "Nenhuma aquisição válida encontrada."
-                : `Nenhuma aquisição com situação "${getStatusDisplay(statusFilter).text}" encontrada.`}
+                : `Nenhuma aquisição com situação selecionada foi encontrada.`}
           </Typography>
         </Box>
       )}
@@ -443,6 +513,17 @@ export default function CheckoutsTable() {
         onUpdateComplimentaryTickets={updateComplimentaryTickets}
         loadingComplimentaryUpdate={loadingComplimentaryUpdate}
       />
+
+      {/* Dialog de gerenciamento de empenho */}
+      {selectedCheckoutForCommitment && (
+        <Commitment
+          checkout={eventCheckouts.find(c => c.id === selectedCheckoutForCommitment.id) || selectedCheckoutForCommitment}
+          eventId={selectedEvent?.id || ""}
+          isAdmin={true}
+          open={commitmentDialogOpen}
+          onClose={handleCommitmentDialogClose}
+        />
+      )}
     </Box>
   );
 }
