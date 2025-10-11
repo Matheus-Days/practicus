@@ -56,6 +56,11 @@ export default function PurchaseSummary() {
   const handleCancelAcquisition = async () => {
     if (!checkout?.id) return;
 
+    const confirm = window.confirm(
+      "Tem certeza que deseja cancelar a aquisição?"
+    );
+    if (!confirm) return;
+
     try {
       await deleteCheckout();
     } catch (error) {
@@ -78,16 +83,20 @@ export default function PurchaseSummary() {
             </Typography>
           </Box>
 
-          <Box sx={{ 
-            display: "flex", 
-            flexWrap: "wrap", 
-            gap: 2,
-            flexDirection: { xs: "column", sm: "row" }
-          }}>
-            <Box sx={{ 
-              flex: { xs: "0 0 46px", sm: "1 1 300px" }, 
-              minWidth: { xs: "100%", sm: "200px" } 
-            }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 2,
+              flexDirection: { xs: "column", sm: "row" },
+            }}
+          >
+            <Box
+              sx={{
+                flex: { xs: "0 0 46px", sm: "1 1 300px" },
+                minWidth: { xs: "100%", sm: "200px" },
+              }}
+            >
               <Typography variant="subtitle2" color="text.secondary">
                 Quantidade de Inscrições
               </Typography>
@@ -95,10 +104,12 @@ export default function PurchaseSummary() {
             </Box>
 
             {!!checkout.complimentary && (
-              <Box sx={{ 
-                flex: { xs: "0 0 46px", sm: "1 1 300px" }, 
-                minWidth: { xs: "100%", sm: "200px" } 
-              }}>
+              <Box
+                sx={{
+                  flex: { xs: "0 0 46px", sm: "1 1 300px" },
+                  minWidth: { xs: "100%", sm: "200px" },
+                }}
+              >
                 <Typography variant="subtitle2" color="text.secondary">
                   Quantidade de cortesias
                 </Typography>
@@ -108,10 +119,12 @@ export default function PurchaseSummary() {
               </Box>
             )}
 
-            <Box sx={{ 
-              flex: { xs: "0 0 46px", sm: "1 1 300px" }, 
-              minWidth: { xs: "100%", sm: "200px" } 
-            }}>
+            <Box
+              sx={{
+                flex: { xs: "0 0 46px", sm: "1 1 300px" },
+                minWidth: { xs: "100%", sm: "200px" },
+              }}
+            >
               <Typography variant="subtitle2" color="text.secondary">
                 Tipo de pessoa
               </Typography>
@@ -121,10 +134,12 @@ export default function PurchaseSummary() {
             </Box>
 
             {registrateMyself && (
-              <Box sx={{ 
-                flex: { xs: "0 0 46px", sm: "1 1 100%" }, 
-                minWidth: { xs: "100%", sm: "200px" } 
-              }}>
+              <Box
+                sx={{
+                  flex: { xs: "0 0 46px", sm: "1 1 100%" },
+                  minWidth: { xs: "100%", sm: "200px" },
+                }}
+              >
                 <Typography variant="subtitle2" color="text.secondary">
                   Inscrição própria
                 </Typography>
@@ -134,19 +149,23 @@ export default function PurchaseSummary() {
               </Box>
             )}
 
-            {legalEntity === "pj" && billingDetails && (billingDetails as BillingDetailsPJ).paymentByCommitment && (
-              <Box sx={{ 
-                flex: { xs: "0 0 46px", sm: "1 1 100%" }, 
-                minWidth: { xs: "100%", sm: "200px" } 
-              }}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Forma de pagamento
-                </Typography>
-                <Typography variant="body1" color="primary">
-                  Empenho
-                </Typography>
-              </Box>
-            )}
+            {legalEntity === "pj" &&
+              billingDetails &&
+              (billingDetails as BillingDetailsPJ).paymentByCommitment && (
+                <Box
+                  sx={{
+                    flex: { xs: "0 0 46px", sm: "1 1 100%" },
+                    minWidth: { xs: "100%", sm: "200px" },
+                  }}
+                >
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Forma de pagamento
+                  </Typography>
+                  <Typography variant="body1" color="primary">
+                    Empenho
+                  </Typography>
+                </Box>
+              )}
           </Box>
 
           <Divider sx={{ my: 2 }} />
@@ -198,16 +217,16 @@ export default function PurchaseSummary() {
 
           {/* Botões de Ação */}
           <Divider sx={{ my: 3 }} />
-          <Stack 
-            direction={{ xs: "column", sm: "row" }} 
-            sx={{ 
-              mt: 2, 
-              flexWrap: "wrap", 
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            sx={{
+              mt: 2,
+              flexWrap: "wrap",
               gap: 1,
               "& > *": {
                 flex: { xs: "1 1 100%", sm: "0 1 auto" },
-                minWidth: { xs: "100%", sm: "auto" }
-              }
+                minWidth: { xs: "100%", sm: "auto" },
+              },
             }}
           >
             {checkout?.status === "pending" && (
@@ -216,23 +235,25 @@ export default function PurchaseSummary() {
                   variant="outlined"
                   startIcon={<EditIcon />}
                   onClick={handleEditBilling}
-                  sx={{ 
+                  sx={{
                     width: { xs: "100%", sm: "auto" },
-                    minWidth: { sm: "auto" }
+                    minWidth: { sm: "auto" },
                   }}
                 >
                   Editar dados de faturamento
                 </Button>
-                
+
                 {/* Botão de pagamento baseado no tipo de pagamento */}
-                {legalEntity === "pj" && billingDetails && (billingDetails as BillingDetailsPJ).paymentByCommitment ? (
+                {legalEntity === "pj" &&
+                billingDetails &&
+                (billingDetails as BillingDetailsPJ).paymentByCommitment ? (
                   <Button
                     variant="contained"
                     startIcon={<AccountBalanceIcon />}
                     onClick={() => setCommitmentOpen(true)}
-                    sx={{ 
+                    sx={{
                       width: { xs: "100%", sm: "auto" },
-                      minWidth: { sm: "auto" }
+                      minWidth: { sm: "auto" },
                     }}
                   >
                     Gerenciar empenho
@@ -242,26 +263,26 @@ export default function PurchaseSummary() {
                     variant="contained"
                     startIcon={<PaymentIcon />}
                     onClick={handleGoToPayment}
-                    sx={{ 
+                    sx={{
                       width: { xs: "100%", sm: "auto" },
-                      minWidth: { sm: "auto" }
+                      minWidth: { sm: "auto" },
                     }}
                   >
                     Efetuar Pagamento
                   </Button>
                 )}
-                
+
                 <Button
                   variant="outlined"
                   color="error"
                   startIcon={<DeleteIcon />}
                   onClick={handleCancelAcquisition}
-                  sx={{ 
+                  sx={{
                     width: { xs: "100%", sm: "auto" },
-                    minWidth: { sm: "auto" }
+                    minWidth: { sm: "auto" },
                   }}
                 >
-                  Cancelar Aquisição
+                  Cancelar e apagar aquisição
                 </Button>
               </>
             )}
@@ -272,9 +293,9 @@ export default function PurchaseSummary() {
                 color="error"
                 startIcon={<DeleteIcon />}
                 onClick={handleRequestCancellation}
-                sx={{ 
+                sx={{
                   width: { xs: "100%", sm: "auto" },
-                  minWidth: { sm: "auto" }
+                  minWidth: { sm: "auto" },
                 }}
               >
                 Solicitar cancelamento
