@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useFirebase } from '../hooks/firebase';
+import { useUserAPI } from '../hooks/userAPI';
 import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import { User } from 'firebase/auth';
 import AdminPanel from '../components/AdminPanel';
@@ -9,7 +10,8 @@ import HeadingBadge from '@/app/components/HeadingBadge';
 import BoundedMain from '@/app/components/BoundedMain';
 
 export default function Page() {
-  const { auth, getUserData } = useFirebase();
+  const { auth } = useFirebase();
+  const { getUserData } = useUserAPI();
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
