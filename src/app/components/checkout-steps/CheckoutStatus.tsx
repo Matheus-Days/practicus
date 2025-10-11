@@ -21,9 +21,10 @@ export default function CheckoutStatus() {
   if (!checkout) return null;
 
   const getCheckoutStatusInfo = (): StatusInfo => {
-    const multiple = Boolean(
-      checkout && checkout.amount && checkout.amount > 1
-    );
+    const onlyRegistrateMylself =
+      checkout.registrateMyself === true &&
+      checkout.amount === 1 &&
+      !checkout.complimentary;
 
     switch (checkout.status) {
       case "pending":
@@ -31,36 +32,27 @@ export default function CheckoutStatus() {
           label: "pagamento pendente",
           color: "warning" as const,
           icon: <PendingIcon color="warning" />,
-          description: multiple
-            ? "Voucher liberado para inscrições. Porém elas só serão confirmadas após a aprovação do pagamento."
-            : "Aguardando confirmação do pagamento.",
+          description: onlyRegistrateMylself
+            ? "Aguardando confirmação do pagamento."
+            : "O voucher para as inscrições será liberado após a aprovação do pagamento.",
         };
       case "completed":
         return {
           label: "concluída",
           color: "success" as const,
           icon: <CheckCircleIcon color="success" />,
-          description: multiple
-            ? "Seu pagamento foi aprovado e as vagas no evento foram confirmadas e garantidas."
-            : "Seu pagamento foi aprovado e a vaga no evento foi confirmada e garantida.",
+          description: onlyRegistrateMylself
+            ? "Seu pagamento foi aprovado e a vaga no evento foi confirmada e garantida."
+            : "Seu pagamento foi aprovado e as vagas no evento foram confirmadas e garantidas.",
         };
       case "refunded":
         return {
-          label: "reembolsada",
+          label: "cancelada",
           color: "error" as const,
           icon: <CancelIcon color="error" />,
-          description: multiple
-            ? "Pagamento reembolsado e inscrição cancelada."
-            : "Pagamento reembolsado e inscrições feitas pelo voucher canceladas.",
-        };
-      case "deleted":
-        return {
-          label: "excluída",
-          color: "default" as const,
-          icon: <CancelIcon color="error" />,
-          description: multiple
-            ? "Processo de aquisição e inscrições feitas pelo voucher cancelados."
-            : "Processo de aquisição e inscrição cancelados.",
+          description: onlyRegistrateMylself
+            ? "Aquisição e inscrição cancelada. Se houve pagamento efetivado, o reembolso será avaliado."
+            : "Aquisição e inscrições por voucher canceladas. Se houve pagamento efetivado, o reembolso será avaliado.",
         };
       default:
         return {
@@ -91,7 +83,9 @@ export default function CheckoutStatus() {
         label: "Pagamento empenhado",
         color: "info" as const,
         icon: <CheckCircleIcon color="success" />,
-        description: "O recibo de empenho foi validado pela Practicus.",
+        description: checkout.payment?.paymentAttachment
+          ? "A Practicus recebeu o comprovante de pagamento do empenho e o está avaliando."
+          : "O recibo de empenho foi validado pela Practicus. Não se esqueça de enviar o comprovante de pagamento quando ele tiver sido efetuado.",
       };
     }
     if (
