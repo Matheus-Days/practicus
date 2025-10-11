@@ -4,6 +4,7 @@ import { Box, Card, CardContent, Typography } from "@mui/material";
 import { ConfirmationNumber as TicketIcon } from "@mui/icons-material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import { useVoucherCalculations } from "../../hooks/useVoucherCalculations";
+import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function VoucherStatistics() {
   const { checkout } = useCheckout();
@@ -15,7 +16,11 @@ export default function VoucherStatistics() {
   } = useVoucherCalculations();
 
   // Não mostrar o componente se não há checkout ou se é um checkout de voucher
-  if (!checkout || checkout.checkoutType === "voucher") {
+  if (
+    !checkout ||
+    checkout.checkoutType === "voucher" ||
+    (checkout.status === "pending" && !isPaymentByCommitment(checkout))
+  ) {
     return null;
   }
 
