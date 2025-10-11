@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useFirebase } from "../hooks/firebase";
 import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
 import { User } from "firebase/auth";
 import { EventData } from "../types/events";
 import { CheckoutProvider } from "../contexts/CheckoutContext";
@@ -28,7 +29,7 @@ interface CheckoutsProps {
 }
 
 export default function Checkouts({ eventId }: CheckoutsProps) {
-  const { auth, getEventData } = useFirebase();
+  const { auth, firestore } = useFirebase();
   const [user, setUser] = useState<User | null>(null);
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,30 +71,36 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
   }, [auth]);
 
   useEffect(() => {
-    const fetchEventData = async () => {
-      try {
-        const event = await getEventData(eventId);
-        setEventData(event);
+    if (!eventId) return;
 
-        if (!event) {
-          setError(
-            "Não encontramos nenhum processo de inscrição aberto para este evento"
-          );
-        } else if (event.status === "closed") {
-          setError("As inscrições para este evento estão encerradas");
-        } else if (event.status === "canceled") {
-          setError("Este evento foi cancelado");
+    const eventRef = doc(firestore, "events", eventId);
+    
+    const unsubscribe = onSnapshot(eventRef, 
+      (doc) => {
+        if (doc.exists()) {
+          const event = {
+            id: doc.id,
+            ...doc.data(),
+          } as EventData;
+          setEventData(event);
+          
+          if (event.status === "closed") {
+            setError("As inscrições para este evento estão encerradas");
+          } else if (event.status === "canceled") {
+            setError("Este evento foi cancelado");
+          }
+        } else {
+          setError("Não encontramos nenhum processo de inscrição aberto para este evento");
         }
-      } catch (error) {
+      },
+      (error) => {
         console.error("Error fetching event data:", error);
         setError("Erro ao carregar dados do evento");
       }
-    };
+    );
 
-    if (eventId) {
-      fetchEventData();
-    }
-  }, [eventId, getEventData]);
+    return () => unsubscribe();
+  }, [eventId, firestore]);
 
   const handleSendSignInLink = async (e: React.FormEvent) => {
     e.preventDefault();
