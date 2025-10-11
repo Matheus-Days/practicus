@@ -72,7 +72,6 @@ export function CheckoutProvider({
   } = useRegistrationAPI();
   const {
     createVoucherCheckout: createVoucherCheckoutAPI,
-    getVoucher,
     changeVoucherActiveStatus,
   } = useVoucherAPI();
 
@@ -148,12 +147,10 @@ export function CheckoutProvider({
     }
 
     listenersRef.current.checkout = onSnapshot(checkoutRef, (doc) => {
-      if (doc.exists()) {
-        const checkoutDoc = doc.data() as CheckoutDocument;
-        fillCheckoutContext(doc.id, checkoutDoc);
-      } else {
-        setCheckout(null);
-      }
+      if (!doc.exists()) return setCheckout(null);
+      const checkoutDoc = doc.data() as CheckoutDocument;
+      if (checkoutDoc.status === "deleted") return setCheckout(null);
+      fillCheckoutContext(doc.id, checkoutDoc);
     }, (error) => {
       console.error("Erro no listener do checkout:", error);
     });
