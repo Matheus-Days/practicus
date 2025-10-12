@@ -113,7 +113,6 @@ export default function CheckoutStatus() {
     const status = registration ? registration.status : "invalid";
     switch (status) {
       case "ok":
-      case "pending":
         return {
           label: "ativa",
           color: "success" as const,
@@ -121,6 +120,14 @@ export default function CheckoutStatus() {
           description:
             "Inscrição realizada. Você não precisa tomar mais nenhuma ação.",
         };
+      case "pending":
+        return {
+          label: "suspensa",
+          color: "warning" as const,
+          icon: <PendingIcon color="warning" />,
+          description:
+            "<b>Inscrição suspensa por problemas com a compra.</b> Entre em contato com o responsável pela aquisição.",
+        }
       case "cancelled":
         return {
           label: "desativada",
@@ -135,7 +142,7 @@ export default function CheckoutStatus() {
           color: "default" as const,
           icon: <CancelIcon color="error" />,
           description:
-            "<b>O comprador cancelou a compra desta inscrição.</b> Delete sua inscrição e use um novo voucher.",
+            "<b>O comprador cancelou a compra desta inscrição.</b> Case queira se inscrever de outra forma, delete esta inscrição primeiro.",
         };
       default:
         return {
