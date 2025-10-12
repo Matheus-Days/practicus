@@ -127,19 +127,6 @@ export async function DELETE(
       batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
     });
 
-    if (checkoutData.voucher) {
-      const voucherDoc = await firestore
-        .collection("vouchers")
-        .doc(checkoutData.voucher)
-        .get();
-      if (voucherDoc.exists) {
-        batch.update(voucherDoc.ref, {
-          active: false,
-          updatedAt: new Date(),
-        });
-      }
-    }
-
     await batch.commit();
 
     return new NextResponse(undefined, { status: 204 });
