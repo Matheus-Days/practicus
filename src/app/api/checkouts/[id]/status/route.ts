@@ -74,9 +74,9 @@ export async function PATCH(
 
     const checkoutData = checkoutDoc.data() as CheckoutDocument;
 
-    if (isPaymentByCommitment(checkoutData) && body.status !== "deleted") {
+    if (isPaymentByCommitment(checkoutData) && body.status === "completed") {
       return createErrorResponse(
-        "Não é possível alterar diretamente a situação da compra pois o pagamento é por empenho.",
+        "Não é possível marcar uma compra por empenho como concluída diretamente.",
         400
       );
     }
@@ -100,7 +100,8 @@ export async function PATCH(
       const registrationData = doc.data() as RegistrationDocument;
       const newStatus = getRegistrationStatusFromCheckoutStatusChange(
         body.status,
-        registrationData.status
+        registrationData.status,
+        isPaymentByCommitment(checkoutData)
       );
       batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
     });
