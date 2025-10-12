@@ -28,6 +28,7 @@ import {
 import { formatCNPJ } from "../../utils/export-utils";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import Commitment from "../Commitment";
+import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function PurchaseSummary() {
   const {
@@ -243,35 +244,6 @@ export default function PurchaseSummary() {
                   Editar dados de faturamento
                 </Button>
 
-                {/* Botão de pagamento baseado no tipo de pagamento */}
-                {legalEntity === "pj" &&
-                billingDetails &&
-                (billingDetails as BillingDetailsPJ).paymentByCommitment ? (
-                  <Button
-                    variant="contained"
-                    startIcon={<AccountBalanceIcon />}
-                    onClick={() => setCommitmentOpen(true)}
-                    sx={{
-                      width: { xs: "100%", sm: "auto" },
-                      minWidth: { sm: "auto" },
-                    }}
-                  >
-                    Gerenciar empenho
-                  </Button>
-                ) : (
-                  <Button
-                    variant="contained"
-                    startIcon={<PaymentIcon />}
-                    onClick={handleGoToPayment}
-                    sx={{
-                      width: { xs: "100%", sm: "auto" },
-                      minWidth: { sm: "auto" },
-                    }}
-                  >
-                    Efetuar Pagamento
-                  </Button>
-                )}
-
                 <Button
                   variant="outlined"
                   color="error"
@@ -282,9 +254,37 @@ export default function PurchaseSummary() {
                     minWidth: { sm: "auto" },
                   }}
                 >
-                  Cancelar e apagar aquisição
+                  Cancelar aquisição
                 </Button>
               </>
+            )}
+
+            {/* Botão de pagamento baseado no tipo de pagamento */}
+            {isPaymentByCommitment(checkout) && (
+              <Button
+                variant="contained"
+                startIcon={<AccountBalanceIcon />}
+                onClick={() => setCommitmentOpen(true)}
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: "auto" },
+                }}
+              >
+                Gerenciar empenho
+              </Button>
+            )}
+            {!isPaymentByCommitment(checkout) && checkout.status === "pending" && (
+              <Button
+                variant="contained"
+                startIcon={<PaymentIcon />}
+                onClick={handleGoToPayment}
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: "auto" },
+                }}
+              >
+                Efetuar Pagamento
+              </Button>
             )}
 
             {checkout?.status === "completed" && (
