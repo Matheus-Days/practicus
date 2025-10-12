@@ -47,7 +47,8 @@ export default function MyRegistration() {
     "success" | "error" | "info"
   >("success");
   const [isDeletingVoucher, setIsDeletingVoucher] = useState(false);
-  const [isCancellingRegistration, setIsCancellingRegistration] = useState(false);
+  const [isCancellingRegistration, setIsCancellingRegistration] =
+    useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const { generateRegistrationPDF, setup } = useRegistrationPDF();
@@ -140,7 +141,10 @@ export default function MyRegistration() {
     if (!registration) return false;
 
     // Não pode desativar se a inscrição já estiver cancelada ou for inválida
-    if (registration.status === "cancelled" || registration.status === "invalid") {
+    if (
+      registration.status === "cancelled" ||
+      registration.status === "invalid"
+    ) {
       return false;
     }
 
@@ -155,25 +159,27 @@ export default function MyRegistration() {
     return true;
   };
 
-  const getChipLabel = (status?: RegistrationStatus) => {
+  const getChipLabel = (status: RegistrationStatus) => {
     switch (status) {
       case "cancelled":
         return "Desativada";
       case "ok":
-      case "pending":
         return "Ativa";
+      case "pending":
+        return "Pendente";
       default:
         return "Inválida";
     }
   };
 
-  const getChipColor = (status?: RegistrationStatus) => {
+  const getChipColor = (status: RegistrationStatus) => {
     switch (status) {
       case "cancelled":
         return "error";
       case "ok":
-      case "pending":
         return "success";
+      case "pending":
+        return "warning";
       default:
         return "warning";
     }
@@ -211,23 +217,26 @@ export default function MyRegistration() {
 
     try {
       setIsGeneratingPDF(true);
-      const result = await generateRegistrationPDF(registration, checkout.eventId);
-      
+      const result = await generateRegistrationPDF(
+        registration,
+        checkout.eventId
+      );
+
       if (!result) {
         throw new Error("Erro ao gerar PDF");
       }
 
       const { blob, eventName } = result;
-      const fileName = `Comprovante_${eventName.replace(/[^a-zA-Z0-9]/g, '_')}_${registration.fullName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+      const fileName = `Comprovante_${eventName.replace(/[^a-zA-Z0-9]/g, "_")}_${registration.fullName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
 
       // Usar Web Share API se disponível
       if (canShare) {
         try {
-          const file = new File([blob], fileName, { type: 'application/pdf' });
+          const file = new File([blob], fileName, { type: "application/pdf" });
           await share({
-            title: 'Comprovante de Inscrição',
+            title: "Comprovante de Inscrição",
             text: `Comprovante de inscrição para ${eventName}`,
-            files: [file]
+            files: [file],
           });
           setSnackbarMessage("Comprovante compartilhado com sucesso");
           setSnackbarSeverity("success");
@@ -251,14 +260,14 @@ export default function MyRegistration() {
 
   const downloadPDF = (blob: Blob, fileName: string) => {
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     setSnackbarMessage("Comprovante baixado com sucesso");
     setSnackbarSeverity("success");
     setSnackbarOpen(true);
@@ -275,7 +284,7 @@ export default function MyRegistration() {
               justifyContent: "space-between",
               mb: 2,
               flexDirection: { xs: "column", sm: "row" },
-              gap: { xs: 2, sm: 0 }
+              gap: { xs: 2, sm: 0 },
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -286,8 +295,8 @@ export default function MyRegistration() {
             </Box>
             {registration && (
               <Chip
-                label={getChipLabel(registration?.status)}
-                color={getChipColor(registration?.status)}
+                label={getChipLabel(registration.status)}
+                color={getChipColor(registration.status)}
                 size="medium"
                 variant="filled"
                 sx={{
@@ -295,8 +304,8 @@ export default function MyRegistration() {
                   height: { xs: 36, sm: 32 },
                   "& .MuiChip-label": {
                     fontSize: { xs: "1rem", sm: "0.75rem" },
-                    fontWeight: { xs: "bold", sm: "normal" }
-                  }
+                    fontWeight: { xs: "bold", sm: "normal" },
+                  },
                 }}
               />
             )}
@@ -343,53 +352,73 @@ export default function MyRegistration() {
                 </Box>
               </Box>
 
-              <Stack 
-                direction={{ xs: "column", sm: "row" }} 
-                sx={{ 
-                  flexWrap: "wrap", 
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                sx={{
+                  flexWrap: "wrap",
                   gap: 1,
                   "& > *": {
                     flex: { xs: "1 1 100%", sm: "0 1 auto" },
-                    minWidth: { xs: "100%", sm: "auto" }
-                  }
+                    minWidth: { xs: "100%", sm: "auto" },
+                  },
                 }}
               >
                 <Button
                   variant="outlined"
                   startIcon={<EditIcon />}
                   onClick={() => setCurrentStep("registration-form")}
-                  sx={{ 
+                  sx={{
                     width: { xs: "100%", sm: "auto" },
-                    minWidth: { sm: "auto" }
+                    minWidth: { sm: "auto" },
                   }}
                 >
                   Editar meus dados de inscrição
                 </Button>
                 <Button
                   variant="outlined"
-                  startIcon={isGeneratingPDF ? <CircularProgress size={20} color="inherit" /> : (canShare ? <ShareIcon /> : <PrintIcon />)}
+                  startIcon={
+                    isGeneratingPDF ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : canShare ? (
+                      <ShareIcon />
+                    ) : (
+                      <PrintIcon />
+                    )
+                  }
                   onClick={handlePrintCertificate}
                   disabled={isGeneratingPDF}
-                  sx={{ 
+                  sx={{
                     width: { xs: "100%", sm: "auto" },
-                    minWidth: { sm: "auto" }
+                    minWidth: { sm: "auto" },
                   }}
                 >
-                  {isGeneratingPDF ? "Gerando..." : (canShare ? "Compartilhar comprovante" : "Imprimir comprovante")}
+                  {isGeneratingPDF
+                    ? "Gerando..."
+                    : canShare
+                      ? "Compartilhar comprovante"
+                      : "Imprimir comprovante"}
                 </Button>
                 {canCancelMyRegistration() ? (
                   <Button
                     variant="outlined"
                     color="error"
-                    startIcon={isCancellingRegistration ? <CircularProgress size={20} color="inherit" /> : <CancelIcon />}
+                    startIcon={
+                      isCancellingRegistration ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <CancelIcon />
+                      )
+                    }
                     onClick={handleCancelMyRegistration}
                     disabled={isCancellingRegistration}
-                    sx={{ 
+                    sx={{
                       width: { xs: "100%", sm: "auto" },
-                      minWidth: { sm: "auto" }
+                      minWidth: { sm: "auto" },
                     }}
                   >
-                    {isCancellingRegistration ? "Processando..." : "Desistir da inscrição"}
+                    {isCancellingRegistration
+                      ? "Processando..."
+                      : "Desistir da inscrição"}
                   </Button>
                 ) : canActivateMyRegistration() ? (
                   <Tooltip
@@ -406,9 +435,9 @@ export default function MyRegistration() {
                         disabled={availableRegistrations <= 0}
                         startIcon={<RefreshIcon />}
                         onClick={handleActivateMyRegistration}
-                        sx={{ 
+                        sx={{
                           width: { xs: "100%", sm: "auto" },
-                          minWidth: { sm: "auto" }
+                          minWidth: { sm: "auto" },
                         }}
                       >
                         Reativar inscrição
@@ -431,12 +460,18 @@ export default function MyRegistration() {
                     <Button
                       variant="contained"
                       color="error"
-                      startIcon={isDeletingVoucher ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
+                      startIcon={
+                        isDeletingVoucher ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : (
+                          <DeleteIcon />
+                        )
+                      }
                       onClick={handleDeleteVoucherCheckout}
                       disabled={isDeletingVoucher}
-                      sx={{ 
+                      sx={{
                         width: { xs: "100%", sm: "auto" },
-                        minWidth: { sm: "auto" }
+                        minWidth: { sm: "auto" },
                       }}
                     >
                       {isDeletingVoucher ? "Deletando..." : "Deletar inscrição"}
@@ -465,9 +500,9 @@ export default function MyRegistration() {
                 variant="contained"
                 startIcon={<PersonIcon />}
                 onClick={() => setCurrentStep("registration-form")}
-                sx={{ 
+                sx={{
                   width: { xs: "100%", sm: "auto" },
-                  minWidth: { sm: "auto" }
+                  minWidth: { sm: "auto" },
                 }}
               >
                 Preencher minha inscrição
