@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import { useVoucherPDF } from "../../hooks/useVoucherPDF";
+import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 interface VoucherCodeProps {
   voucher: string;
@@ -140,6 +141,10 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
     setSnackbarSeverity("success");
     setSnackbarOpen(true);
   };
+
+  if (checkout?.status === "pending" && !isPaymentByCommitment(checkout)) {
+    return null;
+  }
 
   return (
     <>
