@@ -80,12 +80,12 @@ export async function PATCH(
         400
       );
     }
-    
+
     const registrationsQuery = await firestore
-    .collection("registrations")
-    .where("checkoutId", "==", checkoutDoc.id)
-    .get();
-    
+      .collection("registrations")
+      .where("checkoutId", "==", checkoutDoc.id)
+      .get();
+
     const batch = firestore.batch();
 
     // Atualizar o status do checkout
@@ -112,7 +112,11 @@ export async function PATCH(
         checkoutId: id,
         createdAt: new Date(),
       };
-      batch.set(firestore.collection("vouchers").doc(), voucherDoc);
+      const newVoucherDoc = firestore.collection("vouchers").doc();
+      batch.set(newVoucherDoc, voucherDoc);
+      batch.update(checkoutDoc.ref, {
+        voucher: newVoucherDoc.id,
+      } as Partial<CheckoutDocument>);
     }
 
     await batch.commit();
