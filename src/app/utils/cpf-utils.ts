@@ -82,3 +82,20 @@ export const formatCPF = (value: string): string => {
     return `${numericValue.slice(0, 3)}.${numericValue.slice(3, 6)}.${numericValue.slice(6, 9)}-${numericValue.slice(9, 11)}`;
   }
 };
+
+/**
+ * Obfusca CPF mantendo apenas os 3 primeiros e 2 últimos dígitos
+ * Formato: XXX.***.***-XX
+ */
+export const obfuscateCPF = (cpf: string): string => {
+  const numericCPF = removeNonNumeric(cpf);
+  
+  if (numericCPF.length !== 11) {
+    return '***.***.***-**';
+  }
+  
+  const firstThree = numericCPF.slice(0, 3);
+  const lastTwo = numericCPF.slice(-2);
+  
+  return `${firstThree}.***.***-${lastTwo}`;
+};

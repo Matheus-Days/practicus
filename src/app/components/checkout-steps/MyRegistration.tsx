@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -19,11 +19,15 @@ import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   Cancel as CancelIcon,
+  Print as PrintIcon,
+  Share as ShareIcon,
 } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
 import { formatCPF } from "../../utils/export-utils";
+import { useRegistrationPDF } from "../../hooks/useRegistrationPDF";
+import { useShare } from "../../hooks/useShare";
 
 export default function MyRegistration() {
   const {
@@ -44,12 +48,23 @@ export default function MyRegistration() {
   >("success");
   const [isDeletingVoucher, setIsDeletingVoucher] = useState(false);
   const [isCancellingRegistration, setIsCancellingRegistration] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const { generateRegistrationPDF, setup } = useRegistrationPDF();
+  const { canShare, share } = useShare();
 
   const usedRegistrations = checkoutRegistrations.filter(
     (reg) =>
       (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
   ).length;
   const availableRegistrations = registrationsAmount - usedRegistrations;
+
+  // Setup do PDF quando tiver eventId
+  useEffect(() => {
+    if (checkout?.eventId) {
+      setup(checkout.eventId);
+    }
+  }, [checkout?.eventId, setup]);
 
   const handleActivateMyRegistration = async () => {
     try {
@@ -186,6 +201,69 @@ export default function MyRegistration() {
     }
   };
 
+  const handlePrintCertificate = async () => {
+    if (!registration || !checkout?.eventId) {
+      setSnackbarMessage("Dados necessários não encontrados");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      setIsGeneratingPDF(true);
+      const result = await generateRegistrationPDF(registration, checkout.eventId);
+      
+      if (!result) {
+        throw new Error("Erro ao gerar PDF");
+      }
+
+      const { blob, eventName } = result;
+      const fileName = `Comprovante_${eventName.replace(/[^a-zA-Z0-9]/g, '_')}_${registration.fullName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+
+      // Usar Web Share API se disponível
+      if (canShare) {
+        try {
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          await share({
+            title: 'Comprovante de Inscrição',
+            text: `Comprovante de inscrição para ${eventName}`,
+            files: [file]
+          });
+          setSnackbarMessage("Comprovante compartilhado com sucesso");
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+        } catch (shareError) {
+          // Fallback para download se share falhar
+          downloadPDF(blob, fileName);
+        }
+      } else {
+        // Fallback para download se Web Share API não estiver disponível
+        downloadPDF(blob, fileName);
+      }
+    } catch (error) {
+      setSnackbarMessage("Erro ao gerar comprovante");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const downloadPDF = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    setSnackbarMessage("Comprovante baixado com sucesso");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+  };
+
   return (
     <>
       <Card sx={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
@@ -286,6 +364,18 @@ export default function MyRegistration() {
                   }}
                 >
                   Editar meus dados de inscrição
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={isGeneratingPDF ? <CircularProgress size={20} color="inherit" /> : (canShare ? <ShareIcon /> : <PrintIcon />)}
+                  onClick={handlePrintCertificate}
+                  disabled={isGeneratingPDF}
+                  sx={{ 
+                    width: { xs: "100%", sm: "auto" },
+                    minWidth: { sm: "auto" }
+                  }}
+                >
+                  {isGeneratingPDF ? "Gerando..." : (canShare ? "Compartilhar comprovante" : "Imprimir comprovante")}
                 </Button>
                 {canCancelMyRegistration() ? (
                   <Button
