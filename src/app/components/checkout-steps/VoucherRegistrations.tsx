@@ -36,6 +36,7 @@ import {
 } from "../../hooks/registrationAPI";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
 import { useVoucherCalculations } from "../../hooks/useVoucherCalculations";
+import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function VoucherRegistrations() {
   const { checkout, checkoutRegistrations } = useCheckout();
@@ -130,14 +131,19 @@ export default function VoucherRegistrations() {
     return true;
   };
 
-  const getRegistrationStatusInfo = (status: string) => {
-    switch (status) {
+  const getRegistrationStatusInfo = (registration: RegistrationMinimal) => {
+    switch (registration.status) {
       case "ok":
-      case "pending":
         return {
           label: "Ativa",
           color: "success" as const,
           icon: <CheckCircleIcon fontSize="small" color="success" />,
+        };
+      case "pending":
+        return {
+          label: "Pendente",
+          color: "warning" as const,
+          icon: <PendingIcon fontSize="small" color="warning" />,
         };
       case "invalid":
         return {
@@ -160,9 +166,13 @@ export default function VoucherRegistrations() {
     }
   };
 
-  // Mostrar o componente se há registrations além da própria, mesmo que não sejam ativas
+  // Não mostrar o componente se:
+  // - não houver registrations além da própria
+  // - checkout estiver pendente e não for um checkout de empenho
   if (
-    checkoutRegistrations.filter((reg) => !reg.isMyRegistration).length === 0
+    checkoutRegistrations.filter((reg) => !reg.isMyRegistration).length === 0 ||
+    !checkout ||
+    (checkout.status === "pending" && !isPaymentByCommitment(checkout))
   ) {
     return null;
   }
@@ -171,14 +181,16 @@ export default function VoucherRegistrations() {
     <>
       <Card>
         <CardContent sx={{ p: { xs: 2, sm: 3 }, overflow: "hidden" }}>
-          <Box sx={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: 1, 
-            mb: 2,
-            flexDirection: { xs: "column", sm: "row" },
-            textAlign: { xs: "center", sm: "left" }
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              mb: 2,
+              flexDirection: { xs: "column", sm: "row" },
+              textAlign: { xs: "center", sm: "left" },
+            }}
+          >
             <GroupIcon color="primary" />
             <Typography variant="h6" component="h3">
               Inscritos via voucher
@@ -191,56 +203,60 @@ export default function VoucherRegistrations() {
               <CircularProgress />
             </Box>
           ) : (
-            <Box sx={{ 
-              overflow: "auto",
-              width: "100%",
-              maxWidth: "100%"
-            }}>
-              <TableContainer 
-                component={Paper} 
+            <Box
+              sx={{
+                overflow: "auto",
+                width: "100%",
+                maxWidth: "100%",
+              }}
+            >
+              <TableContainer
+                component={Paper}
                 variant="outlined"
-                sx={{ 
+                sx={{
                   minWidth: { xs: "100%", sm: "auto" },
-                  maxWidth: "100%"
+                  maxWidth: "100%",
                 }}
               >
-                <Table sx={{ 
-                  minWidth: { xs: 600, sm: "auto" },
-                  tableLayout: { xs: "fixed", sm: "auto" }
-                }}>
+                <Table
+                  sx={{
+                    minWidth: { xs: 600, sm: "auto" },
+                    tableLayout: { xs: "fixed", sm: "auto" },
+                  }}
+                >
                   <TableHead>
                     <TableRow>
-                      <TableCell 
-                        sx={{ 
+                      <TableCell
+                        sx={{
                           fontWeight: "bold",
                           minWidth: { xs: 150, sm: "auto" },
-                          maxWidth: { xs: 150, sm: "none" }
+                          maxWidth: { xs: 150, sm: "none" },
                         }}
                       >
                         Nome completo
                       </TableCell>
-                      <TableCell 
-                        sx={{ 
+                      <TableCell
+                        sx={{
                           fontWeight: "bold",
                           minWidth: { xs: 120, sm: "auto" },
-                          maxWidth: { xs: 120, sm: "none" }
+                          maxWidth: { xs: 120, sm: "none" },
                         }}
                       >
                         E-mail
                       </TableCell>
-                      <TableCell 
-                        sx={{ 
+                      <TableCell
+                        sx={{
                           fontWeight: "bold",
-                          minWidth: { xs: 100, sm: "auto" }
+                          minWidth: { xs: 100, sm: "auto" },
                         }}
                       >
                         Situação
                       </TableCell>
-                      <TableCell 
-                        align="center" 
-                        sx={{ 
+                      <TableCell
+                        align="center"
+                        sx={{
                           fontWeight: "bold",
-                          minWidth: { xs: 120, sm: "auto" }
+                          minWidth: { xs: 120, sm: "auto" },
                         }}
                       >
                         Ações
@@ -251,21 +267,21 @@ export default function VoucherRegistrations() {
                     {checkoutRegistrations
                       .filter((reg) => !reg.isMyRegistration)
                       .map((reg) => {
-                        const statusInfo = getRegistrationStatusInfo(reg.status);
+                        const statusInfo = getRegistrationStatusInfo(reg);
                         return (
                           <TableRow key={reg.id}>
-                            <TableCell 
-                              sx={{ 
+                            <TableCell
+                              sx={{
                                 wordBreak: "break-word",
-                                maxWidth: { xs: 150, sm: "none" }
+                                maxWidth: { xs: 150, sm: "none" },
                               }}
                             >
                               {reg.fullName}
                             </TableCell>
-                            <TableCell 
-                              sx={{ 
+                            <TableCell
+                              sx={{
                                 wordBreak: "break-word",
-                                maxWidth: { xs: 120, sm: "none" }
+                                maxWidth: { xs: 120, sm: "none" },
                               }}
                             >
                               {reg.email || "Não informado"}
@@ -276,7 +292,7 @@ export default function VoucherRegistrations() {
                                   display: "flex",
                                   alignItems: "center",
                                   gap: 1,
-                                  flexDirection: { xs: "column", sm: "row" }
+                                  flexDirection: { xs: "column", sm: "row" },
                                 }}
                               >
                                 {statusInfo.icon}
@@ -320,8 +336,11 @@ export default function VoucherRegistrations() {
                                         !canActivateRegistration(reg)
                                       }
                                       sx={{
-                                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                                        minWidth: { xs: "auto", sm: "auto" }
+                                        fontSize: {
+                                          xs: "0.75rem",
+                                          sm: "0.875rem",
+                                        },
+                                        minWidth: { xs: "auto", sm: "auto" },
                                       }}
                                     >
                                       Ativar inscrição
@@ -334,13 +353,15 @@ export default function VoucherRegistrations() {
                                   color="error"
                                   size="small"
                                   startIcon={<DeleteIcon />}
-                                  onClick={() => handleCancelRegistration(reg.id)}
+                                  onClick={() =>
+                                    handleCancelRegistration(reg.id)
+                                  }
                                   disabled={
                                     loading || !canCancelRegistration(reg)
                                   }
                                   sx={{
                                     fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                                    minWidth: { xs: "auto", sm: "auto" }
+                                    minWidth: { xs: "auto", sm: "auto" },
                                   }}
                                 >
                                   Desativar inscrição
