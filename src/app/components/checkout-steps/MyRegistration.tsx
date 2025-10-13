@@ -185,12 +185,6 @@ export default function MyRegistration() {
     }
   };
 
-  const shouldShowRegistration = registrateMyself || checkoutType === "voucher";
-
-  if (!shouldShowRegistration) {
-    return null;
-  }
-
   const handleDeleteVoucherCheckout = async () => {
     try {
       setIsDeletingVoucher(true);
