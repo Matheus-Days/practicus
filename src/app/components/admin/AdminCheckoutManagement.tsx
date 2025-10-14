@@ -37,7 +37,6 @@ interface VoucherData {
 
 export default function AdminCheckoutManagement() {
   const { 
-    selectedEvent, 
     eventCheckouts, 
     user, 
     updateComplimentaryTickets,
@@ -60,7 +59,7 @@ export default function AdminCheckoutManagement() {
   const [isEditingComplimentary, setIsEditingComplimentary] = useState(false);
 
   // Encontrar o checkout do admin
-  const adminCheckout = eventCheckouts.find(checkout => checkout.userId === user.uid);
+  const adminCheckout = eventCheckouts.find(checkout => checkout.checkoutType === "admin");
 
   const loadVoucherData = useCallback(async () => {
     if (!adminCheckout?.voucher) return;
