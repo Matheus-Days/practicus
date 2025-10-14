@@ -91,7 +91,14 @@ export async function validateVoucher(
     };
   }
 
-  if (!buyerCheckoutData.amount) {
+  const userDoc = await firestore
+    .collection("users")
+    .doc(buyerCheckoutData.userId)
+    .get();
+  const userData = userDoc.data() as { admin: boolean };
+  const isAdmin = userData?.admin || false;
+
+  if (!buyerCheckoutData.amount && !isAdmin) {
     return {
       valid: false,
       message: "Compra do voucher não tem um número válido de inscrições.",
@@ -109,8 +116,9 @@ export async function validateVoucher(
     id: doc.id,
   }));
 
+  const checkoutAmount = buyerCheckoutData.amount || 0;
   const complimentary = buyerCheckoutData.complimentary || 0;
-  const maxRegistrations = buyerCheckoutData.amount + complimentary;
+  const maxRegistrations = checkoutAmount + complimentary;
 
   if (validRegistrations.length >= maxRegistrations) {
     return {

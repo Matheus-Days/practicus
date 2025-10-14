@@ -32,6 +32,7 @@ import {
   Visibility as VisibilityIcon,
   Download as DownloadIcon,
   Receipt as ReceiptIcon,
+  ConfirmationNumber as TicketIcon,
 } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { useAdminContext } from "../../contexts/AdminContext";
@@ -42,6 +43,7 @@ import {
 } from "../../api/checkouts/checkout.types";
 import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
+import VoucherManagementDialog from "./VoucherManagementDialog";
 import Commitment from "../Commitment";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
 import { formatCheckoutForExport } from "../../utils/export-utils";
@@ -56,6 +58,7 @@ export default function CheckoutsTable() {
     updateComplimentaryTickets,
     loadingComplimentaryUpdate,
     loadingCheckoutStatusUpdate,
+    user,
   } = useAdminContext();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -66,6 +69,9 @@ export default function CheckoutsTable() {
     React.useState<CheckoutData | null>(null);
   const [commitmentDialogOpen, setCommitmentDialogOpen] = React.useState(false);
   const [selectedCheckoutForCommitment, setSelectedCheckoutForCommitment] =
+    React.useState<CheckoutData | null>(null);
+  const [voucherDialogOpen, setVoucherDialogOpen] = React.useState(false);
+  const [selectedCheckoutForVoucher, setSelectedCheckoutForVoucher] =
     React.useState<CheckoutData | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("valid");
 
@@ -102,6 +108,16 @@ export default function CheckoutsTable() {
   const handleCommitmentDialogClose = () => {
     setCommitmentDialogOpen(false);
     setSelectedCheckoutForCommitment(null);
+  };
+
+  const handleOpenVoucherDialog = (checkout: CheckoutData) => {
+    setSelectedCheckoutForVoucher(checkout);
+    setVoucherDialogOpen(true);
+  };
+
+  const handleVoucherDialogClose = () => {
+    setVoucherDialogOpen(false);
+    setSelectedCheckoutForVoucher(null);
   };
 
   const handleStatusFilterChange = (event: any) => {
@@ -165,13 +181,21 @@ export default function CheckoutsTable() {
       );
       if (!confirmed) return;
     }
-    if (status === "pending" && selectedCheckout?.status === "deleted" && !isPaymentByCommitment(selectedCheckout)) {
+    if (
+      status === "pending" &&
+      selectedCheckout?.status === "deleted" &&
+      !isPaymentByCommitment(selectedCheckout)
+    ) {
       const confirmed = window.confirm(
         "Ao reativar uma compra cancelada como pendente, todas as inscrições associadas a ela serão reativadas. Tem certeza que deseja continuar?"
       );
       if (!confirmed) return;
     }
-    if (status === "pending" && selectedCheckout?.status === "deleted" && isPaymentByCommitment(selectedCheckout)) {
+    if (
+      status === "pending" &&
+      selectedCheckout?.status === "deleted" &&
+      isPaymentByCommitment(selectedCheckout)
+    ) {
       const confirmed = window.confirm(
         "Ao reativar uma compra por empenho, todas as inscrições associadas a ela se tornarão válidas novamente. Tem certeza que deseja continuar?"
       );
@@ -295,12 +319,28 @@ export default function CheckoutsTable() {
   };
 
   const extractCheckoutName = (checkout: CheckoutData): string => {
+    const isAdmin = user.uid === checkout.userId;
+    if (isAdmin) return "Administrador Practicus";
     if (!checkout.billingDetails) return "Não informado";
     if ("fullName" in checkout.billingDetails)
       return checkout.billingDetails.fullName;
     if ("orgName" in checkout.billingDetails)
       return checkout.billingDetails.orgName;
     return "Não informado";
+  };
+
+  const extractLegalEntityLabel = (checkout: CheckoutData): string => {
+    const isAdmin = user.uid === checkout.userId;
+    if (isAdmin) return "Admin";
+    if (!checkout.legalEntity) return "Não informado";
+    return checkout.legalEntity === "pf" ? "Física" : "Jurídica";
+  };
+
+  const extractLegalEntityColor = (checkout: CheckoutData) => {
+    const isAdmin = user.uid === checkout.userId;
+    if (isAdmin) return "success";
+    if (!checkout.legalEntity) return "default";
+    return checkout.legalEntity === "pf" ? "primary" : "secondary";
   };
 
   if (loadingCheckouts) {
@@ -378,12 +418,8 @@ export default function CheckoutsTable() {
                 <TableRow key={checkout.id} hover>
                   <TableCell>
                     <Chip
-                      label={
-                        checkout.legalEntity === "pf" ? "Física" : "Jurídica"
-                      }
-                      color={
-                        checkout.legalEntity === "pf" ? "primary" : "secondary"
-                      }
+                      label={extractLegalEntityLabel(checkout)}
+                      color={extractLegalEntityColor(checkout)}
                       size="small"
                       variant="outlined"
                     />
@@ -435,6 +471,23 @@ export default function CheckoutsTable() {
                           <VisibilityIcon />
                         </IconButton>
                       </Tooltip>
+
+                      {/* Botão para gerenciar voucher - apenas para checkouts do próprio admin */}
+                      {user.uid === checkout.userId && checkout.voucher && (
+                        <Tooltip title="Gerenciar voucher">
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<TicketIcon />}
+                            onClick={() => handleOpenVoucherDialog(checkout)}
+                            color="primary"
+                            sx={{ minWidth: "auto" }}
+                          >
+                            Cortesias
+                          </Button>
+                        </Tooltip>
+                      )}
+
                       {isPaymentByCommitment(checkout) &&
                       checkout.status !== "deleted" ? (
                         <Button
@@ -606,6 +659,13 @@ export default function CheckoutsTable() {
           onClose={handleCommitmentDialogClose}
         />
       )}
+
+      {/* Dialog de gerenciamento de voucher */}
+      <VoucherManagementDialog
+        open={voucherDialogOpen}
+        onClose={handleVoucherDialogClose}
+        checkout={selectedCheckoutForVoucher}
+      />
     </Box>
   );
 }

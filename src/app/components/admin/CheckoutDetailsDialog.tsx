@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Button,
   Typography,
   Box,
@@ -16,7 +15,6 @@ import {
   IconButton,
   Snackbar,
   TextField,
-  InputAdornment,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -26,11 +24,13 @@ import {
   ContentCopy as ContentCopyIcon,
   Check as CheckIcon,
   Clear as ClearIcon,
+  ConfirmationNumber as TicketIcon,
 } from '@mui/icons-material';
 import { CheckoutData } from '../../types/checkout';
 import { calculateTotalPurchasePrice } from '@/lib/checkout-utils';
 import { BillingDetailsPF, BillingDetailsPJ } from '../../api/checkouts/checkout.types';
 import { EventDocument } from '../../types/events';
+import { useAdminContext } from '../../contexts/AdminContext';
 
 interface CheckoutDetailsDialogProps {
   open: boolean;
@@ -145,6 +145,7 @@ export default function CheckoutDetailsDialog({
   onUpdateComplimentaryTickets,
   loadingComplimentaryUpdate = false,
 }: CheckoutDetailsDialogProps) {
+  const { user } = useAdminContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkout, setCheckout] = useState<CheckoutData | null>(checkoutData || null);
@@ -327,178 +328,261 @@ export default function CheckoutDetailsDialog({
 
           {checkout && !loading && (
             <Box>
-              {/* Status */}
-              <Box mb={3}>
-                <Typography variant="h6" gutterBottom>
-                  Situação da aquisição
-                </Typography>
-                <Chip
-                  icon={getStatusDisplay(checkout.status).icon}
-                  label={getStatusDisplay(checkout.status).text}
-                  color={getStatusDisplay(checkout.status).color}
-                  size="medium"
-                  variant="outlined"
-                />
-              </Box>
-
-              <Divider sx={{ mb: 3 }} />
-
-              {/* Informações Gerais */}
-              <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
+              {/* Verificar se é checkout do próprio admin */}
+              {user.uid === checkout.userId ? (
+                // Seção especial para controle de cortesias do admin
                 <Box>
-                  <Typography variant="h6" gutterBottom>
-                    Informações gerais
-                  </Typography>
-                  <Box>
-                    <Typography variant="body2" color="textSecondary">
-                      ID da aquisição:
-                    </Typography>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                        {checkout.id}
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2, 
+                      mb: 3,
+                      p: 3,
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      borderRadius: 2,
+                      textAlign: 'center'
+                    }}
+                  >
+                    <TicketIcon sx={{ fontSize: 40 }} />
+                    <Box>
+                      <Typography variant="h4" component="h2" gutterBottom>
+                        Controle de Cortesias do Administrador
                       </Typography>
+                      <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                        Gerenciamento de vouchers e cortesias para este evento
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Seção de Cortesias */}
+                  <Box mb={3}>
+                    <Typography variant="h6" gutterBottom color="primary">
+                      Cortesias
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <TextField
+                        type="number"
+                        value={complimentaryValue}
+                        onChange={handleComplimentaryChange}
+                        size="small"
+                        sx={{ width: 100 }}
+                        inputProps={{ 
+                          min: 0,
+                          style: { textAlign: 'center' }
+                        }}
+                        disabled={loadingComplimentaryUpdate}
+                        label="Quantidade"
+                      />
                       <IconButton
                         size="small"
-                        onClick={handleCopyId}
                         color="primary"
+                        onClick={handleConfirmComplimentary}
+                        disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
+                        sx={{ 
+                          bgcolor: 'success.main', 
+                          color: 'white',
+                          '&:hover': { bgcolor: 'success.dark' },
+                          '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                        }}
                       >
-                        <ContentCopyIcon />
+                        <CheckIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="secondary"
+                        onClick={handleCancelComplimentary}
+                        disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
+                        sx={{ 
+                          bgcolor: 'secondary.main', 
+                          color: 'white',
+                          '&:hover': { bgcolor: 'secondary.dark' },
+                          '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                        }}
+                      >
+                        <ClearIcon />
                       </IconButton>
                     </Box>
-                    
-                    <Typography variant="body2" color="textSecondary">
-                      Tipo de pessoa:
+                  </Box>
+                </Box>
+              ) : (
+                // Seção normal para outros usuários
+                <>
+                  {/* Status */}
+                  <Box mb={3}>
+                    <Typography variant="h6" gutterBottom>
+                      Situação da aquisição
                     </Typography>
                     <Chip
-                      label={checkout.legalEntity === "pf" ? "Física" : "Jurídica"}
-                      color={checkout.legalEntity === "pf" ? "primary" : "secondary"}
-                      size="small"
+                      icon={getStatusDisplay(checkout.status).icon}
+                      label={getStatusDisplay(checkout.status).text}
+                      color={getStatusDisplay(checkout.status).color}
+                      size="medium"
                       variant="outlined"
-                      sx={{ mb: 1 }}
                     />
-                    
-                    <Typography variant="body2" color="textSecondary">
-                      Número de inscrições:
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {checkout.amount || "Não informado"}
-                    </Typography>
-                    
-                    <Typography variant="body2" color="textSecondary">
-                      Valor total:
-                    </Typography>
-                    <Typography variant="h6" color="primary" gutterBottom>
-                      {checkout.amount && eventData
-                        ? formatCurrency(calculateTotalPurchasePrice(eventData, checkout))
-                        : "-"}
-                    </Typography>
-                    
-                    <Typography variant="body2" color="textSecondary">
-                      Data de criação:
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {formatDate(checkout.createdAt)}
-                    </Typography>
-                    
-                    {checkout.updatedAt && (
-                      <>
-                        <Typography variant="body2" color="textSecondary">
-                          Última atualização:
-                        </Typography>
-                        <Typography variant="body1" gutterBottom>
-                          {formatDate(checkout.updatedAt)}
-                        </Typography>
-                      </>
-                    )}
                   </Box>
-                </Box>
 
-                <Box>
-                  <Typography variant="h6" gutterBottom>
-                    Dados de faturamento
-                  </Typography>
-                  {checkout.billingDetails ? (
-                    checkout.legalEntity === "pf" ? (
-                      <BillingDetailsPFComponent billingDetails={checkout.billingDetails as BillingDetailsPF} />
-                    ) : (
-                      <BillingDetailsPJComponent billingDetails={checkout.billingDetails as BillingDetailsPJ} />
-                    )
-                  ) : (
-                    <Typography variant="body1" color="textSecondary">
-                      Dados de faturamento não disponíveis
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
+                  <Divider sx={{ mb: 3 }} />
 
-              {/* Seção de Cortesias */}
-              <Divider sx={{ my: 3 }} />
-              <Box mb={3}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Cortesias
-                </Typography>
-                <Box display="flex" alignItems="center" gap={2}>
-                  <TextField
-                    type="number"
-                    value={complimentaryValue}
-                    onChange={handleComplimentaryChange}
-                    size="small"
-                    sx={{ width: 100 }}
-                    inputProps={{ 
-                      min: 0,
-                      style: { textAlign: 'center' }
-                    }}
-                    disabled={loadingComplimentaryUpdate}
-                    label="Quantidade"
-                  />
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={handleConfirmComplimentary}
-                    disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
-                    sx={{ 
-                      bgcolor: 'success.main', 
-                      color: 'white',
-                      '&:hover': { bgcolor: 'success.dark' },
-                      '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
-                    }}
-                  >
-                    <CheckIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="secondary"
-                    onClick={handleCancelComplimentary}
-                    disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
-                    sx={{ 
-                      bgcolor: 'secondary.main', 
-                      color: 'white',
-                      '&:hover': { bgcolor: 'secondary.dark' },
-                      '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
-                    }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                </Box>
-              </Box>
-
-              {/* Informações Adicionais */}
-              {checkout.registrateMyself !== undefined && (
-                <>
-                  <Divider sx={{ my: 3 }} />
-                  <Typography variant="h6" gutterBottom>
-                    Informações adicionais
-                  </Typography>
+                  {/* Informações Gerais */}
                   <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
                     <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        O comprador vai ele mesmo se inscrever?
+                      <Typography variant="h6" gutterBottom>
+                        Informações gerais
                       </Typography>
-                      <Typography variant="body1">
-                        {checkout.registrateMyself ? "Sim" : "Não"}
+                      <Box>
+                        <Typography variant="body2" color="textSecondary">
+                          ID da aquisição:
+                        </Typography>
+                        <Box display="flex" alignItems="center" gap={1} mb={2}>
+                          <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                            {checkout.id}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={handleCopyId}
+                            color="primary"
+                          >
+                            <ContentCopyIcon />
+                          </IconButton>
+                        </Box>
+                        
+                        <Typography variant="body2" color="textSecondary">
+                          Tipo de pessoa:
+                        </Typography>
+                        <Chip
+                          label={checkout.legalEntity === "pf" ? "Física" : "Jurídica"}
+                          color={checkout.legalEntity === "pf" ? "primary" : "secondary"}
+                          size="small"
+                          variant="outlined"
+                          sx={{ mb: 1 }}
+                        />
+                        
+                        <Typography variant="body2" color="textSecondary">
+                          Número de inscrições:
+                        </Typography>
+                        <Typography variant="body1" gutterBottom>
+                          {checkout.amount || "Não informado"}
+                        </Typography>
+                        
+                        <Typography variant="body2" color="textSecondary">
+                          Valor total:
+                        </Typography>
+                        <Typography variant="h6" color="primary" gutterBottom>
+                          {checkout.amount && eventData
+                            ? formatCurrency(calculateTotalPurchasePrice(eventData, checkout))
+                            : "-"}
+                        </Typography>
+                        
+                        <Typography variant="body2" color="textSecondary">
+                          Data de criação:
+                        </Typography>
+                        <Typography variant="body1" gutterBottom>
+                          {formatDate(checkout.createdAt)}
+                        </Typography>
+                        
+                        {checkout.updatedAt && (
+                          <>
+                            <Typography variant="body2" color="textSecondary">
+                              Última atualização:
+                            </Typography>
+                            <Typography variant="body1" gutterBottom>
+                              {formatDate(checkout.updatedAt)}
+                            </Typography>
+                          </>
+                        )}
+                      </Box>
+                    </Box>
+
+                    <Box>
+                      <Typography variant="h6" gutterBottom>
+                        Dados de faturamento
                       </Typography>
+                      {checkout.billingDetails ? (
+                        checkout.legalEntity === "pf" ? (
+                          <BillingDetailsPFComponent billingDetails={checkout.billingDetails as BillingDetailsPF} />
+                        ) : (
+                          <BillingDetailsPJComponent billingDetails={checkout.billingDetails as BillingDetailsPJ} />
+                        )
+                      ) : (
+                        <Typography variant="body1" color="textSecondary">
+                          Dados de faturamento não disponíveis
+                        </Typography>
+                      )}
                     </Box>
                   </Box>
+
+                  {/* Seção de Cortesias */}
+                  <Divider sx={{ my: 3 }} />
+                  <Box mb={3}>
+                    <Typography variant="h6" gutterBottom color="primary">
+                      Cortesias
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <TextField
+                        type="number"
+                        value={complimentaryValue}
+                        onChange={handleComplimentaryChange}
+                        size="small"
+                        sx={{ width: 100 }}
+                        inputProps={{ 
+                          min: 0,
+                          style: { textAlign: 'center' }
+                        }}
+                        disabled={loadingComplimentaryUpdate}
+                        label="Quantidade"
+                      />
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={handleConfirmComplimentary}
+                        disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
+                        sx={{ 
+                          bgcolor: 'success.main', 
+                          color: 'white',
+                          '&:hover': { bgcolor: 'success.dark' },
+                          '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                        }}
+                      >
+                        <CheckIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="secondary"
+                        onClick={handleCancelComplimentary}
+                        disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
+                        sx={{ 
+                          bgcolor: 'secondary.main', 
+                          color: 'white',
+                          '&:hover': { bgcolor: 'secondary.dark' },
+                          '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                        }}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+
+                  {/* Informações Adicionais */}
+                  {checkout.registrateMyself !== undefined && (
+                    <>
+                      <Divider sx={{ my: 3 }} />
+                      <Typography variant="h6" gutterBottom>
+                        Informações adicionais
+                      </Typography>
+                      <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
+                        <Box>
+                          <Typography variant="body2" color="textSecondary">
+                            O comprador vai ele mesmo se inscrever?
+                          </Typography>
+                          <Typography variant="body1">
+                            {checkout.registrateMyself ? "Sim" : "Não"}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </>
+                  )}
                 </>
               )}
             </Box>

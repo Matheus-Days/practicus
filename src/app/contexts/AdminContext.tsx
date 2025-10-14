@@ -75,6 +75,8 @@ interface AdminContextType {
   snackbarMessage: string;
   snackbarSeverity: 'success' | 'error' | 'warning' | 'info';
 
+  user: User;
+
   // Funções de navegação
   navigateToEventsList: () => void;
   navigateToEventDetails: (event: EventData) => void;
@@ -463,6 +465,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
     snackbarOpen,
     snackbarMessage,
     snackbarSeverity,
+    user,
     navigateToEventsList,
     navigateToEventDetails,
     updateCheckoutStatus: handleUpdateCheckoutStatus,
