@@ -67,6 +67,9 @@ export default function BillingDetails() {
   const [cepError, setCepError] = useState<string | null>(null);
   const [cepLoading, setCepLoading] = useState<boolean>(false);
   const [cepSuccess, setCepSuccess] = useState<boolean>(false);
+  
+  // Estado para validação da quantidade de inscrições
+  const [amountError, setAmountError] = useState<string | null>(null);
 
   const [billingDetailsPF, setBillingDetailsPF] = useState<BillingDetailsPF>({
     email: user?.email || "",
@@ -268,6 +271,11 @@ export default function BillingDetails() {
   };
 
   const isFormValid = (): boolean => {
+    // Validar quantidade de inscrições
+    if (localRegistrationsAmount <= 0) {
+      return false;
+    }
+    
     if (localLegalEntity === "pf") {
       // Validar telefone PF
       const phonePFValidation = validatePhone(billingDetailsPF.phone || "");
@@ -346,15 +354,22 @@ export default function BillingDetails() {
           type="number"
           value={localRegistrationsAmount}
           onChange={(e) => {
-            const value = parseInt(e.target.value) || 1;
+            const value = parseInt(e.target.value) || 0;
             setLocalRegistrationsAmount(value);
             setRegistrationsAmount(value);
+            
+            // Validar quantidade
+            if (value <= 0) {
+              setAmountError("A quantidade deve ser maior que zero");
+            } else {
+              setAmountError(null);
+            }
           }}
           variant="outlined"
           size="medium"
           required
-          slotProps={{ htmlInput: { min: 1 } }}
-          helperText="Mínimo de 1 inscrição"
+          error={!!amountError}
+          helperText={amountError || "Digite a quantidade de inscrições"}
         />
 
         {/* II. Seletor do tipo de pessoa */}
