@@ -17,6 +17,7 @@ import {
   Alert,
   Card,
   Stack,
+  Autocomplete,
 } from "@mui/material";
 import { PatternFormat } from "react-number-format";
 import { useCheckout } from "../../contexts/CheckoutContext";
@@ -27,7 +28,8 @@ import {
 } from "../../api/checkouts/checkout.types";
 import { validateCNPJ } from "../../utils/cnpj-utils";
 import { validatePhone } from "../../utils/phone-utils";
-import { validateCEP, fetchCEPInfo } from "../../utils/cep-utils";
+import { validateCEP } from "../../utils/cep-utils";
+import { useCEP } from "../../hooks/useCEP";
 
 export default function BillingDetails() {
   const {
@@ -63,13 +65,21 @@ export default function BillingDetails() {
   const [phoneOrgFormat, setPhoneOrgFormat] = useState<string>("(##) #####-####");
   const [phoneRespFormat, setPhoneRespFormat] = useState<string>("(##) #####-####");
   
-  // Estado para validação do CEP
-  const [cepError, setCepError] = useState<string | null>(null);
-  const [cepLoading, setCepLoading] = useState<boolean>(false);
-  const [cepSuccess, setCepSuccess] = useState<boolean>(false);
-  
   // Estado para validação da quantidade de inscrições
   const [amountError, setAmountError] = useState<string | null>(null);
+
+  // Hook useCEP para gerenciar CEP, estados e municípios
+  const {
+    cepState,
+    statesState,
+    municipalitiesState,
+    fetchCEPData,
+    validateCEPInput,
+    fetchStates,
+    fetchMunicipalities,
+    clearCEP,
+    clearMunicipalities,
+  } = useCEP();
 
   const [billingDetailsPF, setBillingDetailsPF] = useState<BillingDetailsPF>({
     email: user?.email || "",
@@ -83,6 +93,8 @@ export default function BillingDetails() {
     orgCnpj: "",
     orgAddress: "",
     orgZip: "",
+    orgCity: "",
+    orgState: "",
     responsibleName: "",
     responsiblePhone: "",
     responsibleEmail: user?.email || "",
@@ -94,6 +106,11 @@ export default function BillingDetails() {
   const [localRegistrateMyself, setLocalRegistrateMyself] = useState(registrateMyself || false);
 
   const hasExistingCheckout = checkout && checkout.status !== 'deleted';
+
+  // Carregar estados ao montar o componente
+  useEffect(() => {
+    fetchStates();
+  }, [fetchStates]);
 
   useEffect(() => {
     const userEmail = user?.email || "";
@@ -117,6 +134,8 @@ export default function BillingDetails() {
         orgCnpj: pj.orgCnpj || "",
         orgAddress: pj.orgAddress || "",
         orgZip: pj.orgZip || "",
+        orgCity: pj.orgCity || "",
+        orgState: pj.orgState || "",
         responsibleName: pj.responsibleName || "",
         responsiblePhone: pj.responsiblePhone || "",
         responsibleEmail: pj.responsibleEmail || user?.email || "",
@@ -133,6 +152,8 @@ export default function BillingDetails() {
           orgCnpj: "",
           orgAddress: "",
           orgZip: "",
+          orgCity: "",
+          orgState: "",
           responsibleName: "",
           responsiblePhone: "",
           responsibleEmail: user?.email || "",
@@ -143,9 +164,8 @@ export default function BillingDetails() {
         setPhoneRespError(null);
         setPhoneOrgFormat("(##) #####-####");
         setPhoneRespFormat("(##) #####-####");
-        setCepError(null);
-        setCepLoading(false);
-        setCepSuccess(false);
+        clearCEP();
+        clearMunicipalities();
     } else if (localLegalEntity === "pj") {
       setBillingDetailsPF({
         email: user?.email || "",
@@ -155,7 +175,7 @@ export default function BillingDetails() {
       setPhonePFError(null);
       setPhonePFFormat("(##) #####-####");
     }
-  }, [localLegalEntity, user?.email]);
+  }, [localLegalEntity, user?.email, clearCEP, clearMunicipalities]);
 
   useEffect(() => {
     setLocalRegistrationsAmount(registrationsAmount || 1);
@@ -185,6 +205,11 @@ export default function BillingDetails() {
     const updated = { ...billingDetailsPJ, [field]: value };
     setBillingDetailsPJ(updated);
     setBillingDetails(updated);
+
+    if (field === "orgState") {
+      const state = statesState.states.find(state => state.sigla === value);
+      if (state) fetchMunicipalities(state.id);
+    }
   };
 
   const handleCreateCheckout = async () => {
@@ -236,37 +261,26 @@ export default function BillingDetails() {
     setCurrentStep("overview");
   };
 
-  // Função para validar CEP com a API dos Correios
-  const validateCEPWithAPI = async (cep: string) => {
+  // Função para lidar com mudanças no CEP
+  const handleCEPChange = async (cep: string) => {
     const numericCEP = cep.replace(/\D/g, '');
     
     if (numericCEP.length !== 8) {
-      setCepError(null);
-      setCepSuccess(false);
       return;
     }
 
-    setCepLoading(true);
-    setCepError(null);
-    setCepSuccess(false);
-
     try {
-      const cepInfo = await fetchCEPInfo(cep);
+      const cepInfo = await fetchCEPData(cep);
       
-      // CEP válido e encontrado na API
-      setCepSuccess(true);
-      setCepError(null);
-      
-      // Mostrar snackbar de sucesso
-      setSnackbarMessage(`CEP válido: ${cepInfo.logradouro}, ${cepInfo.localidade} - ${cepInfo.uf}`);
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-      
+      if (cepInfo) {
+        setSnackbarMessage(`CEP válido: ${cepInfo.logradouro}, ${cepInfo.localidade} - ${cepInfo.uf}`);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+      }
     } catch (error) {
-      setCepError("CEP não encontrado nos Correios");
-      setCepSuccess(false);
-    } finally {
-      setCepLoading(false);
+      setSnackbarMessage("CEP não encontrado");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -307,6 +321,11 @@ export default function BillingDetails() {
       // Validar CEP
       const cepValidation = validateCEP(billingDetailsPJ.orgZip || "");
       if (billingDetailsPJ.orgZip?.trim() && cepValidation) {
+        return false;
+      }
+      
+      // Validar se estado (sigla) e município estão preenchidos
+      if (!billingDetailsPJ.orgState?.trim() || !billingDetailsPJ.orgCity?.trim()) {
         return false;
       }
       
@@ -563,25 +582,7 @@ export default function BillingDetails() {
                   placeholder="(00) 00000-0000"
                 />
 
-                <TextField
-                  fullWidth
-                  label="Endereço da organização"
-                  value={billingDetailsPJ.orgAddress || ""}
-                  onChange={(e) =>
-                    handleBillingDetailsPJChange("orgAddress", e.target.value)
-                  }
-                  variant="outlined"
-                  size="medium"
-                  required
-                  multiline
-                  rows={2}
-                  sx={{
-                    '& textarea': {
-                      textTransform: 'uppercase'
-                    }
-                  }}
-                />
-
+                {/* CEP - Primeiro campo de endereço */}
                 <PatternFormat
                   customInput={TextField}
                   format="#####-###"
@@ -592,39 +593,27 @@ export default function BillingDetails() {
                   onValueChange={(values) => {
                     const { value } = values;
                     handleBillingDetailsPJChange("orgZip", value);
-                    
-                    // Validar CEP em tempo real
-                    if (value && value.length === 8) {
-                      const validation = validateCEP(value);
-                      if (!validation) {
-                        validateCEPWithAPI(value);
-                      } else {
-                        setCepError(validation);
-                        setCepSuccess(false);
-                      }
-                    } else {
-                      setCepError(null);
-                      setCepSuccess(false);
-                    }
                   }}
                   onBlur={() => {
-                    const validation = validateCEP(billingDetailsPJ.orgZip || "");
-                    setCepError(validation);
+                    const validation = validateCEPInput(billingDetailsPJ.orgZip || "");
+                    if (!validation && billingDetailsPJ.orgZip && billingDetailsPJ.orgZip.length === 8) {
+                      handleCEPChange(billingDetailsPJ.orgZip);
+                    }
                   }}
                   variant="outlined"
                   size="medium"
                   required
-                  error={!!cepError}
+                  error={!!cepState.cepError}
                   helperText={
-                    cepLoading 
+                    cepState.cepLoading 
                       ? "Validando CEP..." 
-                      : cepSuccess 
+                      : cepState.cepSuccess 
                         ? "CEP válido" 
-                        : cepError || "Sujeito a validação com os Correios"
+                        : cepState.cepError || "Digite o CEP para preenchimento automático"
                   }
                   placeholder="00000-000"
                   InputProps={{
-                    endAdornment: cepLoading ? (
+                    endAdornment: cepState.cepLoading ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
                         <Box
                           sx={{
@@ -641,9 +630,91 @@ export default function BillingDetails() {
                           }}
                         />
                       </Box>
-                    ) : cepSuccess ? (
+                    ) : cepState.cepSuccess ? (
                       <Box sx={{ color: 'success.main', mr: 1 }}>✓</Box>
                     ) : null
+                  }}
+                />
+
+                {/* Estado */}
+                <Autocomplete
+                  fullWidth
+                  options={statesState.states.map(state => state.sigla)}
+                  value={billingDetailsPJ.orgState}
+                  onChange={(_, newValue) => handleBillingDetailsPJChange("orgState", newValue || "")}
+                  loading={statesState.statesLoading}
+                  disabled={statesState.statesLoading}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Estado"
+                      required
+                      error={!billingDetailsPJ.orgState && !!billingDetailsPJ.orgZip}
+                      helperText={!billingDetailsPJ.orgState && billingDetailsPJ.orgZip ? "Selecione um estado" : ""}
+                    />
+                  )}
+                  renderOption={(props, option) => {
+                    const { key, ...otherProps } = props;
+                    return (
+                      <Box component="li" key={key} {...otherProps}>
+                        {option}
+                      </Box>
+                    );
+                  }}
+                  noOptionsText="Nenhum estado encontrado"
+                  loadingText="Carregando estados..."
+                />
+
+                {/* Município */}
+                <Autocomplete
+                  fullWidth
+                  options={municipalitiesState.municipalities.map(municipality => municipality.nome.toUpperCase())}
+                  value={billingDetailsPJ.orgCity}
+                  onChange={(_, newValue) => handleBillingDetailsPJChange("orgCity", newValue || "")}
+                  loading={municipalitiesState.municipalitiesLoading}
+                  disabled={municipalitiesState.municipalities.length === 0 || municipalitiesState.municipalitiesLoading}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Município"
+                      required
+                      error={!billingDetailsPJ.orgCity && !!billingDetailsPJ.orgState}
+                      helperText="Selecione um município"
+                    />
+                  )}
+                  renderOption={(props, option) => {
+                    const { key, ...otherProps } = props;
+                    return (
+                      <Box component="li" key={key} {...otherProps}>
+                        {option}
+                      </Box>
+                    );
+                  }}
+                  noOptionsText={
+                    municipalitiesState.municipalities.length === 0 && billingDetailsPJ.orgState
+                      ? "Selecione um estado primeiro"
+                      : "Nenhum município encontrado"
+                  }
+                  loadingText="Carregando municípios..."
+                />
+
+                {/* Logradouro */}
+                <TextField
+                  fullWidth
+                  label="Logradouro da organização"
+                  value={billingDetailsPJ.orgAddress || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange("orgAddress", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
+                  required
+                  multiline
+                  rows={2}
+                  sx={{
+                    '& textarea': {
+                      textTransform: 'uppercase'
+                    }
                   }}
                 />
 

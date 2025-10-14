@@ -19,6 +19,8 @@ export type BillingDetailsPJ = {
   orgName: string;
   orgCnpj: string;
   orgAddress: string;
+  orgCity: string;
+  orgState: string;
   orgZip: string;
   responsibleName: string;
   responsiblePhone: string;
