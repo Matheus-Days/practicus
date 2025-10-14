@@ -6,6 +6,7 @@ import Dashboard from "./Dashboard";
 import BillingDetails from "./BillingDetails";
 import SelectType from "./SelectType";
 import VoucherValidation from "./VoucherValidation";
+import CommonPayment from "./CommonPayment";
 import RegistrationForm from "../RegistrationForm";
 import { Box, Typography, Button, Card, CardContent } from "@mui/material";
 import { RegistrationFormData } from "../../api/registrations/registration.types";
@@ -119,6 +120,11 @@ export default function CheckoutFlow() {
         </Box>
       </Box>
     );
+  }
+
+  // Se o usuário está na etapa de payment, mostrar CommonPayment
+  if (currentStep === "payment") {
+    return <CommonPayment />;
   }
 
   // Caso contrário, mostrar Dashboard (incluindo quando currentStep === "overview")
