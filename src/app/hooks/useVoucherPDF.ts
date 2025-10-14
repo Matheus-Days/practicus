@@ -4,7 +4,7 @@ import { EventoDocument } from "../../../prismicio-types";
 import { CheckoutData } from "../types/checkout";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
 import { asText } from "@prismicio/client";
-import { convertSvgToPng } from "./utils";
+import { convertSvgToPng, localizeDate } from "./utils";
 
 interface LogoData {
   url: string;
@@ -46,14 +46,13 @@ export const useVoucherPDF = () => {
         "evento",
         eventUID
       )) as EventoDocument;
+      const eventDate = localizeDate(evento.data.data_do_evento?.toString() || "");
       const eventData: EventData = {
         uid: evento.uid,
         nome: asText(evento.data.nome_do_evento) || "Evento",
         local:
           asText(evento.data.local_do_evento_longo) || "Local não informado",
-        data: evento.data.data_do_evento
-          ? new Date(evento.data.data_do_evento).toLocaleDateString("pt-BR")
-          : "Data não informada",
+        data: eventDate || "Data não informada",
       };
 
       const pdfmakeModule = await import("pdfmake/build/pdfmake");
