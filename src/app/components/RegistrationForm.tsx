@@ -10,9 +10,16 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Autocomplete,
+  Typography,
 } from "@mui/material";
 import { useCheckout } from "../contexts/CheckoutContext";
 import { RegistrationFormData } from "../api/registrations/registration.types";
+import {
+  HOW_DID_YOU_HEAR_ABOUT_US_OPTIONS,
+  PUBLIC_AGENT_OCCUPATIONS,
+  PRIVATE_AGENT_OCCUPATIONS,
+} from "../api/registrations/constants";
 import { validateCPF } from "../utils/cpf-utils";
 import { validatePhone } from "../utils/phone-utils";
 import { PatternFormat } from "react-number-format";
@@ -23,8 +30,16 @@ interface RegistrationFormProps {
   onValidationChange?: (isValid: boolean) => void;
 }
 
-const VALID_SOURCE_OPTIONS = ["INSTAGRAM", "WEBSITE", "INDICACAO"];
-
+const OCCUPATION_OPTIONS = [
+  {
+    group: "AGENTE PÚBLICO",
+    options: PUBLIC_AGENT_OCCUPATIONS,
+  },
+  {
+    group: "INICIATIVA PRIVADA",
+    options: PRIVATE_AGENT_OCCUPATIONS,
+  },
+];
 
 export default function RegistrationForm({
   initialData = {},
@@ -33,28 +48,9 @@ export default function RegistrationForm({
 }: RegistrationFormProps) {
   const { user } = useCheckout();
 
-  // Função para detectar se o valor inicial é personalizado
-  const getInitialSourceState = () => {
-    const initialValue = initialData.howDidYouHearAboutUs || "";
-    
-    // Se o valor inicial é uma das opções válidas, usar ele
-    if (VALID_SOURCE_OPTIONS.includes(initialValue)) {
-      return {
-        selectedSource: initialValue,
-        otherSource: ""
-      };
-    }
-    
-    // Se o valor inicial não é uma opção válida, tratar como "outro"
-    return {
-      selectedSource: "outro",
-      otherSource: initialValue
-    };
-  };
-
-  const initialSourceState = getInitialSourceState();
-
-  const [registration, setRegistration] = useState<Partial<RegistrationFormData>>({
+  const [registration, setRegistration] = useState<
+    Partial<RegistrationFormData>
+  >({
     fullName: initialData.fullName || "",
     email: initialData.email || user?.email || "",
     phone: initialData.phone || "",
@@ -62,31 +58,34 @@ export default function RegistrationForm({
     isPhoneWhatsapp: initialData.isPhoneWhatsapp || false,
     credentialName: initialData.credentialName || "",
     occupation: initialData.occupation || "",
-    employer: initialData.employer || "",
-    city: initialData.city || "",
     useImage: initialData.useImage || false,
     howDidYouHearAboutUs: initialData.howDidYouHearAboutUs || "",
+    howDidYouHearAboutUsOther: initialData.howDidYouHearAboutUsOther || "",
   });
 
-  const [otherSource, setOtherSource] = useState(initialSourceState.otherSource);
-  const [selectedSource, setSelectedSource] = useState(initialSourceState.selectedSource);
-  
   const [credNameCounter, setCredNameCounter] = useState(0);
 
   // Validation states
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [cpfError, setCpfError] = useState<string | null>(null);
-  
+
   // Estado para controlar o formato da máscara do telefone
   const [phoneFormat, setPhoneFormat] = useState<string>("(##) #####-####");
 
   // Validation function
   const validateForm = useCallback((): boolean => {
     // Verificar se todos os campos obrigatórios estão preenchidos
-    const hasFullName = registration.fullName?.trim() !== undefined && registration.fullName?.trim() !== "";
-    const hasPhone = registration.phone?.trim() !== undefined && registration.phone?.trim() !== "";
-    const hasCpf = registration.cpf?.trim() !== undefined && registration.cpf?.trim() !== "";
-    const hasHowDidYouHearAboutUs = registration.howDidYouHearAboutUs?.trim() !== undefined && registration.howDidYouHearAboutUs?.trim() !== "";
+    const hasFullName =
+      registration.fullName?.trim() !== undefined &&
+      registration.fullName?.trim() !== "";
+    const hasPhone =
+      registration.phone?.trim() !== undefined &&
+      registration.phone?.trim() !== "";
+    const hasCpf =
+      registration.cpf?.trim() !== undefined && registration.cpf?.trim() !== "";
+    const hasHowDidYouHearAboutUs =
+      registration.howDidYouHearAboutUs?.trim() !== undefined &&
+      registration.howDidYouHearAboutUs?.trim() !== "";
 
     // Verificar se o telefone é válido (sem erros de validação)
     const isPhoneValid = !phoneError && hasPhone;
@@ -97,28 +96,29 @@ export default function RegistrationForm({
     // Verificar se concordou com o uso de imagem
     const hasAgreedToImageUse = registration.useImage === true;
 
-    // Verificar se "como ficou sabendo" está preenchido quando "outro" é selecionado
-    const hasValidSource = selectedSource !== "outro" || 
-                          (selectedSource === "outro" && otherSource.trim() !== "");
+    // Verificar se "como ficou sabendo" está preenchido quando "OUTRO" é selecionado
+    const hasValidSource =
+      registration.howDidYouHearAboutUs !== "OUTRO" ||
+      (registration.howDidYouHearAboutUs === "OUTRO" &&
+        registration.howDidYouHearAboutUsOther?.trim() !== "");
 
-    return hasFullName && hasPhone && hasCpf && hasHowDidYouHearAboutUs && isPhoneValid && isCpfValid && hasAgreedToImageUse && hasValidSource;
-  }, [registration, phoneError, cpfError, otherSource, selectedSource]);
+    return (
+      hasFullName &&
+      hasPhone &&
+      hasCpf &&
+      hasHowDidYouHearAboutUs &&
+      isPhoneValid &&
+      isCpfValid &&
+      hasAgreedToImageUse &&
+      hasValidSource
+    );
+  }, [registration, phoneError, cpfError]);
 
   // Effect para notificar mudanças na validação
   useEffect(() => {
     const isValid = validateForm();
     onValidationChange?.(isValid);
   }, [validateForm, onValidationChange]);
-
-
-  const handleOtherSourceChange = (value: string) => {
-    setOtherSource(value);
-    if (selectedSource === "outro") {
-      const updatedData = { ...registration, howDidYouHearAboutUs: value };
-      setRegistration(updatedData);
-      onDataChange(updatedData);
-    }
-  };
 
   const handleFieldChange = (field: keyof RegistrationFormData, value: any) => {
     if (field === "credentialName") {
@@ -137,21 +137,22 @@ export default function RegistrationForm({
       setCpfError(validation);
     }
 
+    // Convert to uppercase for specific fields
+    if (field === "howDidYouHearAboutUsOther" && typeof value === "string") {
+      value = value.toUpperCase();
+    }
+
     // Handle "howDidYouHearAboutUs" field changes
     if (field === "howDidYouHearAboutUs") {
-      setSelectedSource(value);
-      // If changing away from "outro", clear the otherSource
-      if (value !== "outro") {
-        setOtherSource("");
-        const updatedData = { ...registration, [field]: value };
-        setRegistration(updatedData);
-        onDataChange(updatedData);
-      } else {
-        // If selecting "outro", keep the current otherSource value
-        const updatedData = { ...registration, [field]: otherSource || "" };
-        setRegistration(updatedData);
-        onDataChange(updatedData);
-      }
+      // If changing away from "OUTRO", clear the other field
+      const updatedData = {
+        ...registration,
+        [field]: value,
+        howDidYouHearAboutUsOther:
+          value === "OUTRO" ? registration.howDidYouHearAboutUsOther : "",
+      };
+      setRegistration(updatedData);
+      onDataChange(updatedData);
     } else {
       const updatedData = { ...registration, [field]: value };
       setRegistration(updatedData);
@@ -171,9 +172,9 @@ export default function RegistrationForm({
         required
         helperText="Esse nome será usado para emissão do certificado."
         sx={{
-          '& input': {
-            textTransform: 'uppercase'
-          }
+          "& input": {
+            textTransform: "uppercase",
+          },
         }}
       />
 
@@ -184,12 +185,12 @@ export default function RegistrationForm({
         onChange={(e) => handleFieldChange("credentialName", e.target.value)}
         variant="outlined"
         size="medium"
-        slotProps={{ htmlInput: { maxLength: 15 }}}
+        slotProps={{ htmlInput: { maxLength: 15 } }}
         helperText={`${credNameCounter}/15 caracteres`}
         sx={{
-          '& input': {
-            textTransform: 'uppercase'
-          }
+          "& input": {
+            textTransform: "uppercase",
+          },
         }}
       />
 
@@ -218,9 +219,9 @@ export default function RegistrationForm({
         onBlur={() => {
           const validation = validatePhone(registration.phone || "");
           setPhoneError(validation);
-          
+
           // Ajustar formato baseado no número de dígitos
-          const numericPhone = (registration.phone || "").replace(/\D/g, '');
+          const numericPhone = (registration.phone || "").replace(/\D/g, "");
           if (numericPhone.length === 10) {
             setPhoneFormat("(##) ####-####");
           } else {
@@ -274,52 +275,61 @@ export default function RegistrationForm({
         placeholder="000.000.000-00"
       />
 
-      <TextField
+      <Autocomplete
         fullWidth
-        label="Ocupação (opcional)"
-        value={registration.occupation}
-        onChange={(e) => handleFieldChange("occupation", e.target.value)}
-        variant="outlined"
-        size="medium"
-        sx={{
-          '& input': {
-            textTransform: 'uppercase'
-          }
+        options={OCCUPATION_OPTIONS.flatMap((group) => group.options)}
+        groupBy={(option) => {
+          const group = OCCUPATION_OPTIONS.find((g) =>
+            g.options.includes(option)
+          );
+          return group?.group || "";
         }}
-      />
-
-      <TextField
-        fullWidth
-        label="Empregador (opcional)"
-        value={registration.employer}
-        onChange={(e) => handleFieldChange("employer", e.target.value)}
-        variant="outlined"
-        size="medium"
-        sx={{
-          '& input': {
-            textTransform: 'uppercase'
-          }
+        value={registration.occupation || null}
+        onChange={(_, newValue) => {
+          console.log("newValue", newValue);
+          handleFieldChange("occupation", newValue || "");
         }}
-      />
-
-      <TextField
-        fullWidth
-        label="Município de ocupação (opcional)"
-        value={registration.city}
-        onChange={(e) => handleFieldChange("city", e.target.value)}
-        variant="outlined"
-        size="medium"
-        sx={{
-          '& input': {
-            textTransform: 'uppercase'
-          }
-        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Ocupação (opcional)"
+            variant="outlined"
+            size="medium"
+            sx={{
+              "& input": {
+                textTransform: "uppercase",
+              },
+            }}
+            helperText="Caso não esteja na lista, digite a ocupação"
+            onChange={(e) => handleFieldChange("occupation", e.target.value)}
+          />
+        )}
+        renderGroup={(params) => (
+          <li key={params.key}>
+            <Box
+              sx={{
+                px: 2,
+                py: 1,
+                bgcolor: "grey.100",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+                color: "text.secondary",
+              }}
+            >
+              {params.group}
+            </Box>
+            <ul style={{ padding: 0, margin: 0 }}>{params.children}</ul>
+          </li>
+        )}
+        freeSolo
+        selectOnFocus
+        handleHomeEndKeys
       />
 
       <FormControl fullWidth required>
         <InputLabel>Como você ficou sabendo deste evento?</InputLabel>
         <Select
-          value={selectedSource}
+          value={registration.howDidYouHearAboutUs || ""}
           label="Como você ficou sabendo deste evento?"
           onChange={(e) =>
             handleFieldChange("howDidYouHearAboutUs", e.target.value)
@@ -327,31 +337,39 @@ export default function RegistrationForm({
           required
           size="medium"
         >
-          <MenuItem value="INSTAGRAM">INSTAGRAM</MenuItem>
-          <MenuItem value="WEBSITE">WEBSITE PRACTICUS</MenuItem>
-          <MenuItem value="INDICACAO">INDICAÇÃO</MenuItem>
-          <MenuItem value="OUTRO">OUTRO</MenuItem>
+          {HOW_DID_YOU_HEAR_ABOUT_US_OPTIONS.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
 
-      {selectedSource === "outro" && (
-      <TextField
-        fullWidth
-        label="Especifique como ficou sabendo"
-        value={otherSource}
-        onChange={(e) => {
-          handleOtherSourceChange(e.target.value);
-        }}
-        variant="outlined"
-        size="medium"
-        required
-        sx={{
-          '& input': {
-            textTransform: 'uppercase'
-          }
-        }}
+      {registration.howDidYouHearAboutUs === "OUTRO" && (
+        <TextField
+          fullWidth
+          label="Especifique como ficou sabendo"
+          value={registration.howDidYouHearAboutUsOther || ""}
+          onChange={(e) => {
+            handleFieldChange("howDidYouHearAboutUsOther", e.target.value);
+          }}
+          variant="outlined"
+          size="medium"
+          required
+          sx={{
+            "& input": {
+              textTransform: "uppercase",
+            },
+          }}
         />
       )}
+
+      <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+        A Practicus Treinamento e Capacitação
+        poderá utilizar a referida imagem, no todo ou em parte, por número indeterminado de vezes, nos meios de 
+        comunicação e para os fins que lhe convier, sem fins econômicos, desde que respeitados os dispositivos 
+        vigentes na legislação brasileira e no presente instrumento.
+      </Typography>
 
       <FormControlLabel
         control={

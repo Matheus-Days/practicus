@@ -1,11 +1,10 @@
 export type RegistrationFormData = {
-  city?: string;
   cpf: string;
   credentialName?: string;
   email?: string;
-  employer?: string;
   fullName: string;
   howDidYouHearAboutUs?: string;
+  howDidYouHearAboutUsOther?: string;
   isPhoneWhatsapp: boolean;
   occupation?: string;
   phone: string;

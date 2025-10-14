@@ -182,10 +182,9 @@ export function CheckoutProvider({
           isPhoneWhatsapp: registrationData.isPhoneWhatsapp,
           credentialName: registrationData.credentialName,
           occupation: registrationData.occupation,
-          employer: registrationData.employer,
-          city: registrationData.city,
           useImage: registrationData.useImage,
           howDidYouHearAboutUs: registrationData.howDidYouHearAboutUs,
+          howDidYouHearAboutUsOther: registrationData.howDidYouHearAboutUsOther,
         });
       } else {
         setRegistration(null);
@@ -352,9 +351,8 @@ export function CheckoutProvider({
         fullName: registrationData.fullName?.toUpperCase() || "",
         credentialName: registrationData.credentialName?.toUpperCase() || "",
         occupation: registrationData.occupation?.toUpperCase() || "",
-        employer: registrationData.employer?.toUpperCase() || "",
-        city: registrationData.city?.toUpperCase() || "",
         howDidYouHearAboutUs: registrationData.howDidYouHearAboutUs?.toUpperCase() || "",
+        howDidYouHearAboutUsOther: registrationData.howDidYouHearAboutUsOther?.toUpperCase() || "",
       };
 
       const result = await createRegistrationAPI({
@@ -413,10 +411,9 @@ export function CheckoutProvider({
           credentialName:
             (registrationData.credentialName || registrationData.fullName)?.toUpperCase() || "",
           occupation: registrationData.occupation?.toUpperCase() || "",
-          employer: registrationData.employer?.toUpperCase() || "",
-          city: registrationData.city?.toUpperCase() || "",
-          useImage: registrationData.useImage || false,
+          howDidYouHearAboutUsOther: registrationData.howDidYouHearAboutUsOther?.toUpperCase() || "",
           howDidYouHearAboutUs: registrationData.howDidYouHearAboutUs?.toUpperCase() || "",
+          useImage: registrationData.useImage || false,
         },
       };
 
