@@ -36,8 +36,6 @@ export default function BillingDetails() {
     setCheckoutType,
     setBillingDetails,
     setRegistrationsAmount,
-    setRegistrateMyself,
-    registrateMyself,
     registrationsAmount,
     legalEntity,
     billingDetails,
@@ -103,7 +101,6 @@ export default function BillingDetails() {
 
   const [localRegistrationsAmount, setLocalRegistrationsAmount] = useState(registrationsAmount || 1);
   const [localLegalEntity, setLocalLegalEntity] = useState<LegalEntity | null>(legalEntity);
-  const [localRegistrateMyself, setLocalRegistrateMyself] = useState(registrateMyself || false);
 
   const hasExistingCheckout = checkout && checkout.status !== 'deleted';
 
@@ -185,10 +182,6 @@ export default function BillingDetails() {
     setLocalLegalEntity(legalEntity);
   }, [legalEntity]);
 
-  useEffect(() => {
-    setLocalRegistrateMyself(registrateMyself || false);
-  }, [registrateMyself]);
-
   const handleBillingDetailsPFChange = (
     field: keyof BillingDetailsPF,
     value: string
@@ -221,7 +214,6 @@ export default function BillingDetails() {
           billingDetails: localLegalEntity === "pf" ? billingDetailsPF : billingDetailsPJ,
           amount: localRegistrationsAmount,
           legalEntity: localLegalEntity || undefined,
-          registrateMyself: localRegistrateMyself,
         });
         
         // Mostra snackbar de sucesso para atualização
@@ -848,23 +840,6 @@ export default function BillingDetails() {
                   </Typography>
                 </Box>
               </Box>
-            )}
-
-            {/* IV. Checkbox para registrateMyself */}
-            {localLegalEntity === "pf" && (
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={localRegistrateMyself}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setLocalRegistrateMyself(checked);
-                      setRegistrateMyself(checked);
-                    }}
-                  />
-                }
-                label="Desejo me inscrever através desta compra"
-              />
             )}
           </>
         )}
