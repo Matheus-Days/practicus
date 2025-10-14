@@ -1,4 +1,4 @@
-export type CheckoutType = "acquire" | "voucher";
+export type CheckoutType = "acquire" | "voucher" | "admin";
 
 export type LegalEntity = "pf" | "pj";
 

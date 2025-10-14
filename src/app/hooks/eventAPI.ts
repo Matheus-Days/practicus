@@ -7,13 +7,15 @@ import {
   updateDoc,
   where,
   getCountFromServer,
-  setDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { useFirebase } from "./firebase";
 import { EventData, EventDocument, EventStatus } from "../types/events";
+import { createCheckoutDocumentId } from "../api/checkouts/utils";
+import { CheckoutDocument } from "../api/checkouts/checkout.types";
 
 export const useEventAPI = () => {
-  const { firestore } = useFirebase();
+  const { firestore, auth } = useFirebase();
 
   const getEvent = async (eventId: string): Promise<EventData> => {
     const eventRef = doc(firestore, "events", eventId);
@@ -64,12 +66,12 @@ export const useEventAPI = () => {
           where("eventId", "==", event.id),
           where("status", "==", "ok")
         );
-        
+
         const countSnapshot = await getCountFromServer(registrationsQuery);
-        
+
         return {
           ...event,
-          registrationsCount: countSnapshot.data().count
+          registrationsCount: countSnapshot.data().count,
         };
       })
     );
@@ -95,17 +97,34 @@ export const useEventAPI = () => {
     }
   };
 
-  const createEvent = async (
-    eventId: string,
-    event: EventDocument
-  ) => {
+  const createEvent = async (eventId: string, event: EventDocument) => {
+    const batch = writeBatch(firestore);
     const eventRef = doc(firestore, "events", eventId);
-    
+
+    batch.set(eventRef, {
+      ...event,
+      createdAt: new Date(),
+    });
+
+    if (!auth?.currentUser) {
+      throw new Error("Usuário não autenticado.");
+    }
+
+    const adminCheckoutRef = doc(
+      firestore,
+      "checkouts",
+      createCheckoutDocumentId(eventId, auth.currentUser.uid)
+    );
+
+    batch.set(adminCheckoutRef, {
+      checkoutType: "admin",
+      eventId,
+      userId: auth.currentUser.uid,
+      status: "completed",
+    } as CheckoutDocument);
+
     try {
-      await setDoc(eventRef, {
-        ...event,
-        createdAt: new Date(),
-      });
+      await batch.commit();
     } catch (error) {
       throw new Error("Erro ao criar evento.");
     }
