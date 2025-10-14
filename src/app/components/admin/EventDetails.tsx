@@ -19,6 +19,7 @@ import { useAdminContext } from '../../contexts/AdminContext';
 import EventDashboard from './EventDashboard';
 import CheckoutsTable from './CheckoutsTable';
 import RegistrationsTable from './RegistrationsTable';
+import AdminCheckoutManagement from './AdminCheckoutManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -80,6 +81,9 @@ export default function EventDetails() {
       {/* Dashboard */}
       <EventDashboard />
 
+      {/* Gerenciamento de Cortesias do Admin */}
+      <AdminCheckoutManagement />
+
       {/* Tabs */}
       <Card>
         <CardContent>
@@ -89,7 +93,6 @@ export default function EventDetails() {
               <Tab label="Inscrições" {...a11yProps(1)} />
             </Tabs>
           </Box>
-
           <TabPanel value={tabValue} index={0}>
             <CheckoutsTable />
           </TabPanel>

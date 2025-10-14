@@ -21,10 +21,12 @@ interface EventData {
 export const useVoucherPDF = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const logoDataRef = useRef<LogoData | null>(null);
   const eventDataRef = useRef<EventData | null>(null);
-  const pdfmakeRef = useRef<typeof import("pdfmake/build/pdfmake") | null>(null);
+  const pdfmakeRef = useRef<typeof import("pdfmake/build/pdfmake") | null>(
+    null
+  );
   const isSetupCompleteRef = useRef<boolean>(false);
 
   const setup = useCallback(async (eventUID: string) => {
@@ -37,9 +39,9 @@ export const useVoucherPDF = () => {
       const configuracoes = await client.getSingle("configuracoes");
       const logoUrl = configuracoes.data.logo.url;
       const logoAlt = configuracoes.data.logo.alt || "Logo Practicus";
-      
-      const logoLocalPng = await convertSvgToPng(logoUrl || '');
-      
+
+      const logoLocalPng = await convertSvgToPng(logoUrl || "");
+
       const evento = (await client.getByUID(
         "evento",
         eventUID
@@ -78,17 +80,31 @@ export const useVoucherPDF = () => {
   }, []);
 
   const generateVoucherPDF = useCallback(
-    async (checkoutData: CheckoutData): Promise<{ blob: Blob; eventName: string } | void> => {
-      if (!isSetupCompleteRef.current || !logoDataRef.current || !eventDataRef.current || !pdfmakeRef.current) {
+    async (
+      checkoutData: CheckoutData
+    ): Promise<{ blob: Blob; eventName: string } | void> => {
+      if (
+        !isSetupCompleteRef.current ||
+        !logoDataRef.current ||
+        !eventDataRef.current ||
+        !pdfmakeRef.current
+      ) {
         await setup(checkoutData.eventId);
       }
 
-      if (!logoDataRef.current || !eventDataRef.current || !pdfmakeRef.current) {
-        setError("Dados do PDF não foram carregados. Execute setup() primeiro.");
+      if (
+        !logoDataRef.current ||
+        !eventDataRef.current ||
+        !pdfmakeRef.current
+      ) {
+        setError(
+          "Dados do PDF não foram carregados. Execute setup() primeiro."
+        );
         return;
       }
 
       try {
+        const isAdminCheckout = checkoutData.checkoutType === "admin";
         const logo = logoDataRef.current;
         const event = eventDataRef.current;
         const pdfmake = pdfmakeRef.current;
@@ -96,12 +112,13 @@ export const useVoucherPDF = () => {
         const hostname =
           typeof window !== "undefined" ? window.location.origin : "";
 
-        const responsavel = checkoutData.billingDetails;
+        // Para checkouts de admin, não extrair informações de billing
         let responsavelNome = "Nome não informado";
         let responsavelTelefone = "Telefone não informado";
         let responsavelEmail = "Email não informado";
 
-        if (responsavel) {
+        if (!isAdminCheckout && checkoutData.billingDetails) {
+          const responsavel = checkoutData.billingDetails;
           if ("fullName" in responsavel) {
             responsavelNome = responsavel.fullName;
             responsavelTelefone = responsavel.phone;
@@ -185,34 +202,39 @@ export const useVoucherPDF = () => {
               color: "#528189",
               link: inscricaoLink,
             },
-            {
-              text: "Em caso de dúvidas, o responsável pela compra deste voucher é:",
-              fontSize: 11,
-              margin: [0, 0, 0, 5],
-              color: "#374151",
-            },
-            {
-              text: `Nome: ${responsavelNome}`,
-              fontSize: 11,
-              margin: [0, 0, 0, 3],
-              color: "#374151",
-            },
-            {
-              text: `Telefone: ${responsavelTelefone}`,
-              fontSize: 11,
-              margin: [0, 0, 0, 3],
-              color: "#374151",
-            },
-            {
-              text: `Email: ${responsavelEmail}`,
-              fontSize: 11,
-              margin: [0, 0, 0, 20],
-              color: "#374151",
-            },
+            // Incluir informações do responsável apenas para checkouts normais (não admin)
+            ...(isAdminCheckout
+              ? []
+              : [
+                  {
+                    text: "Em caso de dúvidas, o responsável pela compra deste voucher é:",
+                    fontSize: 11,
+                    margin: [0, 0, 0, 5] as [number, number, number, number],
+                    color: "#374151",
+                  },
+                  {
+                    text: `Nome: ${responsavelNome}`,
+                    fontSize: 11,
+                    margin: [0, 0, 0, 3] as [number, number, number, number],
+                    color: "#374151",
+                  },
+                  {
+                    text: `Telefone: ${responsavelTelefone}`,
+                    fontSize: 11,
+                    margin: [0, 0, 0, 3] as [number, number, number, number],
+                    color: "#374151",
+                  },
+                  {
+                    text: `Email: ${responsavelEmail}`,
+                    fontSize: 11,
+                    margin: [0, 0, 0, 20] as [number, number, number, number],
+                    color: "#374151",
+                  },
+                ]),
             {
               text: "Em caso de dificuldades técnicas, entre em contato com a Practicus através dos meios oficiais:",
               fontSize: 10,
-              margin: [0, 0, 0, 5],
+              margin: [0, 0, 0, 5] as [number, number, number, number],
               color: "#6b7280",
             },
             {
@@ -243,12 +265,14 @@ export const useVoucherPDF = () => {
         };
 
         const pdfDoc = pdfmake.createPdf(docDefinition);
-        
-        return new Promise<{ blob: Blob; eventName: string }>((resolve, reject) => {
-          pdfDoc.getBlob((blob: Blob) => {
-            resolve({ blob, eventName: event.nome });
-          });
-        });
+
+        return new Promise<{ blob: Blob; eventName: string }>(
+          (resolve, reject) => {
+            pdfDoc.getBlob((blob: Blob) => {
+              resolve({ blob, eventName: event.nome });
+            });
+          }
+        );
       } catch (err) {
         console.error("Erro ao gerar PDF:", err);
         setError("Erro ao gerar o PDF do voucher");
@@ -262,6 +286,10 @@ export const useVoucherPDF = () => {
     generateVoucherPDF,
     isLoading,
     error,
-    isReady: isSetupCompleteRef.current && !!logoDataRef.current && !!eventDataRef.current && !!pdfmakeRef.current,
+    isReady:
+      isSetupCompleteRef.current &&
+      !!logoDataRef.current &&
+      !!eventDataRef.current &&
+      !!pdfmakeRef.current,
   };
 };

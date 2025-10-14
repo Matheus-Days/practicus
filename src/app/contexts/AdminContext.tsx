@@ -153,7 +153,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [loadingCheckouts, setLoadingCheckouts] = useState(false);
   const [loadingRegistrations, setLoadingRegistrations] = useState(false);
-  const [loadingDashboard, setLoadingDashboard] = useState(false);
+  const [loadingDashboard] = useState(false);
   const [loadingComplimentaryUpdate, setLoadingComplimentaryUpdate] =
     useState(false);
   const [loadingCheckoutStatusUpdate, setLoadingCheckoutStatusUpdate] =
@@ -213,7 +213,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
       const q = query(
         checkoutsRef,
         where("eventId", "==", eventId),
-        where("checkoutType", "==", "acquire")
+        where("checkoutType", "in", ["acquire", "admin"])
       );
 
       if (listenersRef.current.checkouts) {

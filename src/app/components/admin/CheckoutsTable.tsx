@@ -32,7 +32,6 @@ import {
   Visibility as VisibilityIcon,
   Download as DownloadIcon,
   Receipt as ReceiptIcon,
-  ConfirmationNumber as TicketIcon,
 } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { useAdminContext } from "../../contexts/AdminContext";
@@ -43,7 +42,6 @@ import {
 } from "../../api/checkouts/checkout.types";
 import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
-import VoucherManagementDialog from "./VoucherManagementDialog";
 import Commitment from "../Commitment";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
 import { formatCheckoutForExport } from "../../utils/export-utils";
@@ -69,9 +67,6 @@ export default function CheckoutsTable() {
     React.useState<CheckoutData | null>(null);
   const [commitmentDialogOpen, setCommitmentDialogOpen] = React.useState(false);
   const [selectedCheckoutForCommitment, setSelectedCheckoutForCommitment] =
-    React.useState<CheckoutData | null>(null);
-  const [voucherDialogOpen, setVoucherDialogOpen] = React.useState(false);
-  const [selectedCheckoutForVoucher, setSelectedCheckoutForVoucher] =
     React.useState<CheckoutData | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("valid");
 
@@ -108,16 +103,6 @@ export default function CheckoutsTable() {
   const handleCommitmentDialogClose = () => {
     setCommitmentDialogOpen(false);
     setSelectedCheckoutForCommitment(null);
-  };
-
-  const handleOpenVoucherDialog = (checkout: CheckoutData) => {
-    setSelectedCheckoutForVoucher(checkout);
-    setVoucherDialogOpen(true);
-  };
-
-  const handleVoucherDialogClose = () => {
-    setVoucherDialogOpen(false);
-    setSelectedCheckoutForVoucher(null);
   };
 
   const handleStatusFilterChange = (event: any) => {
@@ -472,21 +457,6 @@ export default function CheckoutsTable() {
                         </IconButton>
                       </Tooltip>
 
-                      {/* Botão para gerenciar voucher - apenas para checkouts do próprio admin */}
-                      {user.uid === checkout.userId && checkout.voucher && (
-                        <Tooltip title="Gerenciar voucher">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            startIcon={<TicketIcon />}
-                            onClick={() => handleOpenVoucherDialog(checkout)}
-                            color="primary"
-                            sx={{ minWidth: "auto" }}
-                          >
-                            Cortesias
-                          </Button>
-                        </Tooltip>
-                      )}
 
                       {isPaymentByCommitment(checkout) &&
                       checkout.status !== "deleted" ? (
@@ -660,12 +630,6 @@ export default function CheckoutsTable() {
         />
       )}
 
-      {/* Dialog de gerenciamento de voucher */}
-      <VoucherManagementDialog
-        open={voucherDialogOpen}
-        onClose={handleVoucherDialogClose}
-        checkout={selectedCheckoutForVoucher}
-      />
     </Box>
   );
 }

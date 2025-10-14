@@ -13,6 +13,7 @@ import { useFirebase } from "./firebase";
 import { EventData, EventDocument, EventStatus } from "../types/events";
 import { createCheckoutDocumentId } from "../api/checkouts/utils";
 import { CheckoutDocument } from "../api/checkouts/checkout.types";
+import { VoucherDocument } from "../api/voucher/voucher.types";
 
 export const useEventAPI = () => {
   const { firestore, auth } = useFirebase();
@@ -116,12 +117,21 @@ export const useEventAPI = () => {
       createCheckoutDocumentId(eventId, auth.currentUser.uid)
     );
 
+    const voucherRef = doc(collection(firestore, "vouchers"));
+
     batch.set(adminCheckoutRef, {
       checkoutType: "admin",
       eventId,
       userId: auth.currentUser.uid,
       status: "completed",
+      voucher: voucherRef.id,
     } as CheckoutDocument);
+
+    batch.set(voucherRef, {
+      active: true,
+      checkoutId: adminCheckoutRef.id,
+      createdAt: new Date(),
+    } as VoucherDocument);
 
     try {
       await batch.commit();
