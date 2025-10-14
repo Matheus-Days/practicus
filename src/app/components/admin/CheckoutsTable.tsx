@@ -148,15 +148,16 @@ export default function CheckoutsTable() {
 
   // Filtrar checkouts baseado no status selecionado
   const filteredCheckouts = useMemo(() => {
+    const checkouts = eventCheckouts.filter(
+      (checkout) => checkout.checkoutType === "acquire"
+    );
     if (statusFilter === "all") {
-      return eventCheckouts;
+      return checkouts;
     }
     if (statusFilter === "valid") {
-      return eventCheckouts.filter((checkout) => checkout.status !== "deleted");
+      return checkouts.filter((checkout) => checkout.status !== "deleted");
     }
-    return eventCheckouts.filter(
-      (checkout) => checkout.status === statusFilter
-    );
+    return checkouts.filter((checkout) => checkout.status === statusFilter);
   }, [eventCheckouts, statusFilter]);
 
   const handleStatusChange = async (status: CheckoutStatus) => {
@@ -457,7 +458,6 @@ export default function CheckoutsTable() {
                         </IconButton>
                       </Tooltip>
 
-
                       {isPaymentByCommitment(checkout) &&
                       checkout.status !== "deleted" ? (
                         <Button
@@ -629,7 +629,6 @@ export default function CheckoutsTable() {
           onClose={handleCommitmentDialogClose}
         />
       )}
-
     </Box>
   );
 }
