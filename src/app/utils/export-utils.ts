@@ -119,10 +119,9 @@ export const formatRegistrationForExport = (
 
     'ID do Checkout': registration.checkoutId,
     
-    'Cidade': registration.city || '-',
     'Nome no Credencial': registration.credentialName || '-',
-    'Empregador': registration.employer || '-',
     'Como soube do evento': registration.howDidYouHearAboutUs || '-',
+    'Como soube do evento (outro)': registration.howDidYouHearAboutUsOther || '-',
     'Ocupação': registration.occupation || '-',
     'Telefone é WhatsApp': registration.isPhoneWhatsapp ? "Sim" : "Não",
     'Autoriza uso de imagem': registration.useImage ? "Sim" : "Não",

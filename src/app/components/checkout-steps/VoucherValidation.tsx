@@ -101,10 +101,9 @@ export default function VoucherValidation() {
         isPhoneWhatsapp: formData.isPhoneWhatsapp || false,
         credentialName: formData.credentialName || formData.fullName,
         occupation: formData.occupation || "",
-        employer: formData.employer || "",
-        city: formData.city || "",
         useImage: formData.useImage || false,
         howDidYouHearAboutUs: formData.howDidYouHearAboutUs || "",
+        howDidYouHearAboutUsOther: formData.howDidYouHearAboutUsOther || "",
       };
 
       await createVoucherCheckout(
