@@ -267,6 +267,8 @@ export default function MyRegistration() {
     setSnackbarOpen(true);
   };
 
+  if (!checkout || checkout.checkoutType === "admin") return null;
+
   return (
     <>
       <Card sx={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
