@@ -609,7 +609,7 @@ export default function CheckoutsTable() {
       <CheckoutDetailsDialog
         open={checkoutDialogOpen}
         onClose={handleCheckoutDialogClose}
-        checkoutData={selectedCheckoutForDialog || undefined}
+        checkout={selectedCheckoutForDialog || undefined}
         eventData={selectedEvent || undefined}
         onUpdateComplimentaryTickets={updateComplimentaryTickets}
         loadingComplimentaryUpdate={loadingComplimentaryUpdate}

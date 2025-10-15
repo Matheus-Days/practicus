@@ -33,10 +33,8 @@ import { EventDocument } from '../../types/events';
 interface CheckoutDetailsDialogProps {
   open: boolean;
   onClose: () => void;
-  checkoutId?: string;
-  checkoutData?: CheckoutData;
+  checkout?: CheckoutData;
   eventData?: EventDocument;
-  onFetchCheckout?: (checkoutId: string) => Promise<CheckoutData>;
   onUpdateComplimentaryTickets?: (checkout: CheckoutData, val: number) => Promise<void>;
   loadingComplimentaryUpdate?: boolean;
 }
@@ -136,46 +134,19 @@ function BillingDetailsPJComponent({ billingDetails }: BillingDetailsPJProps) {
 export default function CheckoutDetailsDialog({
   open,
   onClose,
-  checkoutId,
-  checkoutData,
+  checkout,
   eventData,
-  onFetchCheckout,
   onUpdateComplimentaryTickets,
   loadingComplimentaryUpdate = false,
 }: CheckoutDetailsDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [checkout, setCheckout] = useState<CheckoutData | null>(checkoutData || null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   
   // Estados para edição de cortesias
   const [complimentaryValue, setComplimentaryValue] = useState<number>(0);
   const [isEditingComplimentary, setIsEditingComplimentary] = useState(false);
-
-  const fetchCheckout = useCallback(async () => {
-    if (!checkoutId || !onFetchCheckout) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await onFetchCheckout(checkoutId);
-      setCheckout(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao buscar informações do checkout');
-    } finally {
-      setLoading(false);
-    }
-  }, [checkoutId, onFetchCheckout]);
-
-  useEffect(() => {
-    if (open && checkoutId && onFetchCheckout && !checkoutData) {
-      fetchCheckout();
-    } else if (checkoutData) {
-      setCheckout(checkoutData);
-    }
-  }, [open, checkoutId, checkoutData, onFetchCheckout, fetchCheckout]);
 
   // Sincronizar valor de cortesias quando checkout mudar
   useEffect(() => {
@@ -186,7 +157,6 @@ export default function CheckoutDetailsDialog({
   }, [checkout]);
 
   const handleClose = () => {
-    setCheckout(null);
     setError(null);
     setLoading(false);
     onClose();
@@ -220,10 +190,6 @@ export default function CheckoutDetailsDialog({
     
     try {
       await onUpdateComplimentaryTickets(checkout, complimentaryValue);
-      
-      setCheckout(prevCheckout => 
-        prevCheckout ? { ...prevCheckout, complimentary: complimentaryValue } : null
-      );
       
       setIsEditingComplimentary(false);
       setSnackbarMessage('Cortesias atualizadas com sucesso!');
