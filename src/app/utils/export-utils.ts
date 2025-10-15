@@ -1,6 +1,7 @@
 import { CheckoutData } from "../types/checkout";
 import { RegistrationData } from "../hooks/registrationAPI";
 import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
+import { RegistrationType } from "../components/admin/RegistrationsTable";
 
 export const formatDate = (date: any): string => {
   if (!date) return "-";
@@ -104,21 +105,23 @@ export const formatCheckoutForExport = (
 };
 
 export const formatRegistrationForExport = (
-  registration: RegistrationData
+  registration: RegistrationData & { registrationType: RegistrationType }
 ): Record<string, any> => {
+  let registrationTypeDisplay = "";
+  if (registration.registrationType === "complimentary") registrationTypeDisplay = "Cortesia";
+  else if (registration.registrationType === "commitment") registrationTypeDisplay = "Empenho";
+  else if (registration.registrationType === "commom") registrationTypeDisplay = "Comum";
   return {
     'ID da Inscrição': registration.id,
+    'Tipo de Inscrição': registrationTypeDisplay,
     'Nome Completo': registration.fullName,
     'Email': registration.email,
     'Telefone': registration.phone || '-',
     'CPF': formatCPF(registration.cpf),
     'Situação': getRegistrationStatusDisplay(registration.status),
-    
     'Data de Inscrição': formatDate(registration.createdAt),
-    'Data de Atualização': registration.updatedAt ? formatDate(registration.updatedAt) : "-",
-
+    'Última atualização': registration.updatedAt ? formatDate(registration.updatedAt) : "-",
     'ID do Checkout': registration.checkoutId,
-    
     'Nome no Credencial': registration.credentialName || '-',
     'Como soube do evento': registration.howDidYouHearAboutUs || '-',
     'Como soube do evento (outro)': registration.howDidYouHearAboutUsOther || '-',
