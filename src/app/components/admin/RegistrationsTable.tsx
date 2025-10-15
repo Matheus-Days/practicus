@@ -42,6 +42,8 @@ import { formatRegistrationForExport } from "../../utils/export-utils";
 import { CheckoutData } from "../../types/checkout";
 import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
+export type RegistrationType = "commom" | "commitment" | "complimentary";
+
 export default function RegistrationsTable() {
   const {
     eventRegistrations,
@@ -67,7 +69,7 @@ export default function RegistrationsTable() {
         (checkout) => checkout.id === registration.checkoutId
       );
 
-      let registrationType: "commom" | "commitment" | "complimentary";
+      let registrationType: RegistrationType;
       if (regCheckout?.checkoutType === "admin")
         registrationType = "complimentary";
       else if (regCheckout && isPaymentByCommitment(regCheckout))
@@ -227,6 +229,21 @@ export default function RegistrationsTable() {
         (registration) => registration.status !== "invalid"
       );
     }
+    if (statusFilter === "complimentary") {
+      return registrations.filter(
+        (registration) => registration.registrationType === "complimentary"
+      );
+    }
+    if (statusFilter === "commitment") {
+      return registrations.filter(
+        (registration) => registration.registrationType === "commitment"
+      );
+    }
+    if (statusFilter === "commom") {
+      return registrations.filter(
+        (registration) => registration.registrationType === "commom"
+      );
+    }
     return registrations.filter(
       (registration) => registration.status === statusFilter
     );
@@ -263,7 +280,7 @@ export default function RegistrationsTable() {
     }
   };
 
-  const getRegistrationTypeDisplay = (type: "commom" | "commitment" | "complimentary") => {
+  const getRegistrationTypeDisplay = (type: RegistrationType) => {
     switch (type) {
       case "complimentary":
         return {
@@ -319,7 +336,7 @@ export default function RegistrationsTable() {
 
         <Box display="flex" gap={2} alignItems="center">
           <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel id="status-filter-label">Situação</InputLabel>
+            <InputLabel id="status-filter-label">Filtrar por:</InputLabel>
             <Select
               labelId="status-filter-label"
               value={statusFilter}
@@ -327,11 +344,14 @@ export default function RegistrationsTable() {
               onChange={handleStatusFilterChange}
             >
               <MenuItem value="valid">Válidas</MenuItem>
-              <MenuItem value="all">Todas</MenuItem>
+              <MenuItem value="complimentary">Cortesias</MenuItem>
+              <MenuItem value="commitment">Empenhos</MenuItem>
+              <MenuItem value="commom">Comuns</MenuItem>
               <MenuItem value="ok">Confirmadas</MenuItem>
+              <MenuItem value="pending">Pendentes</MenuItem>
               <MenuItem value="cancelled">Canceladas</MenuItem>
               <MenuItem value="invalid">Inválidas</MenuItem>
-              <MenuItem value="pending">Pendentes</MenuItem>
+              <MenuItem value="all">Todas</MenuItem>
             </Select>
           </FormControl>
 
