@@ -14,7 +14,7 @@ export interface VoucherCalculations {
 export function useVoucherCalculations(): VoucherCalculations {
   const { checkoutRegistrations, checkout } = useCheckout();
 
-  const registrationsAmount = checkout?.amount || 1;
+  const registrationsAmount = checkout?.amount || 0;
   const complimentary = checkout?.complimentary || 0;
   const maxRegistrations = complimentary + registrationsAmount;
 
