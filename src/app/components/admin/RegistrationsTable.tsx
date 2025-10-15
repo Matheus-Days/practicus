@@ -39,6 +39,8 @@ import { RegistrationStatus } from "../../api/registrations/registration.types";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
 import { formatRegistrationForExport } from "../../utils/export-utils";
+import { CheckoutData } from "../../types/checkout";
+import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function RegistrationsTable() {
   const {
@@ -47,7 +49,6 @@ export default function RegistrationsTable() {
     loadingRegistrations,
     updateRegistrationStatus,
     selectedEvent,
-    getCheckoutById,
     loadingRegistrationStatusUpdate,
   } = useAdminContext();
 
@@ -56,9 +57,30 @@ export default function RegistrationsTable() {
     React.useState<RegistrationData | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("valid");
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
-  const [selectedCheckoutId, setSelectedCheckoutId] = useState<string | null>(
+  const [selectedCheckout, setSelectedCheckout] = useState<CheckoutData | null>(
     null
   );
+
+  const registrations = useMemo(() => {
+    return eventRegistrations.map((registration) => {
+      const regCheckout = eventCheckouts.find(
+        (checkout) => checkout.id === registration.checkoutId
+      );
+
+      let registrationType: "commom" | "commitment" | "complimentary";
+      if (regCheckout?.checkoutType === "admin")
+        registrationType = "complimentary";
+      else if (regCheckout && isPaymentByCommitment(regCheckout))
+        registrationType = "commitment";
+      else registrationType = "commom";
+
+      return {
+        ...registration,
+        checkout: regCheckout,
+        registrationType,
+      };
+    });
+  }, [eventRegistrations, eventCheckouts]);
 
   const { exportToXlsx, isLoading: isExporting } = useXlsxExport();
 
@@ -186,29 +208,29 @@ export default function RegistrationsTable() {
     }
   };
 
-  const handleViewCheckout = (checkoutId: string) => {
-    setSelectedCheckoutId(checkoutId);
+  const handleViewCheckout = (checkout: CheckoutData) => {
+    setSelectedCheckout(checkout);
     setCheckoutDialogOpen(true);
   };
 
   const handleCheckoutDialogClose = () => {
     setCheckoutDialogOpen(false);
-    setSelectedCheckoutId(null);
+    setSelectedCheckout(null);
   };
 
   const filteredRegistrations = useMemo(() => {
     if (statusFilter === "all") {
-      return eventRegistrations;
+      return registrations;
     }
     if (statusFilter === "valid") {
-      return eventRegistrations.filter(
+      return registrations.filter(
         (registration) => registration.status !== "invalid"
       );
     }
-    return eventRegistrations.filter(
+    return registrations.filter(
       (registration) => registration.status === statusFilter
     );
-  }, [eventRegistrations, statusFilter]);
+  }, [registrations, statusFilter]);
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
@@ -238,6 +260,28 @@ export default function RegistrationsTable() {
         };
       default:
         return { text: "Desconhecido", color: "default" as const, icon: null };
+    }
+  };
+
+  const getRegistrationTypeDisplay = (type: "commom" | "commitment" | "complimentary") => {
+    switch (type) {
+      case "complimentary":
+        return {
+          text: "Cortesia",
+          color: "primary" as const,
+        };
+      case "commitment":
+        return {
+          text: "Empenho",
+          color: "warning" as const,
+        };
+      case "commom":
+        return {
+          text: "Comum",
+          color: "success" as const,
+        };
+      default:
+        return { text: "Desconhecido", color: "default" as const };
     }
   };
 
@@ -310,6 +354,7 @@ export default function RegistrationsTable() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell sx={{ fontWeight: "bold" }}>Tipo</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Nome completo</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
               <TableCell>Telefone</TableCell>
@@ -325,8 +370,17 @@ export default function RegistrationsTable() {
           <TableBody>
             {filteredRegistrations.map((registration) => {
               const statusDisplay = getStatusDisplay(registration.status);
+              const typeDisplay = getRegistrationTypeDisplay(registration.registrationType);
               return (
                 <TableRow key={registration.id} hover>
+                  <TableCell>
+                    <Chip
+                      label={typeDisplay.text}
+                      color={typeDisplay.color}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
                   <TableCell>
                     <Typography variant="body2">
                       {registration.fullName}
@@ -363,7 +417,7 @@ export default function RegistrationsTable() {
                           <IconButton
                             size="small"
                             onClick={() =>
-                              handleViewCheckout(registration.checkoutId!)
+                              handleViewCheckout(registration.checkout!)
                             }
                             color="primary"
                           >
@@ -446,9 +500,8 @@ export default function RegistrationsTable() {
       <CheckoutDetailsDialog
         open={checkoutDialogOpen}
         onClose={handleCheckoutDialogClose}
-        checkoutId={selectedCheckoutId || undefined}
+        checkout={selectedCheckout || undefined}
         eventData={selectedEvent || undefined}
-        onFetchCheckout={getCheckoutById}
       />
     </Box>
   );
