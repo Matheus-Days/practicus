@@ -20,6 +20,7 @@ import {
   isUserAdmin,
 } from "../utils";
 import { CheckoutDocument, CheckoutStatus } from "../checkouts/checkout.types";
+import { isPaymentByCommitment } from "../checkouts/utils";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -57,9 +58,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const checkoutDoc = await firestore.collection("checkouts").doc(data.checkoutId).get();
+    const checkoutDoc = await firestore
+      .collection("checkouts")
+      .doc(data.checkoutId)
+      .get();
     const checkout = checkoutDoc.data() as CheckoutDocument;
-    const registrationDoc = generateRegistrationDocument(data, checkout.status);
+    const registrationDoc = generateRegistrationDocument(data, checkout);
 
     const registrationDocId = generateRegistrationDocumentId(
       data.eventId,
@@ -107,11 +111,14 @@ export async function POST(request: NextRequest) {
 
 function generateRegistrationDocument(
   data: CreateRegistrationRequest,
-  checkoutStatus: CheckoutStatus
+  checkout: CheckoutDocument
 ): RegistrationDocument {
   return {
     ...data,
     createdAt: new Date(),
-    status: checkoutStatus === "completed" ? "ok" : "pending",
+    status:
+      checkout.status === "completed" || isPaymentByCommitment(checkout)
+        ? "ok"
+        : "pending",
   };
 }
