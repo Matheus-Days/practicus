@@ -163,6 +163,8 @@ export default function CheckoutStatus() {
     statusInfo = getCheckoutStatusInfo();
   }
 
+  if (checkout.checkoutType === "admin") return null;
+
   return (
     <Card sx={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
       <CardContent sx={{ p: { xs: 2, sm: 3 }, overflow: "hidden" }}>
