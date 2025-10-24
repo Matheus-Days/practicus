@@ -177,9 +177,10 @@ export default function RegistrationsTable() {
   };
 
   const handleExportToXlsx = async () => {
+    if (!selectedEvent) throw new Error("Nenhum evento selecionado.");
     try {
       const exportData = filteredRegistrations.map((registration) =>
-        formatRegistrationForExport(registration)
+        formatRegistrationForExport(registration, selectedEvent)
       );
       let statusDisplay: string;
       switch (statusFilter) {

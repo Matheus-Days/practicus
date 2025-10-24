@@ -3,9 +3,10 @@ import { RegistrationData } from "../hooks/registrationAPI";
 import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import { RegistrationType } from "../components/admin/RegistrationsTable";
 import { isPaymentByCommitment } from "../api/checkouts/utils";
+import { EventData } from "../types/events";
 
 export const formatDate = (date: any): string => {
-  if (!date) return "-";
+  if (!date) return "";
   const dateObj = date.toDate ? date.toDate() : new Date(date);
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
@@ -24,13 +25,13 @@ export const formatCurrency = (amountInCents: number): string => {
 };
 
 export const formatCPF = (cpf: string): string => {
-  if (!cpf) return "-";
+  if (!cpf) return "";
   const cleanCPF = cpf.replace(/\D/g, "");
   return cleanCPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 };
 
 export const formatCNPJ = (cnpj: string): string => {
-  if (!cnpj) return "-";
+  if (!cnpj) return "";
   const cleanCNPJ = cnpj.replace(/\D/g, "");
   return cleanCNPJ.replace(
     /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
@@ -68,56 +69,102 @@ export const getRegistrationStatusDisplay = (status: string) => {
 
 export const formatCheckoutForExport = (
   checkout: CheckoutData,
-  eventData: any
+  eventData: EventData
 ): Record<string, any> => {
   const billingDetails = checkout.billingDetails;
+  const isAdmin = checkout.checkoutType === "admin";
   const isPF = checkout.legalEntity === "pf";
 
   return {
-    "ID do Checkout": checkout.id,
-    "Tipo de Pessoa": isPF ? "Física" : "Jurídica",
-    Status: getCheckoutStatusDisplay(checkout.status),
-    "Valor Total": checkout.amount
-      ? formatCurrency(calculateTotalPurchasePrice(eventData, checkout))
-      : "-",
-    "Inscrições adquiridas": checkout.amount || 0,
-    Cortesias: checkout.complimentary || 0,
-    Voucher: checkout.voucher || "-",
+    "ID da aquisição": checkout.id,
+    "Tipo de pessoa": isAdmin ? "" : isPF ? "Física" : "Jurídica",
+    Situação: isAdmin ? "" : getCheckoutStatusDisplay(checkout.status),
+    "Valor total": isAdmin
+      ? ""
+      : checkout.amount
+        ? formatCurrency(calculateTotalPurchasePrice(eventData, checkout))
+        : "",
+    "Inscrições adquiridas": isAdmin ? "" : checkout.amount || 0,
+    Cortesias: isAdmin ? "" : checkout.complimentary || 0,
+    Voucher: isAdmin ? "" : checkout.voucher || "",
 
-    "Data de Criação": formatDate(checkout.createdAt),
-    "Última Atualização": checkout.updatedAt
-      ? formatDate(checkout.updatedAt)
-      : "-",
+    "Data de criação": isAdmin ? "" : formatDate(checkout.createdAt),
+    "Última atualização": isAdmin
+      ? ""
+      : checkout.updatedAt
+        ? formatDate(checkout.updatedAt)
+        : "",
 
-    "Tipo de pagamento": isPaymentByCommitment(checkout) ? "Empenho" : "Comum",
+    "Tipo de pagamento": isAdmin
+      ? ""
+      : isPaymentByCommitment(checkout)
+        ? "Empenho"
+        : "Comum",
 
-    ...(isPF && billingDetails && "fullName" in billingDetails
-      ? {
-          "Nome Completo": billingDetails.fullName,
-          Email: billingDetails.email,
-          Telefone: billingDetails.phone,
-        }
-      : {}),
+    // Campos para pessoa física
+    "Nome completo (comprador)":
+      billingDetails && "fullName" in billingDetails
+        ? billingDetails.fullName
+        : "",
+    "Email (comprador)":
+      billingDetails && "fullName" in billingDetails
+        ? billingDetails.email
+        : "",
+    "Telefone (comprador)":
+      billingDetails && "fullName" in billingDetails
+        ? billingDetails.phone
+        : "",
 
-    ...(!isPF && billingDetails && "orgName" in billingDetails
-      ? {
-          "Nome da Organização": billingDetails.orgName,
-          CNPJ: formatCNPJ(billingDetails.orgCnpj),
-          "UF da Organização": billingDetails.orgState,
-          "Município da Organização": billingDetails.orgCity,
-          "Logradouro da Organização": billingDetails.orgAddress,
-          CEP: billingDetails.orgZip,
-          "Telefone da Organização": billingDetails.orgPhone,
-          "Nome do Responsável": billingDetails.responsibleName,
-          "Telefone do Responsável": billingDetails.responsiblePhone,
-          "Email do Responsável": billingDetails.responsibleEmail,
-        }
-      : {}),
+    // Campos para pessoa jurídica
+    "Nome da organização":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.orgName
+        : "",
+    CNPJ:
+      billingDetails && "orgName" in billingDetails
+        ? formatCNPJ(billingDetails.orgCnpj)
+        : "",
+    "UF da organização":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.orgState
+        : "",
+    "Município da organização":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.orgCity
+        : "",
+    "Logradouro da organização":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.orgAddress
+        : "",
+    CEP:
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.orgZip
+        : "",
+    "Telefone da organização":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.orgPhone
+        : "",
+    "Nome do responsável":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.responsibleName
+        : "",
+    "Telefone do responsável":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.responsiblePhone
+        : "",
+    "Email do responsável":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.responsibleEmail
+        : "",
   };
 };
 
 export const formatRegistrationForExport = (
-  registration: RegistrationData & { registrationType: RegistrationType }
+  registration: RegistrationData & {
+    checkout?: CheckoutData;
+    registrationType: RegistrationType;
+  },
+  eventData: EventData
 ): Record<string, any> => {
   let registrationTypeDisplay = "";
   if (registration.registrationType === "complimentary")
@@ -126,25 +173,30 @@ export const formatRegistrationForExport = (
     registrationTypeDisplay = "Empenho";
   else if (registration.registrationType === "commom")
     registrationTypeDisplay = "Comum";
+
+  const checkoutColumns = registration.checkout
+    ? formatCheckoutForExport(registration.checkout, eventData)
+    : {};
+
   return {
-    "ID da Inscrição": registration.id,
-    "Tipo de Inscrição": registrationTypeDisplay,
-    "Nome Completo": registration.fullName,
+    "ID da inscrição": registration.id,
+    "Tipo de inscrição": registrationTypeDisplay,
+    "Nome completo": registration.fullName,
     Email: registration.email,
-    Telefone: registration.phone || "-",
+    Telefone: registration.phone || "",
     CPF: formatCPF(registration.cpf),
     Situação: getRegistrationStatusDisplay(registration.status),
-    "Data de Inscrição": formatDate(registration.createdAt),
+    "Data de inscrição": formatDate(registration.createdAt),
     "Última atualização": registration.updatedAt
       ? formatDate(registration.updatedAt)
-      : "-",
-    "ID do Checkout": registration.checkoutId,
-    "Nome no Credencial": registration.credentialName || "-",
-    "Como soube do evento": registration.howDidYouHearAboutUs || "-",
+      : "",
+    "Nome para crachá": registration.credentialName || "",
+    "Como soube do evento": registration.howDidYouHearAboutUs || "",
     "Como soube do evento (outro)":
-      registration.howDidYouHearAboutUsOther || "-",
-    Ocupação: registration.occupation || "-",
+      registration.howDidYouHearAboutUsOther || "",
+    Ocupação: registration.occupation || "",
     "Telefone é WhatsApp": registration.isPhoneWhatsapp ? "Sim" : "Não",
     "Autoriza uso de imagem": registration.useImage ? "Sim" : "Não",
+    ...checkoutColumns,
   };
 };
