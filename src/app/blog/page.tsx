@@ -7,7 +7,7 @@ import BoundedMain from '@/app/components/BoundedMain';
 import HeadingBadge from '@/app/components/HeadingBadge';
 import { subtitleComponent } from '@/app/components/sharedRichTextComponents';
 import BlogList, { PostsSearchParams } from '@/app/components/BlogList';
-import { filter, LinkField } from '@prismicio/client';
+import { filter } from '@prismicio/client';
 import dayjs from 'dayjs';
 import LinkButton from '../components/LinkButton';
 
@@ -41,7 +41,7 @@ export default async function Page({ searchParams }: PageProps) {
     ]
   });
 
-  const linkForReset: LinkField = {
+  const linkForReset: any = {
     url: '/blog',
     link_type: 'Document'
   };

@@ -27,10 +27,12 @@ export default function PageBanner({
       <PrismicNextImage
         field={smImageField}
         className="md:hidden rounded-xl w-full"
+        alt=""
       />
       <PrismicNextImage
         field={lgImageField}
         className="hidden md:block rounded-xl w-full"
+        alt=""
       />
       <div className="absolute inset-0 z-20 px-3">
         <div className="flex h-full items-center">
