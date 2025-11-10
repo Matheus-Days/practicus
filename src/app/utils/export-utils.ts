@@ -4,10 +4,11 @@ import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import { RegistrationType } from "../components/admin/RegistrationsTable";
 import { isPaymentByCommitment } from "../api/checkouts/utils";
 import { EventData } from "../types/events";
+import { Timestamp } from "firebase-admin/firestore";
 
-export const formatDate = (date: any): string => {
+export const formatDate = (date: Timestamp | Date): string => {
   if (!date) return "";
-  const dateObj = date.toDate ? date.toDate() : new Date(date);
+  const dateObj = date instanceof Date ? date : date.toDate();
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "2-digit",
@@ -88,8 +89,8 @@ export const formatCheckoutForExport = (
     Cortesias: isAdmin ? "" : checkout.complimentary || 0,
     Voucher: isAdmin ? "" : checkout.voucher || "",
 
-    "Data de criação": isAdmin ? "" : formatDate(checkout.createdAt),
-    "Última atualização": isAdmin
+    "Data de criação (aquisição)": isAdmin ? "" : formatDate(checkout.createdAt),
+    "Última atualização (aquisição)": isAdmin
       ? ""
       : checkout.updatedAt
         ? formatDate(checkout.updatedAt)
