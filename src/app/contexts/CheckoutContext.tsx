@@ -230,7 +230,8 @@ export function CheckoutProvider({
       checkout?.status === "deleted"
     ) {
       setVoucherData(null);
-      return;
+      setVoucherLoading(false);
+      return () => {};
     }
 
     const voucherRef = doc(firestore, "vouchers", voucher);
