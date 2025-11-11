@@ -8,6 +8,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Paper,
   Typography,
   Chip,
@@ -69,6 +70,8 @@ export default function CheckoutsTable() {
   const [selectedCheckoutForCommitment, setSelectedCheckoutForCommitment] =
     React.useState<CheckoutData | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("valid");
+  const [orderBy, setOrderBy] = useState<string>("");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
 
   const { exportToXlsx, isLoading: isExporting } = useXlsxExport();
 
@@ -107,6 +110,12 @@ export default function CheckoutsTable() {
 
   const handleStatusFilterChange = (event: any) => {
     setStatusFilter(event.target.value);
+  };
+
+  const handleRequestSort = (property: string) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
   };
 
   const handleExportToXlsx = async () => {
@@ -148,17 +157,66 @@ export default function CheckoutsTable() {
 
   // Filtrar checkouts baseado no status selecionado
   const filteredCheckouts = useMemo(() => {
-    const checkouts = eventCheckouts.filter(
+    const getCheckoutName = (checkout: CheckoutData): string => {
+      const isAdmin = user.uid === checkout.userId;
+      if (isAdmin) return "Administrador Practicus";
+      if (!checkout.billingDetails) return "Não informado";
+      if ("fullName" in checkout.billingDetails)
+        return checkout.billingDetails.fullName;
+      if ("orgName" in checkout.billingDetails)
+        return checkout.billingDetails.orgName;
+      return "Não informado";
+    };
+
+    // Função para obter o valor de ordenação de um checkout
+    const getSortValue = (
+      checkout: CheckoutData,
+      property: string
+    ): string | number => {
+      switch (property) {
+        case "acquiredBy":
+          return getCheckoutName(checkout).toLowerCase();
+        case "createdAt":
+          const date = checkout.createdAt;
+          if (!date) return 0;
+          // Verificar se é um Timestamp do Firestore (tem método toDate)
+          const dateObj = date as any;
+          if (dateObj && typeof dateObj.toDate === "function") {
+            return dateObj.toDate().getTime();
+          }
+          return new Date(date).getTime();
+        default:
+          return "";
+      }
+    };
+
+    let checkouts = eventCheckouts.filter(
       (checkout) => checkout.checkoutType === "acquire"
     );
+
+    // Aplicar filtros
     if (statusFilter === "all") {
-      return checkouts;
+      // checkouts já filtrados
+    } else if (statusFilter === "valid") {
+      checkouts = checkouts.filter((checkout) => checkout.status !== "deleted");
+    } else {
+      checkouts = checkouts.filter((checkout) => checkout.status === statusFilter);
     }
-    if (statusFilter === "valid") {
-      return checkouts.filter((checkout) => checkout.status !== "deleted");
+
+    // Aplicar ordenação
+    if (orderBy) {
+      checkouts = [...checkouts].sort((a, b) => {
+        const aVal = getSortValue(a, orderBy);
+        const bVal = getSortValue(b, orderBy);
+
+        if (aVal < bVal) return order === "asc" ? -1 : 1;
+        if (aVal > bVal) return order === "asc" ? 1 : -1;
+        return 0;
+      });
     }
-    return checkouts.filter((checkout) => checkout.status === statusFilter);
-  }, [eventCheckouts, statusFilter]);
+
+    return checkouts;
+  }, [eventCheckouts, statusFilter, orderBy, order, user]);
 
   const handleStatusChange = async (status: CheckoutStatus) => {
     if (status === "deleted" || status === "refunded") {
@@ -387,11 +445,33 @@ export default function CheckoutsTable() {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Pessoa</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Adquirido por</TableCell>
+              <TableCell
+                sx={{ fontWeight: "bold" }}
+                sortDirection={orderBy === "acquiredBy" ? order : false}
+              >
+                <TableSortLabel
+                  active={orderBy === "acquiredBy"}
+                  direction={orderBy === "acquiredBy" ? order : "asc"}
+                  onClick={() => handleRequestSort("acquiredBy")}
+                >
+                  Adquirido por
+                </TableSortLabel>
+              </TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Telefone</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Valor</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Situação</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Data de criação</TableCell>
+              <TableCell
+                sx={{ fontWeight: "bold" }}
+                sortDirection={orderBy === "createdAt" ? order : false}
+              >
+                <TableSortLabel
+                  active={orderBy === "createdAt"}
+                  direction={orderBy === "createdAt" ? order : "asc"}
+                  onClick={() => handleRequestSort("createdAt")}
+                >
+                  Data de criação
+                </TableSortLabel>
+              </TableCell>
               <TableCell sx={{ fontWeight: "bold" }} align="center">
                 Ações
               </TableCell>
