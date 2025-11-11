@@ -63,6 +63,8 @@ export async function POST(request: NextRequest) {
 
     await checkoutDoc.ref.set(checkoutDocument);
 
+    let finalCheckoutDocument = { ...checkoutDocument };
+
     if (isPaymentByCommitment(checkoutDocument)) {
       const voucherDoc: VoucherDocument = {
         active: true,
@@ -73,12 +75,17 @@ export async function POST(request: NextRequest) {
   
       await checkoutDoc.ref
         .update({ voucher: voucherRes.id });
+      
+      finalCheckoutDocument = {
+        ...checkoutDocument,
+        voucher: voucherRes.id,
+      };
     }
 
     return createSuccessResponse(
       {
         documentId: checkoutDocumentId,
-        document: checkoutDocument,
+        document: finalCheckoutDocument,
       },
       201
     );
