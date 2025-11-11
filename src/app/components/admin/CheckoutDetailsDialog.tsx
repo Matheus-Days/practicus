@@ -24,11 +24,13 @@ import {
   ContentCopy as ContentCopyIcon,
   Check as CheckIcon,
   Clear as ClearIcon,
+  Download as DownloadIcon,
 } from '@mui/icons-material';
 import { CheckoutData } from '../../types/checkout';
 import { calculateTotalPurchasePrice } from '@/lib/checkout-utils';
 import { BillingDetailsPF, BillingDetailsPJ } from '../../api/checkouts/checkout.types';
 import { EventDocument } from '../../types/events';
+import { useVoucherPDF } from '../../hooks/useVoucherPDF';
 
 interface CheckoutDetailsDialogProps {
   open: boolean;
@@ -143,10 +145,14 @@ export default function CheckoutDetailsDialog({
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
   
   // Estados para edição de cortesias
   const [complimentaryValue, setComplimentaryValue] = useState<number>(0);
   const [isEditingComplimentary, setIsEditingComplimentary] = useState(false);
+
+  // Hook para geração de PDF
+  const { generateVoucherPDF, isLoading: isGeneratingPDF, error: pdfError } = useVoucherPDF();
 
   // Sincronizar valor de cortesias quando checkout mudar
   useEffect(() => {
@@ -202,6 +208,38 @@ export default function CheckoutDetailsDialog({
   const handleCancelComplimentary = () => {
     setComplimentaryValue(checkout?.complimentary || 0);
     setIsEditingComplimentary(false);
+  };
+
+  // Função para gerar e baixar o PDF do voucher
+  const handleDownloadVoucherPDF = async () => {
+    if (!checkout) return;
+
+    try {
+      const result = await generateVoucherPDF(checkout);
+      
+      if (result && result.blob) {
+        // Criar URL temporária para o blob
+        const url = window.URL.createObjectURL(result.blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `voucher-${checkout.voucher || checkout.id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        setSnackbarMessage('PDF do voucher baixado com sucesso!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } else {
+        throw new Error('Erro ao gerar PDF');
+      }
+    } catch (err) {
+      console.error('Erro ao baixar PDF do voucher:', err);
+      setSnackbarMessage(pdfError || 'Erro ao gerar o PDF do voucher');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
   };
 
   const getStatusDisplay = (status: string) => {
@@ -291,18 +329,33 @@ export default function CheckoutDetailsDialog({
 
           {checkout && !loading && (
             <Box>
-              {/* Status */}
-              <Box mb={3}>
-                <Typography variant="h6" gutterBottom>
-                  Situação da aquisição
-                </Typography>
-                <Chip
-                  icon={getStatusDisplay(checkout.status).icon}
-                  label={getStatusDisplay(checkout.status).text}
-                  color={getStatusDisplay(checkout.status).color}
-                  size="medium"
-                  variant="outlined"
-                />
+              {/* Status e Download PDF */}
+              <Box mb={3} display="grid" gridTemplateColumns="1fr 1fr" gap={3} alignItems="flex-start">
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Situação da aquisição
+                  </Typography>
+                  <Chip
+                    icon={getStatusDisplay(checkout.status).icon}
+                    label={getStatusDisplay(checkout.status).text}
+                    color={getStatusDisplay(checkout.status).color}
+                    size="medium"
+                    variant="outlined"
+                  />
+                </Box>
+                <Box>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<DownloadIcon />}
+                    onClick={handleDownloadVoucherPDF}
+                    disabled={isGeneratingPDF || !checkout.voucher}
+                    fullWidth
+                    sx={{ mt: 1 }}
+                  >
+                    {isGeneratingPDF ? 'Gerando PDF...' : 'Baixar PDF do voucher'}
+                  </Button>
+                </Box>
               </Box>
 
               <Divider sx={{ mb: 3 }} />
@@ -479,7 +532,7 @@ export default function CheckoutDetailsDialog({
       >
         <Alert
           onClose={handleSnackbarClose}
-          severity="success"
+          severity={snackbarSeverity}
           sx={{ width: '100%' }}
         >
           {snackbarMessage}
