@@ -83,7 +83,7 @@ export const formatCheckoutForExport = (
     "Valor total": isAdmin
       ? ""
       : checkout.amount
-        ? formatCurrency(calculateTotalPurchasePrice(eventData, checkout))
+        ? calculateTotalPurchasePrice(eventData, checkout) / 100
         : "",
     "Inscrições adquiridas": isAdmin ? "" : checkout.amount || 0,
     Cortesias: isAdmin ? "" : checkout.complimentary || 0,
@@ -179,6 +179,21 @@ export const formatRegistrationForExport = (
     ? formatCheckoutForExport(registration.checkout, eventData)
     : {};
 
+  const checkout = registration.checkout;
+  const isAdmin = checkout?.checkoutType === "admin";
+  let averageTicketValue = 0;
+  
+  if (checkout && !isAdmin && checkout.amount !== undefined) {
+    const totalValue = checkout.amount
+      ? calculateTotalPurchasePrice(eventData, checkout) / 100
+      : 0;
+    const totalTickets = (checkout.amount || 0) + (checkout.complimentary || 0);
+    
+    if (totalTickets > 0) {
+      averageTicketValue = totalValue / totalTickets;
+    }
+  }
+
   return {
     "ID da inscrição": registration.id,
     "Tipo de inscrição": registrationTypeDisplay,
@@ -198,6 +213,7 @@ export const formatRegistrationForExport = (
     Ocupação: registration.occupation || "",
     "Telefone é WhatsApp": registration.isPhoneWhatsapp ? "Sim" : "Não",
     "Autoriza uso de imagem": registration.useImage ? "Sim" : "Não",
+    "Valor médio do ingresso": averageTicketValue,
     ...checkoutColumns,
   };
 };
