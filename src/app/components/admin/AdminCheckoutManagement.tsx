@@ -15,7 +15,6 @@ import {
   CircularProgress,
   TextField,
   Divider,
-  Chip,
 } from "@mui/material";
 import {
   ConfirmationNumber as TicketIcon,
@@ -38,7 +37,6 @@ interface VoucherData {
 export default function AdminCheckoutManagement() {
   const { 
     eventCheckouts, 
-    user, 
     updateComplimentaryTickets,
     loadingComplimentaryUpdate,
     showNotification 
