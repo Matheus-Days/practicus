@@ -8,6 +8,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Paper,
   Typography,
   Chip,
@@ -62,6 +63,8 @@ export default function RegistrationsTable() {
   const [selectedCheckout, setSelectedCheckout] = useState<CheckoutData | null>(
     null
   );
+  const [orderBy, setOrderBy] = useState<string>("");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
 
   const registrations = useMemo(() => {
     return eventRegistrations.map((registration) => {
@@ -221,34 +224,83 @@ export default function RegistrationsTable() {
     setSelectedCheckout(null);
   };
 
+  const handleRequestSort = (property: string) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
   const filteredRegistrations = useMemo(() => {
+    // Função para obter o valor de ordenação de uma registration
+    const getSortValue = (
+      registration: typeof registrations[0],
+      property: string
+    ): string | number => {
+      switch (property) {
+        case "fullName":
+          return registration.fullName.toLowerCase();
+        case "organization":
+          return (
+            registration.checkout?.billingDetails &&
+            "orgName" in registration.checkout.billingDetails
+              ? registration.checkout.billingDetails.orgName.toLowerCase()
+              : ""
+          );
+        case "createdAt":
+          const date = registration.createdAt;
+          if (!date) return 0;
+          // Verificar se é um Timestamp do Firestore (tem método toDate)
+          const dateObj = date as any;
+          if (dateObj && typeof dateObj.toDate === "function") {
+            return dateObj.toDate().getTime();
+          }
+          return new Date(date).getTime();
+        default:
+          return "";
+      }
+    };
+
+    let filtered = registrations;
+
+    // Aplicar filtros
     if (statusFilter === "all") {
-      return registrations;
-    }
-    if (statusFilter === "valid") {
-      return registrations.filter(
+      filtered = registrations;
+    } else if (statusFilter === "valid") {
+      filtered = registrations.filter(
         (registration) => registration.status !== "invalid"
       );
-    }
-    if (statusFilter === "complimentary") {
-      return registrations.filter(
+    } else if (statusFilter === "complimentary") {
+      filtered = registrations.filter(
         (registration) => registration.registrationType === "complimentary"
       );
-    }
-    if (statusFilter === "commitment") {
-      return registrations.filter(
+    } else if (statusFilter === "commitment") {
+      filtered = registrations.filter(
         (registration) => registration.registrationType === "commitment"
       );
-    }
-    if (statusFilter === "commom") {
-      return registrations.filter(
+    } else if (statusFilter === "commom") {
+      filtered = registrations.filter(
         (registration) => registration.registrationType === "commom"
       );
+    } else {
+      filtered = registrations.filter(
+        (registration) => registration.status === statusFilter
+      );
     }
-    return registrations.filter(
-      (registration) => registration.status === statusFilter
-    );
-  }, [registrations, statusFilter]);
+
+    // Aplicar ordenação
+    if (orderBy) {
+      filtered = [...filtered].sort((a, b) => {
+        const aVal = getSortValue(a, orderBy);
+        const bVal = getSortValue(b, orderBy);
+
+        if (aVal < bVal) return order === "asc" ? -1 : 1;
+        if (aVal > bVal) return order === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [registrations, statusFilter, orderBy, order]);
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
@@ -376,12 +428,44 @@ export default function RegistrationsTable() {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Tipo</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Nome completo</TableCell>
+              <TableCell
+                sx={{ fontWeight: "bold" }}
+                sortDirection={orderBy === "fullName" ? order : false}
+              >
+                <TableSortLabel
+                  active={orderBy === "fullName"}
+                  direction={orderBy === "fullName" ? order : "asc"}
+                  onClick={() => handleRequestSort("fullName")}
+                >
+                  Nome completo
+                </TableSortLabel>
+              </TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
-              <TableCell>Telefone</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Telefone</TableCell>
+              <TableCell
+                sx={{ fontWeight: "bold" }}
+                sortDirection={orderBy === "organization" ? order : false}
+              >
+                <TableSortLabel
+                  active={orderBy === "organization"}
+                  direction={orderBy === "organization" ? order : "asc"}
+                  onClick={() => handleRequestSort("organization")}
+                >
+                  Organização
+                </TableSortLabel>
+              </TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Situação</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>
-                Data de inscrição
+              <TableCell
+                sx={{ fontWeight: "bold" }}
+                sortDirection={orderBy === "createdAt" ? order : false}
+              >
+                <TableSortLabel
+                  active={orderBy === "createdAt"}
+                  direction={orderBy === "createdAt" ? order : "asc"}
+                  onClick={() => handleRequestSort("createdAt")}
+                >
+                  Data de inscrição
+                </TableSortLabel>
               </TableCell>
               <TableCell sx={{ fontWeight: "bold" }} align="center">
                 Ações
@@ -415,6 +499,14 @@ export default function RegistrationsTable() {
                   <TableCell>
                     <Typography variant="body2">
                       {registration.phone || "-"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {registration.checkout?.billingDetails &&
+                      "orgName" in registration.checkout.billingDetails
+                        ? registration.checkout.billingDetails.orgName
+                        : ""}
                     </Typography>
                   </TableCell>
                   <TableCell>
