@@ -286,7 +286,6 @@ export default function RegistrationForm({
         }}
         value={registration.occupation || null}
         onChange={(_, newValue) => {
-          console.log("newValue", newValue);
           handleFieldChange("occupation", newValue || "");
         }}
         renderInput={(params) => (
