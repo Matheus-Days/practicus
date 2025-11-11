@@ -386,18 +386,18 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
   );
 
   const handleUpdateComplimentaryTickets = useCallback(
-    async (checkout: CheckoutData, val: number) => {
+    async (checkout: CheckoutData, newVal: number) => {
       try {
         setLoadingComplimentaryUpdate(true);
 
-        if (val < (checkout.complimentary || 0)) {
+        if (newVal < (checkout.complimentary || 0)) {
           const registrations = query(
             collection(firestore, "registrations"),
             where("checkoutId", "==", checkout.id),
             where("status", "in", ["ok", "pending"])
           );
           const registrationsSnapshot = await getDocs(registrations);
-          if (registrationsSnapshot.size > val) {
+          if (registrationsSnapshot.size >= newVal) {
             throw new Error(
               "Quantidade de cortesias não pode ser menor que o número de inscrições já preenchidas."
             );
@@ -406,7 +406,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
 
         const checkoutRef = doc(firestore, "checkouts", checkout.id);
         await updateDoc(checkoutRef, {
-          complimentary: val,
+          complimentary: newVal,
           updatedAt: new Date(),
         });
 
