@@ -28,6 +28,7 @@ import { RegistrationStatus } from "../../api/registrations/registration.types";
 import { formatCPF } from "../../utils/export-utils";
 import { useRegistrationPDF } from "../../hooks/useRegistrationPDF";
 import { useShare } from "../../hooks/useShare";
+import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function MyRegistration() {
   const {
@@ -77,9 +78,10 @@ export default function MyRegistration() {
         throw new Error("Checkout não encontrado");
       }
 
-      // Determinar o novo status baseado no status do checkout
-      const newStatus: RegistrationStatus =
-        checkout.status === "pending" ? "pending" : "ok";
+
+      const newStatus: RegistrationStatus = isPaymentByCommitment(checkout)
+        ? "ok"
+        : (checkout.status === "pending" ? "pending" : "ok");
 
       await updateRegistrationStatus(registration.id, newStatus);
 
