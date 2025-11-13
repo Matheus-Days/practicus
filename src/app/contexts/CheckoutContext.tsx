@@ -298,6 +298,7 @@ export function CheckoutProvider({
         : {
             ...billingDetails as BillingDetailsPJ,
             orgName: (billingDetails as BillingDetailsPJ).orgName?.toUpperCase() || "",
+            orgDepartment: (billingDetails as BillingDetailsPJ).orgDepartment?.toUpperCase() || "",
             orgAddress: (billingDetails as BillingDetailsPJ).orgAddress?.toUpperCase() || "",
             responsibleName: (billingDetails as BillingDetailsPJ).responsibleName?.toUpperCase() || "",
           }
@@ -468,6 +469,7 @@ export function CheckoutProvider({
         processedUpdateData.billingDetails = {
           ...pjDetails,
           orgName: pjDetails.orgName?.toUpperCase() || "",
+          orgDepartment: pjDetails.orgDepartment?.toUpperCase() || "",
           orgAddress: pjDetails.orgAddress?.toUpperCase() || "",
           responsibleName: pjDetails.responsibleName?.toUpperCase() || "",
         };
