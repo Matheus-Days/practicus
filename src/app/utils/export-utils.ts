@@ -40,6 +40,23 @@ export const formatCNPJ = (cnpj: string): string => {
   );
 };
 
+/**
+ * Formata o nome da organização com departamento (se existir)
+ * @param orgName Nome da organização
+ * @param orgDepartment Nome do departamento (opcional)
+ * @returns String formatada: "orgName" ou "orgName - orgDepartment"
+ */
+export const formatOrganizationName = (
+  orgName?: string,
+  orgDepartment?: string
+): string => {
+  if (!orgName) return "";
+  if (orgDepartment && orgDepartment.trim()) {
+    return `${orgName} - ${orgDepartment}`;
+  }
+  return orgName;
+};
+
 export const getCheckoutStatusDisplay = (status: string) => {
   switch (status) {
     case "pending":
@@ -119,7 +136,11 @@ export const formatCheckoutForExport = (
     // Campos para pessoa jurídica
     "Nome da organização":
       billingDetails && "orgName" in billingDetails
-        ? billingDetails.orgName
+        ? formatOrganizationName(billingDetails.orgName, billingDetails.orgDepartment)
+        : "",
+    "Nome do órgão ou departamento":
+      billingDetails && "orgName" in billingDetails
+        ? billingDetails.orgDepartment || ""
         : "",
     CNPJ:
       billingDetails && "orgName" in billingDetails
