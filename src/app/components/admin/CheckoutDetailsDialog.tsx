@@ -31,6 +31,7 @@ import { calculateTotalPurchasePrice } from '@/lib/checkout-utils';
 import { BillingDetailsPF, BillingDetailsPJ } from '../../api/checkouts/checkout.types';
 import { EventDocument } from '../../types/events';
 import { useVoucherPDF } from '../../hooks/useVoucherPDF';
+import { formatOrganizationName } from '../../utils/export-utils';
 
 interface CheckoutDetailsDialogProps {
   open: boolean;
@@ -85,8 +86,19 @@ function BillingDetailsPJComponent({ billingDetails }: BillingDetailsPJProps) {
         Razão Social:
       </Typography>
       <Typography variant="body1" gutterBottom>
-        {billingDetails.orgName || "Não informado"}
+        {formatOrganizationName(billingDetails.orgName, billingDetails.orgDepartment) || "Não informado"}
       </Typography>
+      
+      {billingDetails.orgDepartment && (
+        <>
+          <Typography variant="body2" color="textSecondary">
+            Órgão ou departamento:
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            {billingDetails.orgDepartment}
+          </Typography>
+        </>
+      )}
       
       <Typography variant="body2" color="textSecondary">
         Nome do Responsável:

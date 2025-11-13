@@ -25,7 +25,7 @@ import {
   BillingDetailsPF,
   BillingDetailsPJ,
 } from "../../api/checkouts/checkout.types";
-import { formatCNPJ } from "../../utils/export-utils";
+import { formatCNPJ, formatOrganizationName } from "../../utils/export-utils";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import Commitment from "../Commitment";
 import { isPaymentByCommitment } from "../../api/checkouts/utils";
@@ -195,7 +195,10 @@ export default function PurchaseSummary() {
             <Box>
               <Typography variant="body2">
                 <strong>Organização:</strong>{" "}
-                {(billingDetails as BillingDetailsPJ).orgName}
+                {formatOrganizationName(
+                  (billingDetails as BillingDetailsPJ).orgName,
+                  (billingDetails as BillingDetailsPJ).orgDepartment
+                )}
               </Typography>
               <Typography variant="body2">
                 <strong>CNPJ:</strong>{" "}
