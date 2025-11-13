@@ -88,6 +88,7 @@ export default function BillingDetails() {
   const [billingDetailsPJ, setBillingDetailsPJ] = useState<BillingDetailsPJ>({
     orgPhone: "",
     orgName: "",
+    orgDepartment: "",
     orgCnpj: "",
     orgAddress: "",
     orgZip: "",
@@ -128,6 +129,7 @@ export default function BillingDetails() {
       setBillingDetailsPJ({
         orgPhone: pj.orgPhone || "",
         orgName: pj.orgName || "",
+        orgDepartment: pj.orgDepartment || "",
         orgCnpj: pj.orgCnpj || "",
         orgAddress: pj.orgAddress || "",
         orgZip: pj.orgZip || "",
@@ -143,19 +145,20 @@ export default function BillingDetails() {
 
   useEffect(() => {
     if (localLegalEntity === "pf") {
-        setBillingDetailsPJ({
-          orgPhone: "",
-          orgName: "",
-          orgCnpj: "",
-          orgAddress: "",
-          orgZip: "",
-          orgCity: "",
-          orgState: "",
-          responsibleName: "",
-          responsiblePhone: "",
-          responsibleEmail: user?.email || "",
-          paymentByCommitment: false,
-        });
+      setBillingDetailsPJ({
+        orgPhone: "",
+        orgName: "",
+        orgDepartment: "",
+        orgCnpj: "",
+        orgAddress: "",
+        orgZip: "",
+        orgCity: "",
+        orgState: "",
+        responsibleName: "",
+        responsiblePhone: "",
+        responsibleEmail: user?.email || "",
+        paymentByCommitment: false,
+      });
         setCnpjError(null);
         setPhoneOrgError(null);
         setPhoneRespError(null);
@@ -497,6 +500,22 @@ export default function BillingDetails() {
                   variant="outlined"
                   size="medium"
                   required
+                  sx={{
+                    '& input': {
+                      textTransform: 'uppercase'
+                    }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Nome do órgão ou departamento"
+                  value={billingDetailsPJ.orgDepartment || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange("orgDepartment", e.target.value)
+                  }
+                  variant="outlined"
+                  size="medium"
                   sx={{
                     '& input': {
                       textTransform: 'uppercase'
