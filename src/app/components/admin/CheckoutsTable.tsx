@@ -33,6 +33,7 @@ import {
   Visibility as VisibilityIcon,
   Download as DownloadIcon,
   Receipt as ReceiptIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { useAdminContext } from "../../contexts/AdminContext";
@@ -45,7 +46,10 @@ import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
 import Commitment from "../Commitment";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
-import { formatCheckoutForExport, formatOrganizationName } from "../../utils/export-utils";
+import {
+  formatCheckoutForExport,
+  formatOrganizationName,
+} from "../../utils/export-utils";
 import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function CheckoutsTable() {
@@ -203,7 +207,9 @@ export default function CheckoutsTable() {
     } else if (statusFilter === "valid") {
       checkouts = checkouts.filter((checkout) => checkout.status !== "deleted");
     } else {
-      checkouts = checkouts.filter((checkout) => checkout.status === statusFilter);
+      checkouts = checkouts.filter(
+        (checkout) => checkout.status === statusFilter
+      );
     }
 
     // Aplicar ordenação
@@ -220,6 +226,14 @@ export default function CheckoutsTable() {
 
     return checkouts;
   }, [eventCheckouts, statusFilter, orderBy, order, user]);
+
+  const handleDeleteCommitmentCheckout = async (checkout: CheckoutData) => {
+    const confirmed = window.confirm(
+      "Ao cancelar uma aquisição, todas as inscrições confirmadas associadas a ela serão invalidadas. Tem certeza que deseja continuar?"
+    );
+    if (!confirmed) return;
+    await updateCheckoutStatus(checkout.id, "deleted");
+  };
 
   const handleStatusChange = async (status: CheckoutStatus) => {
     if (status === "deleted" || status === "refunded") {
@@ -546,16 +560,30 @@ export default function CheckoutsTable() {
 
                       {isPaymentByCommitment(checkout) &&
                       checkout.status !== "deleted" ? (
-                        <Button
-                          size="small"
-                          variant="contained"
-                          startIcon={<ReceiptIcon />}
-                          onClick={() => handleOpenCommitmentDialog(checkout)}
-                          color="secondary"
-                          sx={{ minWidth: "auto" }}
-                        >
-                          Empenho
-                        </Button>
+                        <>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<ReceiptIcon />}
+                            onClick={() => handleOpenCommitmentDialog(checkout)}
+                            color="secondary"
+                            sx={{ minWidth: "auto" }}
+                          >
+                            Empenho
+                          </Button>
+                          <Tooltip title="Cancelar aquisição">
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleDeleteCommitmentCheckout(checkout)
+                              }
+                              color="error"
+                              disabled={loadingCheckoutStatusUpdate}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </>
                       ) : (
                         <Tooltip title="Mais ações">
                           <IconButton
