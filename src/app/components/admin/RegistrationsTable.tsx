@@ -39,7 +39,7 @@ import { RegistrationData } from "../../hooks/registrationAPI";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
-import { formatRegistrationForExport } from "../../utils/export-utils";
+import { formatRegistrationForExport, formatOrganizationName } from "../../utils/export-utils";
 import { CheckoutData } from "../../types/checkout";
 import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
@@ -243,7 +243,10 @@ export default function RegistrationsTable() {
           return (
             registration.checkout?.billingDetails &&
             "orgName" in registration.checkout.billingDetails
-              ? registration.checkout.billingDetails.orgName.toLowerCase()
+              ? formatOrganizationName(
+                  registration.checkout.billingDetails.orgName,
+                  registration.checkout.billingDetails.orgDepartment
+                ).toLowerCase()
               : ""
           );
         case "createdAt":
@@ -505,7 +508,10 @@ export default function RegistrationsTable() {
                     <Typography variant="body2">
                       {registration.checkout?.billingDetails &&
                       "orgName" in registration.checkout.billingDetails
-                        ? registration.checkout.billingDetails.orgName
+                        ? formatOrganizationName(
+                            registration.checkout.billingDetails.orgName,
+                            registration.checkout.billingDetails.orgDepartment
+                          )
                         : ""}
                     </Typography>
                   </TableCell>

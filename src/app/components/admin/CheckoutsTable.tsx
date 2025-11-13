@@ -45,7 +45,7 @@ import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
 import Commitment from "../Commitment";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
-import { formatCheckoutForExport } from "../../utils/export-utils";
+import { formatCheckoutForExport, formatOrganizationName } from "../../utils/export-utils";
 import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function CheckoutsTable() {
@@ -164,7 +164,10 @@ export default function CheckoutsTable() {
       if ("fullName" in checkout.billingDetails)
         return checkout.billingDetails.fullName;
       if ("orgName" in checkout.billingDetails)
-        return checkout.billingDetails.orgName;
+        return formatOrganizationName(
+          checkout.billingDetails.orgName,
+          checkout.billingDetails.orgDepartment
+        );
       return "Não informado";
     };
 
@@ -369,7 +372,10 @@ export default function CheckoutsTable() {
     if ("fullName" in checkout.billingDetails)
       return checkout.billingDetails.fullName;
     if ("orgName" in checkout.billingDetails)
-      return checkout.billingDetails.orgName;
+      return formatOrganizationName(
+        checkout.billingDetails.orgName,
+        checkout.billingDetails.orgDepartment
+      );
     return "Não informado";
   };
 
