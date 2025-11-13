@@ -17,6 +17,7 @@ export type BillingDetailsPF = {
 export type BillingDetailsPJ = {
   orgPhone: string;
   orgName: string;
+  orgDepartment?: string;
   orgCnpj: string;
   orgAddress: string;
   orgCity: string;
