@@ -52,7 +52,7 @@ export default function RegistrationForm({
     Partial<RegistrationFormData>
   >({
     fullName: initialData.fullName || "",
-    email: initialData.email || user?.email || "",
+    email: initialData.email || "",
     phone: initialData.phone || "",
     cpf: initialData.cpf || "",
     isPhoneWhatsapp: initialData.isPhoneWhatsapp || false,
@@ -199,9 +199,10 @@ export default function RegistrationForm({
         label="Email"
         type="email"
         value={registration.email}
-        disabled
+        onChange={(e) => handleFieldChange("email", e.target.value)}
         variant="outlined"
         size="medium"
+        required
         helperText="Esse e-mail será usado para envio do certificado."
       />
 

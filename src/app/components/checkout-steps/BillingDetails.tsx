@@ -80,7 +80,7 @@ export default function BillingDetails() {
   } = useCEP();
 
   const [billingDetailsPF, setBillingDetailsPF] = useState<BillingDetailsPF>({
-    email: user?.email || "",
+    email: "",
     fullName: "",
     phone: "",
   });
@@ -96,7 +96,7 @@ export default function BillingDetails() {
     orgState: "",
     responsibleName: "",
     responsiblePhone: "",
-    responsibleEmail: user?.email || "",
+    responsibleEmail: "",
     paymentByCommitment: false,
   });
 
@@ -110,17 +110,12 @@ export default function BillingDetails() {
     fetchStates();
   }, [fetchStates]);
 
-  useEffect(() => {
-    const userEmail = user?.email || "";
-    setBillingDetailsPF((prev) => ({ ...prev, email: userEmail }));
-    setBillingDetailsPJ((prev) => ({ ...prev, responsibleEmail: userEmail }));
-  }, [user?.email]);
 
   useEffect(() => {
     if (legalEntity === "pf" && billingDetails) {
       const pf = billingDetails as BillingDetailsPF;
       setBillingDetailsPF({
-        email: pf.email || user?.email || "",
+        email: pf.email || "",
         fullName: pf.fullName || "",
         phone: pf.phone || "",
       });
@@ -137,11 +132,11 @@ export default function BillingDetails() {
         orgState: pj.orgState || "",
         responsibleName: pj.responsibleName || "",
         responsiblePhone: pj.responsiblePhone || "",
-        responsibleEmail: pj.responsibleEmail || user?.email || "",
+        responsibleEmail: pj.responsibleEmail || "",
         paymentByCommitment: pj.paymentByCommitment || false,
       });
     }
-  }, [legalEntity, billingDetails, user?.email]);
+  }, [legalEntity, billingDetails]);
 
   useEffect(() => {
     if (localLegalEntity === "pf") {
@@ -156,7 +151,7 @@ export default function BillingDetails() {
         orgState: "",
         responsibleName: "",
         responsiblePhone: "",
-        responsibleEmail: user?.email || "",
+        responsibleEmail: "",
         paymentByCommitment: false,
       });
         setCnpjError(null);
@@ -168,14 +163,14 @@ export default function BillingDetails() {
         clearMunicipalities();
     } else if (localLegalEntity === "pj") {
       setBillingDetailsPF({
-        email: user?.email || "",
+        email: "",
         fullName: "",
         phone: "",
       });
       setPhonePFError(null);
       setPhonePFFormat("(##) #####-####");
     }
-  }, [localLegalEntity, user?.email, clearCEP, clearMunicipalities]);
+  }, [localLegalEntity, clearCEP, clearMunicipalities]);
 
   useEffect(() => {
     setLocalRegistrationsAmount(registrationsAmount || 1);
@@ -440,11 +435,12 @@ export default function BillingDetails() {
                   label="Email"
                   type="email"
                   value={billingDetailsPF.email || ""}
-                  disabled
+                  onChange={(e) =>
+                    handleBillingDetailsPFChange("email", e.target.value)
+                  }
                   variant="outlined"
                   size="medium"
                   required
-                  helperText="Email do usuário autenticado"
                 />
 
                 <PatternFormat
@@ -758,12 +754,13 @@ export default function BillingDetails() {
                   fullWidth
                   label="Email do responsável"
                   type="email"
-                  value={billingDetailsPJ.responsibleEmail || user?.email || ""}
-                  disabled
+                  value={billingDetailsPJ.responsibleEmail || ""}
+                  onChange={(e) =>
+                    handleBillingDetailsPJChange("responsibleEmail", e.target.value)
+                  }
                   variant="outlined"
                   size="medium"
                   required
-                  helperText="Email do usuário autenticado"
                 />
 
                 <PatternFormat
