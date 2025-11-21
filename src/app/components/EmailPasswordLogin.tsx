@@ -12,7 +12,7 @@ import {
   Typography,
   Link,
 } from "@mui/material";
-import { Email, Lock, Error, CheckCircle } from "@mui/icons-material";
+import { Person, Lock, Error, CheckCircle } from "@mui/icons-material";
 
 interface EmailPasswordLoginProps {
   auth: Auth;
@@ -61,13 +61,13 @@ export default function EmailPasswordLogin({
           errorMessage = "Senha incorreta";
           break;
         case "auth/invalid-email":
-          errorMessage = "Email inválido";
+          errorMessage = "Usuário inválido";
           break;
         case "auth/user-disabled":
           errorMessage = "Esta conta foi desabilitada";
           break;
         case "auth/email-already-in-use":
-          errorMessage = "Este email já está em uso";
+          errorMessage = "Este usuário já está em uso";
           break;
         case "auth/weak-password":
           errorMessage = "A senha é muito fraca. Use pelo menos 6 caracteres";
@@ -90,17 +90,17 @@ export default function EmailPasswordLogin({
       <Stack spacing={3}>
         <TextField
           id="email"
-          label="Email"
-          type="email"
+          label="Usuário"
+          type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           fullWidth
-          placeholder="seu@email.com"
+          placeholder="nome de usuário"
           disabled={loading}
           InputProps={{
             startAdornment: (
-              <Email sx={{ mr: 1, color: "text.secondary" }} />
+              <Person sx={{ mr: 1, color: "text.secondary" }} />
             ),
           }}
         />

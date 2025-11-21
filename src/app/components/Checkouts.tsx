@@ -163,7 +163,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
 
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Não quer adquirir inscrições com este e-mail?{" "}
+              Não quer adquirir inscrições com este usuário?{" "}
               <Button
                 variant="text"
                 size="small"
@@ -177,7 +177,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
                 }}
                 sx={{ textTransform: "none", p: 0, minWidth: "auto" }}
               >
-                Clique aqui para usar outro e-mail
+                Clique aqui para usar outro usuário
               </Button>
             </Typography>
           </Box>
@@ -217,8 +217,8 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
                 <ToggleButton value="email-link" aria-label="login por email link">
                   Link por Email
                 </ToggleButton>
-                <ToggleButton value="email-password" aria-label="login por email e senha">
-                  Email e Senha
+                <ToggleButton value="email-password" aria-label="login por usuário e senha">
+                  Usuário e Senha
                 </ToggleButton>
               </ToggleButtonGroup>
             </Box>
