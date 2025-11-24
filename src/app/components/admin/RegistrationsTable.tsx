@@ -42,6 +42,7 @@ import { useXlsxExport } from "../../hooks/useXlsxExport";
 import { formatRegistrationForExport, formatOrganizationName } from "../../utils/export-utils";
 import { CheckoutData } from "../../types/checkout";
 import { isPaymentByCommitment } from "../../api/checkouts/utils";
+import { useRegistrationPDF } from "../../hooks/useRegistrationPDF";
 
 export type RegistrationType = "commom" | "commitment" | "complimentary";
 
@@ -53,6 +54,7 @@ export default function RegistrationsTable() {
     updateRegistrationStatus,
     selectedEvent,
     loadingRegistrationStatusUpdate,
+    showNotification,
   } = useAdminContext();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -65,6 +67,9 @@ export default function RegistrationsTable() {
   );
   const [orderBy, setOrderBy] = useState<string>("");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [generatingPDFFor, setGeneratingPDFFor] = useState<string | null>(null);
+
+  const { generateRegistrationPDF } = useRegistrationPDF();
 
   const registrations = useMemo(() => {
     return eventRegistrations.map((registration) => {
@@ -222,6 +227,42 @@ export default function RegistrationsTable() {
   const handleCheckoutDialogClose = () => {
     setCheckoutDialogOpen(false);
     setSelectedCheckout(null);
+  };
+
+  const handleGenerateRegistrationPDF = async (registration: RegistrationData) => {
+    if (!selectedEvent?.id) {
+      showNotification("Nenhum evento selecionado", "error");
+      return;
+    }
+
+    try {
+      setGeneratingPDFFor(registration.id);
+      const result = await generateRegistrationPDF(registration, selectedEvent.id);
+
+      if (!result) {
+        throw new Error("Erro ao gerar PDF");
+      }
+
+      const { blob, eventName } = result;
+      const fileName = `Comprovante_${eventName.replace(/[^a-zA-Z0-9]/g, "_")}_${registration.fullName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      showNotification("Comprovante de inscrição gerado com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao gerar PDF do comprovante:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro ao gerar PDF do comprovante";
+      showNotification(errorMessage, "error");
+    } finally {
+      setGeneratingPDFFor(null);
+    }
   };
 
   const handleRequestSort = (property: string) => {
@@ -531,6 +572,20 @@ export default function RegistrationsTable() {
                   </TableCell>
                   <TableCell align="center">
                     <Box display="flex" gap={1} justifyContent="center">
+                      <Tooltip title="Gerar comprovante de inscrição">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleGenerateRegistrationPDF(registration)}
+                          disabled={generatingPDFFor === registration.id}
+                          color="primary"
+                        >
+                          {generatingPDFFor === registration.id ? (
+                            <CircularProgress size={20} />
+                          ) : (
+                            <DownloadIcon />
+                          )}
+                        </IconButton>
+                      </Tooltip>
                       {registration.checkoutId && (
                         <Tooltip title="Ver aquisição">
                           <IconButton
