@@ -60,6 +60,8 @@ export default function CheckoutsTable() {
     updateCheckoutStatus,
     updateComplimentaryTickets,
     loadingComplimentaryUpdate,
+    updateTotalValue,
+    loadingTotalValueUpdate,
     loadingCheckoutStatusUpdate,
     user,
   } = useAdminContext();
@@ -727,6 +729,8 @@ export default function CheckoutsTable() {
         eventData={selectedEvent || undefined}
         onUpdateComplimentaryTickets={updateComplimentaryTickets}
         loadingComplimentaryUpdate={loadingComplimentaryUpdate}
+        onUpdateTotalValue={updateTotalValue}
+        loadingTotalValueUpdate={loadingTotalValueUpdate}
       />
 
       {/* Dialog de gerenciamento de empenho */}

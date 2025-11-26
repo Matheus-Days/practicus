@@ -97,16 +97,19 @@ export const formatCheckoutForExport = (
     "ID da aquisição": checkout.id,
     "Tipo de pessoa": isAdmin ? "" : isPF ? "Física" : "Jurídica",
     Situação: isAdmin ? "" : getCheckoutStatusDisplay(checkout.status),
-    "Valor total": isAdmin
+    "Valor total calculado": isAdmin
       ? ""
       : checkout.amount
         ? calculateTotalPurchasePrice(eventData, checkout) / 100
         : "",
+    "Valor total faturado": checkout.totalValue ? checkout.totalValue / 100 : 0,
     "Inscrições adquiridas": isAdmin ? "" : checkout.amount || 0,
     Cortesias: isAdmin ? "" : checkout.complimentary || 0,
     Voucher: isAdmin ? "" : checkout.voucher || "",
 
-    "Data de criação (aquisição)": isAdmin ? "" : formatDate(checkout.createdAt),
+    "Data de criação (aquisição)": isAdmin
+      ? ""
+      : formatDate(checkout.createdAt),
     "Última atualização (aquisição)": isAdmin
       ? ""
       : checkout.updatedAt
@@ -136,7 +139,10 @@ export const formatCheckoutForExport = (
     // Campos para pessoa jurídica
     "Nome da organização":
       billingDetails && "orgName" in billingDetails
-        ? formatOrganizationName(billingDetails.orgName, billingDetails.orgDepartment)
+        ? formatOrganizationName(
+            billingDetails.orgName,
+            billingDetails.orgDepartment
+          )
         : "",
     "Nome do órgão ou departamento":
       billingDetails && "orgName" in billingDetails
@@ -203,13 +209,13 @@ export const formatRegistrationForExport = (
   const checkout = registration.checkout;
   const isAdmin = checkout?.checkoutType === "admin";
   let averageTicketValue = 0;
-  
+
   if (checkout && !isAdmin && checkout.amount !== undefined) {
     const totalValue = checkout.amount
       ? calculateTotalPurchasePrice(eventData, checkout) / 100
       : 0;
     const totalTickets = (checkout.amount || 0) + (checkout.complimentary || 0);
-    
+
     if (totalTickets > 0) {
       averageTicketValue = totalValue / totalTickets;
     }

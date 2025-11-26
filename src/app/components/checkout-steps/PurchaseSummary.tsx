@@ -25,10 +25,14 @@ import {
   BillingDetailsPF,
   BillingDetailsPJ,
 } from "../../api/checkouts/checkout.types";
-import { formatCNPJ, formatOrganizationName } from "../../utils/export-utils";
+import {
+  formatCurrency,
+  formatOrganizationName,
+} from "../../utils/export-utils";
 import { useCheckout } from "../../contexts/CheckoutContext";
 import Commitment from "../Commitment";
 import { isPaymentByCommitment } from "../../api/checkouts/utils";
+import { formatCNPJ } from "../../utils/cnpj-utils";
 
 export default function PurchaseSummary() {
   const {
@@ -104,6 +108,22 @@ export default function PurchaseSummary() {
               <Typography variant="h6">{registrationsAmount}</Typography>
             </Box>
 
+            {checkout.totalValue && (
+              <Box
+                sx={{
+                  flex: { xs: "0 0 46px", sm: "1 1 300px" },
+                  minWidth: { xs: "100%", sm: "200px" },
+                }}
+              >
+                <Typography variant="subtitle2" color="text.secondary">
+                  Valor total da compra
+                </Typography>
+                <Typography variant="h6">
+                  {formatCurrency(checkout.totalValue)}
+                </Typography>
+              </Box>
+            )}
+
             {!!checkout.complimentary && (
               <Box
                 sx={{
@@ -133,22 +153,6 @@ export default function PurchaseSummary() {
                 {legalEntity === "pf" ? "Pessoa física" : "Pessoa jurídica"}
               </Typography>
             </Box>
-
-            {registrateMyself && (
-              <Box
-                sx={{
-                  flex: { xs: "0 0 46px", sm: "1 1 100%" },
-                  minWidth: { xs: "100%", sm: "200px" },
-                }}
-              >
-                <Typography variant="subtitle2" color="text.secondary">
-                  Inscrição própria
-                </Typography>
-                <Typography variant="body1">
-                  Sim - Vou usar umas das inscrições para mim
-                </Typography>
-              </Box>
-            )}
 
             {legalEntity === "pj" &&
               billingDetails &&
@@ -276,19 +280,20 @@ export default function PurchaseSummary() {
                 Gerenciar empenho
               </Button>
             )}
-            {!isPaymentByCommitment(checkout) && checkout.status === "pending" && (
-              <Button
-                variant="contained"
-                startIcon={<PaymentIcon />}
-                onClick={handleGoToPayment}
-                sx={{
-                  width: { xs: "100%", sm: "auto" },
-                  minWidth: { sm: "auto" },
-                }}
-              >
-                Efetuar Pagamento
-              </Button>
-            )}
+            {!isPaymentByCommitment(checkout) &&
+              checkout.status === "pending" && (
+                <Button
+                  variant="contained"
+                  startIcon={<PaymentIcon />}
+                  onClick={handleGoToPayment}
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    minWidth: { sm: "auto" },
+                  }}
+                >
+                  Efetuar Pagamento
+                </Button>
+              )}
 
             {checkout?.status === "completed" && (
               <Button

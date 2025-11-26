@@ -64,6 +64,7 @@ interface AdminContextType {
   loadingRegistrations: boolean;
   loadingDashboard: boolean;
   loadingComplimentaryUpdate: boolean;
+  loadingTotalValueUpdate: boolean;
   loadingCheckoutStatusUpdate: boolean;
   loadingRegistrationStatusUpdate: boolean;
 
@@ -96,6 +97,12 @@ interface AdminContextType {
 
   // Funções de complimentary tickets
   updateComplimentaryTickets: (
+    checkout: CheckoutData,
+    val: number
+  ) => Promise<void>;
+
+  // Funções de total value
+  updateTotalValue: (
     checkout: CheckoutData,
     val: number
   ) => Promise<void>;
@@ -155,6 +162,8 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
   const [loadingRegistrations, setLoadingRegistrations] = useState(false);
   const [loadingDashboard] = useState(false);
   const [loadingComplimentaryUpdate, setLoadingComplimentaryUpdate] =
+    useState(false);
+  const [loadingTotalValueUpdate, setLoadingTotalValueUpdate] =
     useState(false);
   const [loadingCheckoutStatusUpdate, setLoadingCheckoutStatusUpdate] =
     useState(false);
@@ -423,6 +432,30 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
     [firestore, showNotification]
   );
 
+  const handleUpdateTotalValue = useCallback(
+    async (checkout: CheckoutData, newVal: number) => {
+      try {
+        setLoadingTotalValueUpdate(true);
+
+        const checkoutRef = doc(firestore, "checkouts", checkout.id);
+        await updateDoc(checkoutRef, {
+          totalValue: newVal,
+          updatedAt: new Date(),
+        });
+
+        showNotification("Valor final faturado atualizado com sucesso!", "success");
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Erro ao atualizar valor final faturado";
+        showNotification(errorMessage, "error");
+        console.error("Error updating total value:", err);
+        throw err;
+      } finally {
+        setLoadingTotalValueUpdate(false);
+      }
+    },
+    [firestore, showNotification]
+  );
+
   // Efeitos
   useEffect(() => {
     setupEventsListener();
@@ -459,6 +492,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
     loadingRegistrations,
     loadingDashboard,
     loadingComplimentaryUpdate,
+    loadingTotalValueUpdate,
     loadingCheckoutStatusUpdate,
     loadingRegistrationStatusUpdate,
     error,
@@ -472,6 +506,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
     getCheckoutById,
     updateRegistrationStatus: handleUpdateRegistrationStatus,
     updateComplimentaryTickets: handleUpdateComplimentaryTickets,
+    updateTotalValue: handleUpdateTotalValue,
     showNotification,
     hideNotification,
   };

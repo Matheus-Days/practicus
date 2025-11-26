@@ -55,6 +55,10 @@ export default function RegistrationsTable() {
     selectedEvent,
     loadingRegistrationStatusUpdate,
     showNotification,
+    updateComplimentaryTickets,
+    loadingComplimentaryUpdate,
+    updateTotalValue,
+    loadingTotalValueUpdate,
   } = useAdminContext();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -676,6 +680,10 @@ export default function RegistrationsTable() {
         onClose={handleCheckoutDialogClose}
         checkout={selectedCheckout || undefined}
         eventData={selectedEvent || undefined}
+        onUpdateComplimentaryTickets={updateComplimentaryTickets}
+        loadingComplimentaryUpdate={loadingComplimentaryUpdate}
+        onUpdateTotalValue={updateTotalValue}
+        loadingTotalValueUpdate={loadingTotalValueUpdate}
       />
     </Box>
   );

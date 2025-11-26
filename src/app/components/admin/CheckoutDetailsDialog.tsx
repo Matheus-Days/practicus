@@ -31,7 +31,9 @@ import { calculateTotalPurchasePrice } from '@/lib/checkout-utils';
 import { BillingDetailsPF, BillingDetailsPJ } from '../../api/checkouts/checkout.types';
 import { EventDocument } from '../../types/events';
 import { useVoucherPDF } from '../../hooks/useVoucherPDF';
-import { formatOrganizationName } from '../../utils/export-utils';
+import { formatCNPJ, formatOrganizationName } from '../../utils/export-utils';
+import { formatCEP } from '../../utils/cep-utils';
+import { formatPhone } from '../../utils/phone-utils';
 
 interface CheckoutDetailsDialogProps {
   open: boolean;
@@ -40,6 +42,8 @@ interface CheckoutDetailsDialogProps {
   eventData?: EventDocument;
   onUpdateComplimentaryTickets?: (checkout: CheckoutData, val: number) => Promise<void>;
   loadingComplimentaryUpdate?: boolean;
+  onUpdateTotalValue?: (checkout: CheckoutData, val: number) => Promise<void>;
+  loadingTotalValueUpdate?: boolean;
 }
 
 // Subcomponente para dados de pessoa física
@@ -118,28 +122,35 @@ function BillingDetailsPJComponent({ billingDetails }: BillingDetailsPJProps) {
         Telefone do Responsável:
       </Typography>
       <Typography variant="body1" gutterBottom>
-        {billingDetails.responsiblePhone || "Não informado"}
+        {formatPhone(billingDetails.responsiblePhone)}
       </Typography>
       
       <Typography variant="body2" color="textSecondary">
         CNPJ:
       </Typography>
       <Typography variant="body1" gutterBottom>
-        {billingDetails.orgCnpj || "Não informado"}
+        {formatCNPJ(billingDetails.orgCnpj)}
       </Typography>
       
       <Typography variant="body2" color="textSecondary">
-        Endereço da Organização:
+        Endereço da organização:
       </Typography>
       <Typography variant="body1" gutterBottom>
         {billingDetails.orgAddress || "Não informado"}
       </Typography>
       
       <Typography variant="body2" color="textSecondary">
+        CEP da organização:
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        {formatCEP(billingDetails.orgZip)}
+      </Typography>
+      
+      <Typography variant="body2" color="textSecondary">
         Telefone da Organização:
       </Typography>
       <Typography variant="body1" gutterBottom>
-        {billingDetails.orgPhone || "Não informado"}
+        {formatPhone(billingDetails.orgPhone)}
       </Typography>
     </Box>
   );
@@ -152,6 +163,8 @@ export default function CheckoutDetailsDialog({
   eventData,
   onUpdateComplimentaryTickets,
   loadingComplimentaryUpdate = false,
+  onUpdateTotalValue,
+  loadingTotalValueUpdate = false,
 }: CheckoutDetailsDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -163,6 +176,10 @@ export default function CheckoutDetailsDialog({
   const [complimentaryValue, setComplimentaryValue] = useState<number>(0);
   const [isEditingComplimentary, setIsEditingComplimentary] = useState(false);
 
+  // Estados para edição de valor final faturado
+  const [totalValue, setTotalValue] = useState<number>(0);
+  const [isEditingTotalValue, setIsEditingTotalValue] = useState(false);
+
   // Hook para geração de PDF
   const { generateVoucherPDF, isLoading: isGeneratingPDF, error: pdfError } = useVoucherPDF();
 
@@ -171,6 +188,8 @@ export default function CheckoutDetailsDialog({
     if (checkout) {
       setComplimentaryValue(checkout.complimentary || 0);
       setIsEditingComplimentary(false);
+      setTotalValue(checkout.totalValue !== undefined ? checkout.totalValue : 0);
+      setIsEditingTotalValue(false);
     }
   }, [checkout]);
 
@@ -220,6 +239,35 @@ export default function CheckoutDetailsDialog({
   const handleCancelComplimentary = () => {
     setComplimentaryValue(checkout?.complimentary || 0);
     setIsEditingComplimentary(false);
+  };
+
+  // Funções para edição de valor final faturado
+  const handleTotalValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value) || 0;
+    setTotalValue(value);
+    setIsEditingTotalValue(value !== (checkout?.totalValue || 0));
+  };
+
+  const handleConfirmTotalValue = async () => {
+    if (!checkout?.id || !onUpdateTotalValue) return;
+    
+    try {
+      await onUpdateTotalValue(checkout, totalValue);
+      
+      setIsEditingTotalValue(false);
+      setSnackbarMessage('Valor final faturado atualizado com sucesso!');
+      setSnackbarOpen(true);
+    } catch (err) {
+      console.error('Erro ao atualizar valor final faturado:', err);
+      setSnackbarMessage('Erro ao atualizar valor final faturado');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleCancelTotalValue = () => {
+    setTotalValue(checkout?.totalValue || 0);
+    setIsEditingTotalValue(false);
   };
 
   // Função para gerar e baixar o PDF do voucher
@@ -383,9 +431,22 @@ export default function CheckoutDetailsDialog({
                       ID da aquisição:
                     </Typography>
                     <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                        {checkout.id}
-                      </Typography>
+                      <Box
+                        sx={{
+                          backgroundColor: (theme) =>
+                            theme.palette.mode === 'dark'
+                              ? theme.palette.grey[900]
+                              : theme.palette.grey[200],
+                          borderRadius: 1.5,
+                          px: 2,
+                          py: 1,
+                          display: 'inline-block',
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                          {checkout.id}
+                        </Typography>
+                      </Box>
                       <IconButton
                         size="small"
                         onClick={handleCopyId}
@@ -414,9 +475,9 @@ export default function CheckoutDetailsDialog({
                     </Typography>
                     
                     <Typography variant="body2" color="textSecondary">
-                      Valor total:
+                      Valor total calculado:
                     </Typography>
-                    <Typography variant="h6" color="primary" gutterBottom>
+                    <Typography variant="h6" gutterBottom>
                       {checkout.amount && eventData
                         ? formatCurrency(calculateTotalPurchasePrice(eventData, checkout))
                         : "-"}
@@ -460,54 +521,111 @@ export default function CheckoutDetailsDialog({
                 </Box>
               </Box>
 
-              {/* Seção de Cortesias */}
+              {/* Seção de Cortesias e Valor Final Faturado */}
               <Divider sx={{ my: 3 }} />
               <Box mb={3}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Cortesias
-                </Typography>
-                <Box display="flex" alignItems="center" gap={2}>
-                  <TextField
-                    type="number"
-                    value={complimentaryValue}
-                    onChange={handleComplimentaryChange}
-                    size="small"
-                    sx={{ width: 100 }}
-                    inputProps={{ 
-                      min: 0,
-                      style: { textAlign: 'center' }
-                    }}
-                    disabled={loadingComplimentaryUpdate}
-                    label="Quantidade"
-                  />
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={handleConfirmComplimentary}
-                    disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
-                    sx={{ 
-                      bgcolor: 'success.main', 
-                      color: 'white',
-                      '&:hover': { bgcolor: 'success.dark' },
-                      '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
-                    }}
-                  >
-                    <CheckIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="secondary"
-                    onClick={handleCancelComplimentary}
-                    disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
-                    sx={{ 
-                      bgcolor: 'secondary.main', 
-                      color: 'white',
-                      '&:hover': { bgcolor: 'secondary.dark' },
-                      '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
-                    }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
+                <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
+                  {/* Coluna de Cortesias */}
+                  <Box>
+                    <Typography variant="h6" gutterBottom color="primary">
+                      Cortesias
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <TextField
+                        type="number"
+                        value={complimentaryValue}
+                        onChange={handleComplimentaryChange}
+                        size="small"
+                        sx={{ width: 100 }}
+                        inputProps={{ 
+                          min: 0,
+                          style: { textAlign: 'center' }
+                        }}
+                        disabled={loadingComplimentaryUpdate}
+                        label="Quantidade"
+                      />
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={handleConfirmComplimentary}
+                        disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
+                        sx={{ 
+                          bgcolor: 'success.main', 
+                          color: 'white',
+                          '&:hover': { bgcolor: 'success.dark' },
+                          '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                        }}
+                      >
+                        <CheckIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="secondary"
+                        onClick={handleCancelComplimentary}
+                        disabled={!isEditingComplimentary || loadingComplimentaryUpdate}
+                        sx={{ 
+                          bgcolor: 'secondary.main', 
+                          color: 'white',
+                          '&:hover': { bgcolor: 'secondary.dark' },
+                          '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                        }}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+
+                  {/* Coluna de Valor Final Faturado */}
+                  <Box>
+                    <Typography variant="h6" gutterBottom color="primary">
+                      Valor final faturado
+                    </Typography>
+                    <Box display="flex" alignItems="start" gap={2}>
+                      <TextField
+                        type="number"
+                        value={totalValue}
+                        onChange={handleTotalValueChange}
+                        size="small"
+                        sx={{ width: 150 }}
+                        inputProps={{ 
+                          min: 0,
+                          step: 1,
+                          style: { textAlign: 'center' }
+                        }}
+                        disabled={loadingTotalValueUpdate}
+                        label="Valor (centavos)"
+                        helperText={totalValue > 0 ? `${formatCurrency(totalValue)}` : ''}
+                      />
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={handleConfirmTotalValue}
+                        disabled={!isEditingTotalValue || loadingTotalValueUpdate}
+                        sx={{ 
+                          bgcolor: 'success.main', 
+                          color: 'white',
+                          '&:hover': { bgcolor: 'success.dark' },
+                          '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                        }}
+                      >
+                        <CheckIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="secondary"
+                        onClick={handleCancelTotalValue}
+                        disabled={!isEditingTotalValue || loadingTotalValueUpdate}
+                        sx={{ 
+                          bgcolor: 'secondary.main', 
+                          color: 'white',
+                          '&:hover': { bgcolor: 'secondary.dark' },
+                          '&:disabled': { bgcolor: 'grey.300', color: 'grey.500' }
+                        }}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
                 </Box>
               </Box>
 
