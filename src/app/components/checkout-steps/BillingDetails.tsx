@@ -410,7 +410,7 @@ export default function BillingDetails() {
             size="medium"
             required
             error={!!amountError}
-            helperText={amountError || "Digite a quantidade de inscrições"}
+            helperText={amountError}
           />
           <Box
             sx={{
