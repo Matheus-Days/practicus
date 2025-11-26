@@ -10,6 +10,7 @@ import {
 import { RegistrationData, RegistrationMinimal } from "../hooks/registrationAPI";
 import { RegistrationFormData, RegistrationResponse } from "../api/registrations/registration.types";
 import { VoucherData } from "../hooks/voucherAPI";
+import { EventData } from "../types/events";
 
 export type CheckoutStep =
   | "select-type" // Selecionar tipo de checkout (acquire ou voucher)
@@ -28,6 +29,7 @@ export type CheckoutData = CheckoutDocument & {
 export interface CheckoutContextType {
   user: User | null;
   eventId: string;
+  event: EventData | null;
   checkout: CheckoutData | null;
   registration: RegistrationData | null;
   checkoutRegistrations: Array<RegistrationMinimal>;

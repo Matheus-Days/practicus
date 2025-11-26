@@ -43,6 +43,7 @@ import { useVoucherAPI, VoucherData } from "../hooks/voucherAPI";
 import { useFirebase } from "../hooks/firebase";
 import { createCheckoutDocumentId } from "../api/checkouts/utils";
 import { generateRegistrationDocumentId } from "../api/registrations/utils";
+import { EventData } from "../types/events";
 
 const CheckoutContext = createContext<CheckoutContextType | undefined>(
   undefined
@@ -80,6 +81,7 @@ export function CheckoutProvider({
     checkout?: Unsubscribe;
     registration?: Unsubscribe;
     checkoutRegistrations?: Unsubscribe;
+    event?: Unsubscribe;
   }>({});
 
   const [checkout, setCheckout] = useState<CheckoutData | null>(null);
@@ -104,6 +106,7 @@ export function CheckoutProvider({
   const [registrateMyself, setRegistrateMyself] = useState<boolean>(false);
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
   const [formData, setFormData] = useState<Partial<RegistrationFormData>>({});
+  const [event, setEvent] = useState<EventData | null>(null);
 
   const fillCheckoutContext = useCallback((
     checkoutId: string,
@@ -221,6 +224,33 @@ export function CheckoutProvider({
     });
   }, [checkout?.id, firestore]);
 
+
+  // Função para configurar listener do evento
+  const setupEventListener = useCallback(() => {
+    if (!eventId) return;
+
+    const eventRef = doc(firestore, "events", eventId);
+
+    // Limpar listener anterior se existir
+    if (listenersRef.current.event) {
+      listenersRef.current.event();
+    }
+
+    listenersRef.current.event = onSnapshot(eventRef, (doc) => {
+      if (doc.exists()) {
+        const eventData = {
+          id: doc.id,
+          ...doc.data(),
+        } as EventData;
+        setEvent(eventData);
+      } else {
+        setEvent(null);
+      }
+    }, (error) => {
+      console.error("Erro no listener do evento:", error);
+      setEvent(null);
+    });
+  }, [eventId, firestore]);
 
   // Função para configurar listener dos dados do voucher
   const setupVoucherDataListener = useCallback(() => {
@@ -572,6 +602,10 @@ export function CheckoutProvider({
 
   // Configurar listeners quando user ou eventId mudar
   useEffect(() => {
+    if (eventId) {
+      setupEventListener();
+    }
+    
     if (user && eventId) {
       setupCheckoutListener();
       setupRegistrationListener();
@@ -580,7 +614,7 @@ export function CheckoutProvider({
     return () => {
       cleanupListeners();
     };
-  }, [user, eventId, setupCheckoutListener, setupRegistrationListener, cleanupListeners]);
+  }, [user, eventId, setupEventListener, setupCheckoutListener, setupRegistrationListener, cleanupListeners]);
 
   // Configurar listener das inscrições do checkout quando o checkout mudar
   useEffect(() => {
@@ -597,6 +631,7 @@ export function CheckoutProvider({
   const value: CheckoutContextType = {
     user,
     eventId,
+    event,
     checkout,
     registration,
     checkoutRegistrations,
