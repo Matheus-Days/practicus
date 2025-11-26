@@ -12,6 +12,8 @@ import { CreateCheckoutRequest } from "./checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
 import { createErrorResponse, createSuccessResponse } from "../utils";
 import { VoucherDocument } from "../voucher/voucher.types";
+import { EventDocument } from "../../types/events";
+import { calculateTotalPurchasePrice } from "../../../lib/checkout-utils";
 
 // POST /api/checkouts - Create a new checkout
 export async function POST(request: NextRequest) {
@@ -38,7 +40,6 @@ export async function POST(request: NextRequest) {
       extractCreateCheckoutDataFromRequestBody(body);
 
     // Opcional: Verificar se o usuário está tentando criar checkout para si mesmo
-    // (dependendo da sua lógica de negócio)
     if (checkoutData.userId && checkoutData.userId !== authenticatedUser.uid) {
       return createErrorResponse(
         "Não autorizado. Você só pode criar checkouts para sua própria conta.",
@@ -56,10 +57,29 @@ export async function POST(request: NextRequest) {
       authenticatedUser.uid
     );
 
-    const checkoutDoc = await firestore.collection("checkouts").doc(checkoutDocumentId).get();
+    const checkoutDoc = await firestore
+      .collection("checkouts")
+      .doc(checkoutDocumentId)
+      .get();
     if (checkoutDoc.exists && checkoutDoc.data()?.status !== "deleted") {
-      return createErrorResponse("Uma outra aquisição de inscrições já existe para esse email.", 400);
+      return createErrorResponse(
+        "Uma outra aquisição de inscrições já existe para esse email.",
+        400
+      );
     }
+
+    const event = await firestore
+      .collection("events")
+      .doc(checkoutData.eventId)
+      .get();
+    if (!event.exists) {
+      return createErrorResponse("Evento não encontrado.", 404);
+    }
+    const eventDoc = event.data() as EventDocument;
+    checkoutDocument.totalValue = calculateTotalPurchasePrice(
+      eventDoc,
+      checkoutDocument
+    );
 
     await checkoutDoc.ref.set(checkoutDocument);
 
@@ -72,10 +92,9 @@ export async function POST(request: NextRequest) {
         createdAt: new Date(),
       };
       const voucherRes = await firestore.collection("vouchers").add(voucherDoc);
-  
-      await checkoutDoc.ref
-        .update({ voucher: voucherRes.id });
-      
+
+      await checkoutDoc.ref.update({ voucher: voucherRes.id });
+
       finalCheckoutDocument = {
         ...checkoutDocument,
         voucher: voucherRes.id,

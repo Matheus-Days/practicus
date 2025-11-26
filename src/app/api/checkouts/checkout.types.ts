@@ -60,7 +60,9 @@ export type CheckoutDocument = {
   eventId: string;
   status: CheckoutStatus;
   userId: string;
+  /** Number of tickets being negotiated */
   amount?: number;
+  /** Number of complimentary tickets */
   complimentary?: number;
   billingDetails?: BillingDetailsPF | BillingDetailsPJ;
   deletedAt?: Date;
@@ -69,6 +71,8 @@ export type CheckoutDocument = {
   updatedAt?: Date;
   voucher?: string;
   payment?: Payment;
+  /** Total value of the checkout in cents */
+  totalValue?: number;
 };
 
 //#region Types for API requests/responses
