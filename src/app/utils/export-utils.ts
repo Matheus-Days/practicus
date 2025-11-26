@@ -212,7 +212,7 @@ export const formatRegistrationForExport = (
 
   if (checkout && !isAdmin && checkout.amount !== undefined) {
     const totalValue = checkout.amount
-      ? calculateTotalPurchasePrice(eventData, checkout) / 100
+      ? checkout.totalValue ? checkout.totalValue / 100 : 0
       : 0;
     const totalTickets = (checkout.amount || 0) + (checkout.complimentary || 0);
 
