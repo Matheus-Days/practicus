@@ -89,3 +89,14 @@ export const validatePhone = (phone: string): string | null => {
   return null;
 };
 
+export const formatPhone = (phone?: string) => {
+  if (!phone) return "Não informado";
+  const numeric = phone.replace(/\D/g, "");
+  if (numeric.length === 11) {
+    return numeric.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+  } else if (numeric.length === 10) {
+    return numeric.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+  } else {
+    return phone;
+  }
+};

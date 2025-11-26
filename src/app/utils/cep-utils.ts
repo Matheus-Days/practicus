@@ -102,3 +102,8 @@ export const fetchCEPInfo = async (
     throw new Error("Erro ao buscar informações do CEP");
   }
 };
+
+export const formatCEP = (cep?: string) => {
+  if (!cep) return "Não informado";
+  return cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+};
