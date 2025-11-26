@@ -21,6 +21,7 @@ import { UserData } from '../hooks/firebase';
 import { AdminProvider, useAdminContext } from '../contexts/AdminContext';
 import EventsList from './admin/EventsList';
 import EventDetails from './admin/EventDetails';
+// import PriceMigrationButton from './admin/PriceMigrationButton';
 
 // Tema personalizado
 const theme = createTheme({
@@ -65,6 +66,8 @@ function AdminPanelContent({ user, userData }: AdminPanelContentProps) {
             <Typography variant="body2" color="inherit">
               Olá, {userData.displayName || user.email}
             </Typography>
+            {/* TODO: Uncomment this when we have a way to migrate the total value (dev feature only) */}
+            {/* <PriceMigrationButton /> */}
             <Button
               color="inherit"
               startIcon={<LogoutIcon />}
