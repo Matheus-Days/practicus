@@ -524,14 +524,7 @@ export default function CheckoutsTable() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {checkout.amount
-                        ? formatCurrency(
-                            calculateTotalPurchasePrice(
-                              selectedEvent!,
-                              checkout
-                            )
-                          )
-                        : "-"}
+                      {formatCurrency(checkout.totalValue || 0)}
                     </Typography>
                   </TableCell>
                   <TableCell>
