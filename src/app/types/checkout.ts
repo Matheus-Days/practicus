@@ -30,6 +30,7 @@ export interface CheckoutContextType {
   user: User | null;
   eventId: string;
   event: EventData | null;
+  isEventClosed: boolean;
   checkout: CheckoutData | null;
   registration: RegistrationData | null;
   checkoutRegistrations: Array<RegistrationMinimal>;

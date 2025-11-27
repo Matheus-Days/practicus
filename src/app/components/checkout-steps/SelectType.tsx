@@ -8,6 +8,7 @@ import {
   CardContent,
   CardActionArea,
   ChipOwnProps,
+  Alert,
 } from "@mui/material";
 import {
   ShoppingCart as ShoppingCartIcon,
@@ -15,7 +16,29 @@ import {
 } from "@mui/icons-material";
 
 export default function SelectType() {
-  const { setCheckoutType, setCurrentStep } = useCheckout();
+  const { 
+    setCheckoutType, 
+    setCurrentStep, 
+    isEventClosed, 
+    checkout, 
+  } = useCheckout();
+
+  const hasValidCheckout = checkout !== null && checkout.status !== "deleted";
+
+  if (isEventClosed && !hasValidCheckout) {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: { xs: 2, sm: 3 } }}>
+        <Alert severity="info">
+          <Typography variant="h6" gutterBottom>
+            Inscrições encerradas
+          </Typography>
+          <Typography variant="body2">
+            As inscrições para este evento estão encerradas. Você não pode mais realizar novas compras ou inscrições.
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  }
 
   const handleSelectType = (type: "acquire" | "voucher") => {
     setCheckoutType(type);

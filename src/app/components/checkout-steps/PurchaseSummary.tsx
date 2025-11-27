@@ -43,6 +43,7 @@ export default function PurchaseSummary() {
     checkout,
     setCurrentStep,
     deleteCheckout,
+    isEventClosed,
   } = useCheckout();
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -237,7 +238,7 @@ export default function PurchaseSummary() {
               },
             }}
           >
-            {checkout?.status === "pending" && (
+            {checkout?.status === "pending" && !isEventClosed && (
               <>
                 <Button
                   variant="outlined"

@@ -34,6 +34,8 @@ export default function VoucherValidation() {
     createVoucherCheckout,
     loading,
     error,
+    isEventClosed,
+    checkout,
   } = useCheckout();
   const { validateVoucher } = useVoucherAPI();
   const [voucherCode, setVoucherCode] = useState("");
@@ -80,6 +82,29 @@ export default function VoucherValidation() {
       handleValidateVoucher(voucherFromUrl);
     }
   }, [voucherCode, handleValidateVoucher]);
+
+  const hasValidCheckout = checkout !== null && checkout.status !== "deleted";
+
+  if (isEventClosed && !hasValidCheckout) {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: { xs: 2, sm: 3 } }}>
+        <Alert severity="info">
+          <Typography variant="h6" gutterBottom>
+            Inscrições encerradas
+          </Typography>
+          <Typography variant="body2">
+            As inscrições para este evento estão encerradas. Você não pode mais validar vouchers ou realizar novas inscrições.
+          </Typography>
+        </Alert>
+        <Button
+          variant="outlined"
+          onClick={() => setCurrentStep("select-type")}
+        >
+          Voltar
+        </Button>
+      </Box>
+    );
+  }
 
   const handleCreateRegistration = () => {
     setShowRegistrationForm(true);

@@ -628,10 +628,13 @@ export function CheckoutProvider({
     return unsubscribe;
   }, [setupVoucherDataListener]);
 
+  const isEventClosed = event?.status === "closed";
+
   const value: CheckoutContextType = {
     user,
     eventId,
     event,
+    isEventClosed,
     checkout,
     registration,
     checkoutRegistrations,

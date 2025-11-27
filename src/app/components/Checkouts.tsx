@@ -25,7 +25,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
-import { CheckCircle, Error } from "@mui/icons-material";
+import { CheckCircle, Error, Info } from "@mui/icons-material";
 
 interface CheckoutsProps {
   eventId: string;
@@ -88,10 +88,10 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
           } as EventData;
           setEventData(event);
           
-          if (event.status === "closed") {
-            setError("As inscrições para este evento estão encerradas");
-          } else if (event.status === "canceled") {
+          if (event.status === "canceled") {
             setError("Este evento foi cancelado");
+          } else {
+            setError(null);
           }
         } else {
           setError("Não encontramos nenhum processo de inscrição aberto para este evento");
@@ -134,7 +134,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
     );
   }
 
-  if (error) {
+  if (error && (!eventData || eventData.status === "canceled")) {
     return (
       <Alert severity="error" icon={<Error />}>
         <AlertTitle>Erro</AlertTitle>
@@ -143,12 +143,17 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
     );
   }
 
-  if (
-    !eventData ||
-    eventData.status === "closed" ||
-    eventData.status === "canceled"
-  ) {
+  if (!eventData) {
     return null;
+  }
+
+  if (eventData.status === "canceled") {
+    return (
+      <Alert severity="error" icon={<Error />}>
+        <AlertTitle>Erro</AlertTitle>
+        Este evento foi cancelado
+      </Alert>
+    );
   }
 
   if (user) {
@@ -160,6 +165,16 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
               Autenticado como: <strong>{user.email}</strong>
             </Typography>
           </Alert>
+
+          {eventData?.status === "closed" && (
+            <Alert severity="info" icon={<Info />}>
+              <AlertTitle>Inscrições encerradas</AlertTitle>
+              <Typography variant="body2">
+                As inscrições para este evento estão encerradas. Você não pode mais realizar novas compras ou inscrições. 
+                No entanto, inscrições e aquisições já realizadas ainda podem ser acessadas e editadas.
+              </Typography>
+            </Alert>
+          )}
 
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -205,6 +220,16 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
                 Faça login para verificar ou realizar sua inscrição
               </Typography>
             </Box>
+
+            {eventData?.status === "closed" && (
+              <Alert severity="info" icon={<Info />}>
+                <AlertTitle>Inscrições encerradas</AlertTitle>
+                <Typography variant="body2">
+                  As inscrições para este evento estão encerradas. Você não pode mais realizar novas compras ou inscrições. 
+                  No entanto, inscrições e aquisições já realizadas ainda podem ser acessadas e editadas.
+                </Typography>
+              </Alert>
+            )}
 
             <Box display="flex" justifyContent="center">
               <ToggleButtonGroup

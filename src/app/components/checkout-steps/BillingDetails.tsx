@@ -50,6 +50,7 @@ export default function BillingDetails() {
     user,
     setCurrentStep,
     event,
+    isEventClosed,
   } = useCheckout();
 
   // Estado para controlar o snackbar
@@ -116,6 +117,7 @@ export default function BillingDetails() {
   );
 
   const hasExistingCheckout = checkout && checkout.status !== "deleted";
+  const isReadOnly = isEventClosed;
 
   // Carregar estados ao montar o componente
   useEffect(() => {
@@ -378,6 +380,15 @@ export default function BillingDetails() {
           Informações da compra
         </Typography>
 
+        {/* Alert quando evento está fechado */}
+        {isReadOnly && (
+          <Alert severity="info">
+            <Typography variant="body2">
+              As inscrições para este evento estão encerradas. Os dados de faturamento não podem ser editados.
+            </Typography>
+          </Alert>
+        )}
+
         {/* I. Campo de quantidade de inscrições, valor por inscrição e valor total */}
         <Box
           sx={{
@@ -394,6 +405,7 @@ export default function BillingDetails() {
             label="Quantidade de inscrições"
             type="number"
             value={localRegistrationsAmount}
+            disabled={isReadOnly}
             onChange={(e) => {
               const value = parseInt(e.target.value) || 0;
               setLocalRegistrationsAmount(value);
@@ -485,6 +497,7 @@ export default function BillingDetails() {
             value={localLegalEntity || ""}
             label="Tipo de pessoa"
             size="medium"
+            disabled={isReadOnly}
             onChange={(e) => {
               const value = e.target.value as LegalEntity;
               setLocalLegalEntity(value);
@@ -515,6 +528,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="Nome completo"
                   value={billingDetailsPF.fullName || ""}
+                  disabled={isReadOnly}
                   onChange={(e) =>
                     handleBillingDetailsPFChange("fullName", e.target.value)
                   }
@@ -533,6 +547,7 @@ export default function BillingDetails() {
                   label="Email"
                   type="email"
                   value={billingDetailsPF.email || ""}
+                  disabled={isReadOnly}
                   onChange={(e) =>
                     handleBillingDetailsPFChange("email", e.target.value)
                   }
@@ -548,6 +563,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="Telefone"
                   value={billingDetailsPF.phone || ""}
+                  disabled={isReadOnly}
                   onValueChange={(values) => {
                     const { value } = values;
                     handleBillingDetailsPFChange("phone", value);
@@ -593,6 +609,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="Nome da organização"
                   value={billingDetailsPJ.orgName || ""}
+                  disabled={isReadOnly}
                   onChange={(e) =>
                     handleBillingDetailsPJChange("orgName", e.target.value)
                   }
@@ -610,6 +627,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="Nome do órgão ou departamento"
                   value={billingDetailsPJ.orgDepartment || ""}
+                  disabled={isReadOnly}
                   onChange={(e) =>
                     handleBillingDetailsPJChange(
                       "orgDepartment",
@@ -632,6 +650,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="CNPJ"
                   value={billingDetailsPJ.orgCnpj || ""}
+                  disabled={isReadOnly}
                   onValueChange={(values) => {
                     const { value } = values;
                     handleBillingDetailsPJChange("orgCnpj", value);
@@ -664,6 +683,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="Telefone da organização"
                   value={billingDetailsPJ.orgPhone || ""}
+                  disabled={isReadOnly}
                   onValueChange={(values) => {
                     const { value } = values;
                     handleBillingDetailsPJChange("orgPhone", value);
@@ -709,6 +729,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="CEP"
                   value={billingDetailsPJ.orgZip || ""}
+                  disabled={isReadOnly}
                   onValueChange={(values) => {
                     const { value } = values;
                     handleBillingDetailsPJChange("orgZip", value);
@@ -773,7 +794,7 @@ export default function BillingDetails() {
                     handleBillingDetailsPJChange("orgState", newValue || "")
                   }
                   loading={statesState.statesLoading}
-                  disabled={statesState.statesLoading}
+                  disabled={isReadOnly || statesState.statesLoading}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -813,6 +834,7 @@ export default function BillingDetails() {
                   }
                   loading={municipalitiesState.municipalitiesLoading}
                   disabled={
+                    isReadOnly ||
                     municipalitiesState.municipalities.length === 0 ||
                     municipalitiesState.municipalitiesLoading
                   }
@@ -849,6 +871,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="Logradouro da organização"
                   value={billingDetailsPJ.orgAddress || ""}
+                  disabled={isReadOnly}
                   onChange={(e) =>
                     handleBillingDetailsPJChange("orgAddress", e.target.value)
                   }
@@ -873,6 +896,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="Nome do responsável"
                   value={billingDetailsPJ.responsibleName || ""}
+                  disabled={isReadOnly}
                   onChange={(e) =>
                     handleBillingDetailsPJChange(
                       "responsibleName",
@@ -894,6 +918,7 @@ export default function BillingDetails() {
                   label="Email do responsável"
                   type="email"
                   value={billingDetailsPJ.responsibleEmail || ""}
+                  disabled={isReadOnly}
                   onChange={(e) =>
                     handleBillingDetailsPJChange("responsibleEmail", e.target.value)
                   }
@@ -909,6 +934,7 @@ export default function BillingDetails() {
                   fullWidth
                   label="Telefone do responsável"
                   value={billingDetailsPJ.responsiblePhone || ""}
+                  disabled={isReadOnly}
                   onValueChange={(values) => {
                     const { value } = values;
                     handleBillingDetailsPJChange("responsiblePhone", value);
@@ -961,6 +987,7 @@ export default function BillingDetails() {
                     control={
                       <Checkbox
                         checked={billingDetailsPJ.paymentByCommitment || false}
+                        disabled={isReadOnly}
                         onChange={(e) => {
                           const checked = e.target.checked;
                           handleBillingDetailsPJChange(
@@ -1040,7 +1067,7 @@ export default function BillingDetails() {
             variant="contained"
             size="large"
             onClick={handleCreateCheckout}
-            disabled={loading || !isFormValid()}
+            disabled={isReadOnly || loading || !isFormValid()}
             sx={{
               width: { xs: "100%", sm: "auto" },
               flex: { xs: "1 1 100%", sm: 1 },
