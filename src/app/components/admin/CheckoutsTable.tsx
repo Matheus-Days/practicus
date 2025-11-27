@@ -184,7 +184,10 @@ export default function CheckoutsTable() {
     ): string | number => {
       switch (property) {
         case "acquiredBy":
-          return getCheckoutName(checkout).toLowerCase();
+          return getCheckoutName(checkout)
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, " "); // Normaliza múltiplos espaços em um único espaço
         case "createdAt":
           const date = checkout.createdAt;
           if (!date) return 0;

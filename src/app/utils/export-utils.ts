@@ -51,10 +51,11 @@ export const formatOrganizationName = (
   orgDepartment?: string
 ): string => {
   if (!orgName) return "";
+  const trimmedOrgName = orgName.trim();
   if (orgDepartment && orgDepartment.trim()) {
-    return `${orgName} - ${orgDepartment}`;
+    return `${trimmedOrgName} - ${orgDepartment.trim()}`;
   }
-  return orgName;
+  return trimmedOrgName;
 };
 
 export const getCheckoutStatusDisplay = (status: string) => {
