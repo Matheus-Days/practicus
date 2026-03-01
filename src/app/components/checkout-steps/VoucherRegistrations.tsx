@@ -8,6 +8,10 @@ import {
   Typography,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Table,
   TableBody,
   TableCell,
@@ -29,26 +33,67 @@ import {
   Cancel as CancelIcon,
   Pending as PendingIcon,
 } from "@mui/icons-material";
-import { useCheckout } from "../../contexts/CheckoutContext";
+import { useBuyer } from "../../contexts/BuyerContext";
 import {
   RegistrationMinimal,
   useRegistrationAPI,
 } from "../../hooks/registrationAPI";
-import { RegistrationStatus } from "../../api/registrations/registration.types";
+import {
+  RegistrationFormData,
+  RegistrationStatus,
+} from "../../api/registrations/registration.types";
 import { useVoucherCalculations } from "../../hooks/useVoucherCalculations";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
+import RegistrationForm from "../RegistrationForm";
+import { Add as AddIcon } from "@mui/icons-material";
 
 export default function VoucherRegistrations() {
-  const { checkout, checkoutRegistrations } = useCheckout();
+  const {
+    checkout,
+    checkoutRegistrations,
+    createCheckoutRegistration,
+    event,
+    loading: buyerLoading,
+  } = useBuyer();
   const { updateRegistrationStatus } = useRegistrationAPI();
   const { availableRegistrations } = useVoucherCalculations();
 
   const [loading, setLoading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createFormData, setCreateFormData] = useState<
+    Partial<RegistrationFormData>
+  >({});
+  const [createIsValid, setCreateIsValid] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     "success" | "error" | "info"
   >("success");
+
+  const handleOpenCreate = () => {
+    setCreateError(null);
+    setCreateIsValid(false);
+    setCreateFormData({});
+    setCreateOpen(true);
+  };
+
+  const handleCreate = async () => {
+    try {
+      setCreateError(null);
+      setCreating(true);
+      await createCheckoutRegistration(createFormData as RegistrationFormData);
+      setCreateOpen(false);
+      setSnackbarMessage("Inscrição criada com sucesso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Erro ao criar inscrição";
+      setCreateError(msg);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const handleActivateRegistration = async (registrationId: string) => {
     try {
@@ -101,7 +146,7 @@ export default function VoucherRegistrations() {
     if (!checkout) return false;
 
     // Não pode ativar se o checkout for deleted ou refunded
-    if (checkout.status === "deleted" || checkout.status === "refunded") {
+    if (checkout.status === "refunded") {
       return false;
     }
 
@@ -121,10 +166,7 @@ export default function VoucherRegistrations() {
     }
 
     // Não pode desativar se o checkout for deleted ou refunded
-    if (
-      checkout &&
-      (checkout.status === "deleted" || checkout.status === "refunded")
-    ) {
+    if (checkout && checkout.status === "refunded") {
       return false;
     }
 
@@ -166,16 +208,16 @@ export default function VoucherRegistrations() {
     }
   };
 
-  // Não mostrar o componente se:
-  // - não houver registrations além da própria
-  // - checkout estiver pendente e não for um checkout de empenho
-  if (
-    checkoutRegistrations.filter((reg) => !reg.isMyRegistration).length === 0 ||
-    !checkout ||
-    (checkout.status === "pending" && !isPaymentByCommitment(checkout))
-  ) {
+  if (!checkout) {
     return null;
   }
+
+  const canCreateRegistration =
+    availableRegistrations > 0 &&
+    checkout.status !== "refunded" &&
+    !creating &&
+    !buyerLoading &&
+    event?.status === "open";
 
   return (
     <>
@@ -185,17 +227,29 @@ export default function VoucherRegistrations() {
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1,
+              justifyContent: "space-between",
               mb: 2,
               flexDirection: { xs: "column", sm: "row" },
               textAlign: { xs: "center", sm: "left" },
             }}
           >
-            <GroupIcon color="primary" />
-            <Typography variant="h6" component="h3">
-              Inscritos via voucher
-            </Typography>
-            {loading && <CircularProgress size={20} sx={{ ml: 1 }} />}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <GroupIcon color="primary" />
+              <Typography variant="h6" component="h3">
+                Inscrições realizadas
+              </Typography>
+              {loading && <CircularProgress size={20} sx={{ ml: 1 }} />}
+            </Box>
+
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleOpenCreate}
+              disabled={!canCreateRegistration}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
+              Nova inscrição
+            </Button>
           </Box>
 
           {loading ? (
@@ -264,7 +318,17 @@ export default function VoucherRegistrations() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {checkoutRegistrations
+                    {checkoutRegistrations.filter((reg) => !reg.isMyRegistration)
+                      .length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4}>
+                          <Typography variant="body2" color="text.secondary">
+                            Nenhuma inscrição por voucher realizada ainda.
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      checkoutRegistrations
                       .filter((reg) => !reg.isMyRegistration)
                       .map((reg) => {
                         const statusInfo = getRegistrationStatusInfo(reg);
@@ -370,7 +434,8 @@ export default function VoucherRegistrations() {
                             </TableCell>
                           </TableRow>
                         );
-                      })}
+                      })
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -393,6 +458,46 @@ export default function VoucherRegistrations() {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      <Dialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Nova inscrição</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            {createError ? (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {createError}
+              </Alert>
+            ) : null}
+            <RegistrationForm
+              initialData={createFormData}
+              onDataChange={setCreateFormData}
+              onValidationChange={setCreateIsValid}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setCreateOpen(false)}
+            disabled={creating || buyerLoading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreate}
+            disabled={creating || buyerLoading || !createIsValid}
+            startIcon={creating ? <CircularProgress size={18} /> : undefined}
+          >
+            {creating ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

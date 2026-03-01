@@ -34,6 +34,7 @@ import { useVoucherPDF } from '../../hooks/useVoucherPDF';
 import { formatCNPJ, formatOrganizationName } from '../../utils/export-utils';
 import { formatCEP } from '../../utils/cep-utils';
 import { formatPhone } from '../../utils/phone-utils';
+import CheckoutRegistrationsManagerDialog from './CheckoutRegistrationsManagerDialog';
 
 interface CheckoutDetailsDialogProps {
   open: boolean;
@@ -171,6 +172,7 @@ export default function CheckoutDetailsDialog({
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [registrationsManagerOpen, setRegistrationsManagerOpen] = useState(false);
   
   // Estados para edição de cortesias
   const [complimentaryValue, setComplimentaryValue] = useState<number>(0);
@@ -310,15 +312,21 @@ export default function CheckoutDetailsDialog({
           color: "warning" as const,
           icon: <PendingIcon />,
         };
-      case "completed":
+      case "approved":
         return {
-          text: "Concluído",
+          text: "Aprovado",
+          color: "info" as const,
+          icon: <CheckCircleIcon />,
+        };
+      case "paid":
+        return {
+          text: "Pago",
           color: "success" as const,
           icon: <CheckCircleIcon />,
         };
-      case "deleted":
+      case "refunded":
         return {
-          text: "Cancelado",
+          text: "Reembolsado",
           color: "error" as const,
           icon: <CancelIcon />,
         };
@@ -389,6 +397,16 @@ export default function CheckoutDetailsDialog({
 
           {checkout && !loading && (
             <Box>
+              <Box mb={2} display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
+                <Button
+                  variant="outlined"
+                  onClick={() => setRegistrationsManagerOpen(true)}
+                  disabled={!checkout}
+                >
+                  Gerenciar inscrições desta compra
+                </Button>
+              </Box>
+
               {/* Status e Download PDF */}
               <Box mb={3} display="grid" gridTemplateColumns="1fr 1fr" gap={3} alignItems="flex-start">
                 <Box>
@@ -668,6 +686,14 @@ export default function CheckoutDetailsDialog({
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      {checkout ? (
+        <CheckoutRegistrationsManagerDialog
+          open={registrationsManagerOpen}
+          onClose={() => setRegistrationsManagerOpen(false)}
+          checkout={checkout}
+        />
+      ) : null}
     </>
   );
 }

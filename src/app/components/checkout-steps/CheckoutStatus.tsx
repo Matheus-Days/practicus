@@ -6,7 +6,7 @@ import {
   Cancel as CancelIcon,
   Pending as PendingIcon,
 } from "@mui/icons-material";
-import { useCheckout } from "../../contexts/CheckoutContext";
+import { useBuyer } from "../../contexts/BuyerContext";
 
 type StatusInfo = {
   label: string;
@@ -16,7 +16,7 @@ type StatusInfo = {
 };
 
 export default function CheckoutStatus() {
-  const { checkout, registration } = useCheckout();
+  const { checkout, registration } = useBuyer();
 
   if (!checkout) return null;
 
@@ -36,14 +36,15 @@ export default function CheckoutStatus() {
             ? "Aguardando confirmação do pagamento."
             : "O voucher para as inscrições será liberado após a aprovação do pagamento.",
         };
-      case "completed":
+      case "approved":
+      case "paid":
         return {
-          label: "concluída",
+          label: "paga",
           color: "success" as const,
           icon: <CheckCircleIcon color="success" />,
           description: onlyRegistrateMylself
-            ? "Seu pagamento foi aprovado e a vaga no evento foi confirmada e garantida."
-            : "Seu pagamento foi aprovado e as vagas no evento foram confirmadas e garantidas.",
+            ? "Seu pagamento foi aprovado e a vaga no evento está confirmada e garantida."
+            : "Seu pagamento foi aprovado e as vagas no evento estão confirmadas e garantidas.",
         };
       case "refunded":
         return {
@@ -65,12 +66,9 @@ export default function CheckoutStatus() {
   };
 
   const getCheckoutByCommitmentStatusInfo = (): StatusInfo | null => {
-    if (!checkout.billingDetails) return null;
-    if (!("paymentByCommitment" in checkout.billingDetails)) return null;
-    if (!checkout.billingDetails.paymentByCommitment) return null;
-    const paymentStatus = checkout.payment?.status;
+    if (checkout.payment?.method !== "empenho") return null;
 
-    if (paymentStatus === "paid") {
+    if (checkout.status === "paid") {
       return {
         label: "Pagamento recebido",
         color: "success" as const,
@@ -78,7 +76,7 @@ export default function CheckoutStatus() {
         description: "Pagamento do empenho confirmado pela Practicus.",
       };
     }
-    if (paymentStatus === "committed") {
+    if (checkout.status === "approved") {
       return {
         label: "Pagamento empenhado",
         color: "info" as const,
@@ -89,7 +87,6 @@ export default function CheckoutStatus() {
       };
     }
     if (
-      checkout.payment?.method === "empenho" &&
       checkout.payment.commitmentAttachment
     ) {
       return {
@@ -105,63 +102,12 @@ export default function CheckoutStatus() {
       color: "warning" as const,
       icon: <PendingIcon color="warning" />,
       description:
-        "Aguardando envio do recibo de empenho para a Practicus. Clique em <b>'Gerenciar Empenho'</b> abaixo para enviar o recibo.",
+        "Aguardando envio do recibo de empenho para a Practicus. Clique em <b>'Gerenciar empenho'</b> abaixo para enviar o recibo.",
     };
   };
 
-  const getVoucherStatusInfo = (): StatusInfo => {
-    const status = registration ? registration.status : "invalid";
-    switch (status) {
-      case "ok":
-        return {
-          label: "ativa",
-          color: "success" as const,
-          icon: <CheckCircleIcon color="success" />,
-          description:
-            "Inscrição realizada. Você não precisa tomar mais nenhuma ação.",
-        };
-      case "pending":
-        return {
-          label: "suspensa",
-          color: "warning" as const,
-          icon: <PendingIcon color="warning" />,
-          description:
-            "<b>Inscrição suspensa por problemas com a compra.</b> Entre em contato com o responsável pela aquisição.",
-        }
-      case "cancelled":
-        return {
-          label: "desativada",
-          color: "error" as const,
-          icon: <CancelIcon color="error" />,
-          description:
-            "Inscrição desativada e voucher liberado para outra pessoa utilizar. <b>Caso queira reativar sua inscrição, entre em contato com o responsável pela compra.</b>",
-        };
-      case "invalid":
-        return {
-          label: "inválida",
-          color: "default" as const,
-          icon: <CancelIcon color="error" />,
-          description:
-            "<b>O comprador cancelou a compra desta inscrição.</b> Case queira se inscrever de outra forma, delete esta inscrição primeiro.",
-        };
-      default:
-        return {
-          label: "desconhecida",
-          color: "default" as const,
-          icon: <PendingIcon />,
-          description: "Situação desconhecida.",
-        };
-    }
-  };
-
-  let statusInfo: StatusInfo;
-  if (checkout.checkoutType === "voucher") {
-    statusInfo = getVoucherStatusInfo();
-  } else if (getCheckoutByCommitmentStatusInfo()) {
-    statusInfo = getCheckoutByCommitmentStatusInfo()!;
-  } else {
-    statusInfo = getCheckoutStatusInfo();
-  }
+  const statusInfo: StatusInfo =
+    getCheckoutByCommitmentStatusInfo() ?? getCheckoutStatusInfo();
 
   if (checkout.checkoutType === "admin") return null;
 
@@ -194,10 +140,7 @@ export default function CheckoutStatus() {
             component="h2"
             sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem" } }}
           >
-            {checkout.checkoutType === "voucher"
-              ? "Situação da inscrição"
-              : "Situação da aquisição"}
-            : <span className="uppercase">{statusInfo.label}</span>
+            Situação da aquisição: <span className="uppercase">{statusInfo.label}</span>
           </Typography>
         </Box>
         <Typography

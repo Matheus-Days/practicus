@@ -1,4 +1,3 @@
-import { CheckoutDocument } from "../checkouts/checkout.types";
 import { RegistrationDocument, RegistrationFormData } from "../registrations/registration.types";
 
 export type VoucherDocument = {
@@ -25,8 +24,6 @@ export type CreateVoucherCheckoutRequest = {
 }
 
 export type CreateVoucherCheckoutResponse = {
-  checkoutId: string;
-  checkout: CheckoutDocument;
   registrationId: string;
   registration: RegistrationDocument;
 }

@@ -58,7 +58,7 @@ export async function PUT(
     const registration = registrationDoc.data() as RegistrationDocument;
 
     // Verificar permissões: apenas o dono da inscrição ou um admin pode atualizar
-    if (registration.userId !== authenticatedUser.uid) {
+    if (registration.attendeeUserId !== authenticatedUser.uid) {
       isAdmin = await isUserAdmin(authenticatedUser, firestore);
       if (!isAdmin) {
         return createErrorResponse(

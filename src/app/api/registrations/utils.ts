@@ -6,7 +6,6 @@ import {
   UpdateRegistrationStatusRequest,
 } from "./registration.types";
 import { CheckoutDocument } from "../checkouts/checkout.types";
-import { createCheckoutDocumentId } from "../checkouts/utils";
 
 export type CanActivateRegistrationResult =
   | {
@@ -21,9 +20,7 @@ export type CanActivateRegistrationResult =
 export async function canActivateRegistration(
   checkoutDoc: DocumentSnapshot,
   registration: RegistrationDocument,
-  isAdmin: boolean,
   firestore: Firestore,
-  registrationId: string
 ): Promise<CanActivateRegistrationResult> {
   try {
     if (!checkoutDoc.exists) {
@@ -36,28 +33,25 @@ export async function canActivateRegistration(
 
     const checkout = checkoutDoc.data() as CheckoutDocument;
 
-    // Verificar se a compra está finalizada e válida
-    if (checkout.status !== "completed" && checkout.status !== "pending") {
+    // Verificar se a compra está finalizada e válida (pending, approved, paid)
+    if (checkout.status === "refunded") {
       return {
         canActivate: false,
-        error: "Não é possível ativar uma inscrição cuja compra foi cancelada.",
+        error: "Não é possível ativar uma inscrição cuja compra foi estornada.",
         errorCode: 403,
       };
     }
 
-    // A ordem dessa verificação é importante: se o usuário for admin, ele pode ativar a inscrição mesmo que a compra não tenha vagas disponíveis
-    if (isAdmin) return { canActivate: true };
-
-    // Verificar se o usuário está tentando reativar sua própria inscrição (não permitido)
-    if (registrationId !== registration.checkoutId) {
+    // Verificações de consistência do modelo V2 (aplicam-se a todos, inclusive admin)
+    if (!registration.checkoutId) {
       return {
         canActivate: false,
-        error: "Você não pode reativar sua própria inscrição. Apenas o responsável pela compra pode fazer isso.",
+        error: "Inscrição não está vinculada a uma aquisição",
         errorCode: 403,
       };
     }
 
-    // Verificar se a compra possui um número de inscrições (checkouts do tipo "voucher" não devem ser 'pais' de uma inscrição)
+    // Verificar se a compra possui um número de inscrições
     if (!checkout.amount) {
       return {
         canActivate: false,
@@ -104,7 +98,6 @@ export function validateCreateRegistration(
     data.eventId &&
     data.fullName &&
     data.phone &&
-    data.userId &&
     data.credentialName &&
     data.email &&
     data.useImage
@@ -120,12 +113,12 @@ export function extractCreateRegistrationDataFromRequestBody(
 ): CreateRegistrationRequest {
   const {
     checkoutId,
+    attendeeUserId,
     cpf,
     eventId,
     fullName,
     isPhoneWhatsapp,
     phone,
-    userId,
     credentialName,
     email,
     howDidYouHearAboutUs,
@@ -136,12 +129,12 @@ export function extractCreateRegistrationDataFromRequestBody(
 
   return {
     checkoutId,
+    attendeeUserId,
     cpf,
     eventId,
     fullName,
     isPhoneWhatsapp,
     phone,
-    userId,
     credentialName,
     email,
     howDidYouHearAboutUs,
@@ -154,19 +147,25 @@ export function extractCreateRegistrationDataFromRequestBody(
 export function validateUpdateRegistration(
   data: UpdateRegistrationRequest
 ): data is UpdateRegistrationRequest {
-  if (
-    data.cpf &&
-    data.fullName &&
-    data.isPhoneWhatsapp &&
-    data.phone &&
-    data.credentialName &&
-    data.email &&
-    data.useImage
-  ) {
-    return true;
-  }
+  const hasCpf = typeof data.cpf === "string" && data.cpf.trim() !== "";
+  const hasFullName = typeof data.fullName === "string" && data.fullName.trim() !== "";
+  const hasPhone = typeof data.phone === "string" && data.phone.trim() !== "";
+  const hasCredentialName =
+    typeof data.credentialName === "string" && data.credentialName.trim() !== "";
+  const hasEmail = typeof data.email === "string" && data.email.trim() !== "";
 
-  return false;
+  const hasIsPhoneWhatsapp = typeof data.isPhoneWhatsapp === "boolean";
+  const hasUseImage = typeof data.useImage === "boolean";
+
+  return (
+    hasCpf &&
+    hasFullName &&
+    hasPhone &&
+    hasCredentialName &&
+    hasEmail &&
+    hasIsPhoneWhatsapp &&
+    hasUseImage
+  );
 }
 
 export function extractUpdateRegistrationDataFromRequestBody(
@@ -222,5 +221,7 @@ export function generateRegistrationDocumentId(
   eventId: string,
   userId: string
 ): string {
-  return createCheckoutDocumentId(eventId, userId);
+  throw new Error(
+    `generateRegistrationDocumentId is deprecated in schema V2 (eventId=${eventId}, userId=${userId})`
+  );
 }

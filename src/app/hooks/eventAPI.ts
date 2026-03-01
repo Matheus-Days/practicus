@@ -123,8 +123,9 @@ export const useEventAPI = () => {
       checkoutType: "admin",
       eventId,
       userId: auth.currentUser.uid,
-      status: "completed",
+      status: "paid",
       voucher: voucherRef.id,
+      payment: { method: "card", value: 0, status: "paid" },
     } as CheckoutDocument);
 
     batch.set(voucherRef, {

@@ -13,13 +13,12 @@ import { VoucherData } from "../hooks/voucherAPI";
 import { EventData } from "../types/events";
 
 export type CheckoutStep =
-  | "select-type" // Selecionar tipo de checkout (acquire ou voucher)
+  | "select-type" // Nome legado, agora é a tela inicial do fluxo de compra
   | "select-legal-entity" // Selecionar PF ou PJ
-  | "voucher-validation" // Para voucher: digitar código do voucher
   | "billing-details" // Para PF ou PJ: preencher dados de faturamento, quantidade de inscrições e se é `registrateMyself`
-  | "registration-form" // Quando `registrateMyself` é true ou checkoutType é "voucher": preencher dados do participante
-  | "overview" // Visualizar dados do checkout (se checkoutType é "acquire") e dados de inscrição se `registrateMyself` é true ou checkoutType é "voucher", podendo voltar para editar
-  | "payment" // Se checkoutType é "acquire": tela com vários estados de fluxo de pagamento, é chamada após o overview se o pagamento estiver pendente
+  | "registration-form" // Quando `registrateMyself` é true: preencher dados do participante
+  | "overview" // Visualizar dados do checkout e dados de inscrição se `registrateMyself` é true, podendo voltar para editar
+  | "payment" // Tela com vários estados de fluxo de pagamento, é chamada após o overview se o pagamento estiver pendente
   | "commitment"; // Para pagamento por empenho: gerenciar dados do empenho
 
 export type CheckoutData = CheckoutDocument & {
@@ -66,6 +65,7 @@ export interface CheckoutContextType {
     registrationData: RegistrationFormData,
     voucherId?: string
   ) => Promise<void>;
+  createCheckoutRegistration: (registrationData: RegistrationFormData) => Promise<void>;
   updateRegistration: (updateData: Partial<RegistrationFormData>) => Promise<void>;
   updateRegistrationStatus: (registrationId: string, status: RegistrationData["status"]) => Promise<RegistrationResponse>;
   // Funções de voucher

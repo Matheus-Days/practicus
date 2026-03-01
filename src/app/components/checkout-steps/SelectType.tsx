@@ -1,6 +1,7 @@
 "use client";
 
-import { useCheckout } from "../../contexts/CheckoutContext";
+import Link from "next/link";
+import { useBuyer } from "../../contexts/BuyerContext";
 import {
   Box,
   Typography,
@@ -9,11 +10,9 @@ import {
   CardActionArea,
   ChipOwnProps,
   Alert,
+  Button,
 } from "@mui/material";
-import {
-  ShoppingCart as ShoppingCartIcon,
-  ConfirmationNumber as VoucherIcon,
-} from "@mui/icons-material";
+import { ShoppingCart as ShoppingCartIcon } from "@mui/icons-material";
 
 export default function SelectType() {
   const { 
@@ -21,9 +20,16 @@ export default function SelectType() {
     setCurrentStep, 
     isEventClosed, 
     checkout, 
-  } = useCheckout();
+    registration,
+    eventId,
+  } = useBuyer();
 
-  const hasValidCheckout = checkout !== null && checkout.status !== "deleted";
+  const hasValidCheckout = checkout !== null;
+  const hasVoucherRegistration =
+    Boolean(registration) &&
+    !registration?.checkoutId &&
+    registration?.status !== "cancelled" &&
+    registration?.status !== "invalid";
 
   if (isEventClosed && !hasValidCheckout) {
     return (
@@ -40,13 +46,39 @@ export default function SelectType() {
     );
   }
 
-  const handleSelectType = (type: "acquire" | "voucher") => {
+  // TODO: verificar se esse trecho de código não querbrou o fluxo do comprador
+  if (hasVoucherRegistration && !hasValidCheckout) {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: { xs: 2, sm: 3 } }}>
+        <Alert severity="warning">
+          <Typography variant="h6" gutterBottom>
+            Compra indisponível para esta conta
+          </Typography>
+          <Typography variant="body2">
+            Detectamos que você já possui uma inscrição ativa neste evento via voucher.
+            Para gerenciar seus dados, acesse o fluxo de inscrição.
+          </Typography>
+          <Box sx={{ mt: 1 }}>
+            <Button
+              component={Link}
+              href={`/evento/${eventId}/inscricao`}
+              variant="outlined"
+              size="small"
+              sx={{ textTransform: "none" }}
+            >
+              Ir para minha inscrição
+            </Button>
+          </Box>
+        </Alert>
+      </Box>
+    );
+  }
+
+  const handleSelectType = (type: "acquire") => {
     setCheckoutType(type);
 
     if (type === "acquire") {
       setCurrentStep("billing-details");
-    } else {
-      setCurrentStep("voucher-validation");
     }
   };
 
@@ -62,43 +94,29 @@ export default function SelectType() {
       icon: ShoppingCartIcon,
       color: "primary",
       features: [
-        "Inscreva-se ou adquira para outros",
+        "Adquira para si mesmo ou para outros",
         "Pessoas físicas ou jurídicas",
-        "Inscrições liberadas após aprovação",
-      ],
-    },
-    {
-      type: "voucher" as const,
-      title: "Usar voucher",
-      description: "Alguém já reservou meu ingresso",
-      icon: VoucherIcon,
-      color: "secondary" as const,
-      features: [
-        "Sem custos adicionais",
-        "Código de voucher",
-        "Validação instantânea",
+        "Inscrições garantidas após aprovação",
       ],
     },
   ];
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: { xs: 2, sm: 3 } }}>
-      <Box sx={{ textAlign: "center", mb: 2 }}>
-        <Typography 
-          variant="h4" 
-          component="h1" 
-          gutterBottom
-          sx={{ 
-            fontSize: { xs: "1.75rem", sm: "2.125rem" },
-            textAlign: { xs: "center", sm: "left" }
-          }}
-        >
-          Como você gostaria de se inscrever?
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Escolha a opção que melhor se adequa à sua situação
-        </Typography>
-      </Box>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <Alert severity="info">
+        Tem voucher? O fluxo de inscrição por voucher agora fica na página de inscrição do evento.
+        <Box sx={{ mt: 1 }}>
+          <Button
+            component={Link}
+            href={`/evento/${eventId}/inscricao`}
+            variant="outlined"
+            size="small"
+            sx={{ textTransform: "none" }}
+          >
+            Ir para inscrição por voucher
+          </Button>
+        </Box>
+      </Alert>
 
       <Box
         sx={{

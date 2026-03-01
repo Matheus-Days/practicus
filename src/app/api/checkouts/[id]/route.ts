@@ -5,16 +5,18 @@ import {
   validateUpdateCheckoutRequest,
   extractUpdateCheckoutDataFromRequestBody,
 } from "../utils";
-import { CheckoutDocument, UpdateCheckoutRequest } from "../checkout.types";
+import {
+  CheckoutDocument,
+  DeletedCheckoutDocument,
+  UpdateCheckoutRequest,
+} from "../checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
 import {
   createErrorResponse,
   createSuccessResponse,
-  getRegistrationStatusFromCheckoutStatusChange,
+  isUserAdmin,
 } from "../../utils";
 import { NextResponse } from "next/server";
-import { RegistrationDocument } from "../../registrations/registration.types";
-import { VoucherDocument } from "../../voucher/voucher.types";
 import { EventDocument } from "../../../types/events";
 import { calculateTotalPurchasePrice } from "../../../../lib/checkout-utils";
 
@@ -96,14 +98,13 @@ export async function PUT(
   }
 }
 
-// DELETE /api/checkouts/[id] - Deletar checkout específico
+// DELETE /api/checkouts/[id] - Cancel checkout (admin or buyer). Archives in deletedCheckouts, invalidates registrations, then removes from checkouts.
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     let authenticatedUser: DecodedIdToken;
-
     try {
       authenticatedUser = await validateAuth(request);
     } catch (authError) {
@@ -114,49 +115,61 @@ export async function DELETE(
     }
 
     const { id } = params;
+    const checkoutRef = firestore.collection("checkouts").doc(id);
+    const checkoutSnap = await checkoutRef.get();
 
-    const checkoutDoc = await firestore.collection("checkouts").doc(id).get();
-    const checkoutData = checkoutDoc.data() as CheckoutDocument;
+    if (!checkoutSnap.exists) {
+      return createErrorResponse("Compra não encontrada", 404);
+    }
 
-    if (checkoutData.userId !== authenticatedUser.uid) {
+    const checkoutData = checkoutSnap.data() as CheckoutDocument;
+    const isAdmin = await isUserAdmin(authenticatedUser, firestore);
+    const isBuyer = checkoutData.userId === authenticatedUser.uid;
+
+    if (!isAdmin && !isBuyer) {
       return createErrorResponse(
-        "Usuário não tem permissão para deletar esta aquisição",
+        "Acesso negado. Apenas o comprador ou um administrador podem cancelar esta compra.",
         403
       );
     }
 
-    await firestore.collection("checkouts").doc(id).update({
-      status: "deleted",
-      deletedAt: new Date(),
-    });
-
-    const checkoutsOwnRegistration = await firestore
-      .collection("registrations")
-      .doc(checkoutDoc.id)
-      .get();
-    if (checkoutsOwnRegistration.exists) {
-      await checkoutsOwnRegistration.ref.update({
-        status: "invalid",
-        updatedAt: new Date(),
-      });
+    if (isBuyer && !isAdmin) {
+      const eventSnap = await firestore
+        .collection("events")
+        .doc(checkoutData.eventId)
+        .get();
+      if (!eventSnap.exists) {
+        return createErrorResponse("Evento não encontrado.", 404);
+      }
+      const eventData = eventSnap.data() as EventDocument;
+      if (eventData.status !== "open") {
+        return createErrorResponse(
+          "Só é possível cancelar a compra enquanto o evento estiver em aberto.",
+          403
+        );
+      }
     }
+
+    const deletedAt = new Date();
+
+    const deletedCheckout: DeletedCheckoutDocument = {
+      ...checkoutData,
+      deletedAt,
+    };
 
     const registrationsQuery = await firestore
       .collection("registrations")
-      .where("checkoutId", "==", checkoutDoc.id)
+      .where("checkoutId", "==", id)
       .get();
 
     const batch = firestore.batch();
-    registrationsQuery.forEach((doc) => {
-      const registrationData = doc.data() as RegistrationDocument;
-      const newStatus = getRegistrationStatusFromCheckoutStatusChange(
-        "deleted",
-        registrationData.status
-      );
-      batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
+    registrationsQuery.docs.forEach((regDoc) => {
+      batch.update(regDoc.ref, { status: "invalid", updatedAt: deletedAt });
     });
-
     await batch.commit();
+
+    await firestore.collection("deletedCheckouts").doc(id).set(deletedCheckout);
+    await checkoutRef.delete();
 
     return new NextResponse(undefined, { status: 204 });
   } catch (error) {

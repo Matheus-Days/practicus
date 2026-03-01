@@ -15,7 +15,6 @@ import {
   RegistrationStatus,
   UpdateRegistrationRequest,
 } from "../api/registrations/registration.types";
-import { generateRegistrationDocumentId } from "../api/registrations/utils";
 
 export type RegistrationData = RegistrationDocument & {
   id: string;
@@ -77,18 +76,18 @@ export const useRegistrationAPI = () => {
       userUid: string
     ): Promise<RegistrationData | null> => {
       try {
-        const registrationId = generateRegistrationDocumentId(eventId, userUid);
-        const registrationRef = doc(firestore, "registrations", registrationId);
-        const registrationDoc = await getDoc(registrationRef);
+        const registrationsRef = collection(firestore, "registrations");
+        const q = query(
+          registrationsRef,
+          where("eventId", "==", eventId),
+          where("attendeeUserId", "==", userUid)
+        );
 
-        if (registrationDoc.exists()) {
-          return {
-            id: registrationDoc.id,
-            ...registrationDoc.data(),
-          } as RegistrationData;
-        }
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) return null;
 
-        return null;
+        const docSnap = snapshot.docs[0];
+        return { id: docSnap.id, ...docSnap.data() } as RegistrationData;
       } catch (error) {
         console.error("Erro ao buscar inscrição:", error);
         throw error;
@@ -143,7 +142,9 @@ export const useRegistrationAPI = () => {
             fullName: data.fullName,
             email: data.email,
             status: data.status,
-            isMyRegistration: doc.id === checkoutId,
+            // No V2, quem decide "minha" é o buyer do checkout (comparando com checkout.userId).
+            // Aqui não temos o checkout carregado, então definimos false e deixamos os contexts/listeners enriquecerem isso.
+            isMyRegistration: false,
           });
         });
 
@@ -163,8 +164,42 @@ export const useRegistrationAPI = () => {
       eventId: string,
       updateData: UpdateRegistrationRequest
     ): Promise<RegistrationResponse> => {
-      const registrationId = generateRegistrationDocumentId(eventId, userId);
+      // V2: buscar a inscrição do attendee por query e atualizar por ID
+      const registrationsRef = collection(firestore, "registrations");
+      const q = query(
+        registrationsRef,
+        where("eventId", "==", eventId),
+        where("attendeeUserId", "==", userId)
+      );
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        throw new Error("Inscrição não encontrada");
+      }
+      const registrationId = snapshot.docs[0].id;
 
+      const response = await makeAuthenticatedRequest(
+        `/api/registrations/${registrationId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(updateData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error((await response.json()).error);
+      }
+
+      return await response.json();
+    },
+    [makeAuthenticatedRequest]
+  );
+
+  // UPDATE - Atualizar inscrição por ID (para admin/fluxos avançados)
+  const updateRegistrationById = useCallback(
+    async (
+      registrationId: string,
+      updateData: UpdateRegistrationRequest
+    ): Promise<RegistrationResponse> => {
       const response = await makeAuthenticatedRequest(
         `/api/registrations/${registrationId}`,
         {
@@ -233,6 +268,7 @@ export const useRegistrationAPI = () => {
     getCheckoutRegistrations,
     listRegistrationsByEvent,
     updateRegistration,
+    updateRegistrationById,
     updateRegistrationStatus,
   };
 };

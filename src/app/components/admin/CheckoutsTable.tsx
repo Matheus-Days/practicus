@@ -40,17 +40,15 @@ import { useAdminContext } from "../../contexts/AdminContext";
 import { CheckoutData } from "../../types/checkout";
 import {
   CheckoutStatus,
-  CommitmentPayment,
+  Payment as CheckoutPayment,
 } from "../../api/checkouts/checkout.types";
-import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
-import Commitment from "../Commitment";
+import Payment from "../Payment";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
 import {
   formatCheckoutForExport,
   formatOrganizationName,
 } from "../../utils/export-utils";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function CheckoutsTable() {
   const {
@@ -58,11 +56,13 @@ export default function CheckoutsTable() {
     loadingCheckouts,
     selectedEvent,
     updateCheckoutStatus,
+    deleteCheckout,
     updateComplimentaryTickets,
     loadingComplimentaryUpdate,
     updateTotalValue,
     loadingTotalValueUpdate,
     loadingCheckoutStatusUpdate,
+    loadingCheckoutDelete,
     user,
   } = useAdminContext();
 
@@ -72,8 +72,8 @@ export default function CheckoutsTable() {
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState(false);
   const [selectedCheckoutForDialog, setSelectedCheckoutForDialog] =
     React.useState<CheckoutData | null>(null);
-  const [commitmentDialogOpen, setCommitmentDialogOpen] = React.useState(false);
-  const [selectedCheckoutForCommitment, setSelectedCheckoutForCommitment] =
+  const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
+  const [selectedCheckoutForPayment, setSelectedCheckoutForPayment] =
     React.useState<CheckoutData | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("valid");
   const [orderBy, setOrderBy] = useState<string>("");
@@ -104,14 +104,14 @@ export default function CheckoutsTable() {
     setSelectedCheckoutForDialog(null);
   };
 
-  const handleOpenCommitmentDialog = (checkout: CheckoutData) => {
-    setSelectedCheckoutForCommitment(checkout);
-    setCommitmentDialogOpen(true);
+  const handleOpenPaymentDialog = (checkout: CheckoutData) => {
+    setSelectedCheckoutForPayment(checkout);
+    setPaymentDialogOpen(true);
   };
 
-  const handleCommitmentDialogClose = () => {
-    setCommitmentDialogOpen(false);
-    setSelectedCheckoutForCommitment(null);
+  const handlePaymentDialogClose = () => {
+    setPaymentDialogOpen(false);
+    setSelectedCheckoutForPayment(null);
   };
 
   const handleStatusFilterChange = (event: any) => {
@@ -140,14 +140,14 @@ export default function CheckoutsTable() {
         case "pending":
           statusDisplay = "Pendentes";
           break;
-        case "completed":
-          statusDisplay = "Concluídas";
+        case "approved":
+          statusDisplay = "Aprovadas";
+          break;
+        case "paid":
+          statusDisplay = "Pagas";
           break;
         case "refunded":
           statusDisplay = "Reembolsadas";
-          break;
-        case "deleted":
-          statusDisplay = "Canceladas";
           break;
         default:
           statusDisplay = "Inválidas";
@@ -210,7 +210,9 @@ export default function CheckoutsTable() {
     if (statusFilter === "all") {
       // checkouts já filtrados
     } else if (statusFilter === "valid") {
-      checkouts = checkouts.filter((checkout) => checkout.status !== "deleted");
+      checkouts = checkouts.filter(
+        (checkout) => checkout.status !== "refunded"
+      );
     } else {
       checkouts = checkouts.filter(
         (checkout) => checkout.status === statusFilter
@@ -232,44 +234,19 @@ export default function CheckoutsTable() {
     return checkouts;
   }, [eventCheckouts, statusFilter, orderBy, order, user]);
 
-  const handleDeleteCommitmentCheckout = async (checkout: CheckoutData) => {
+  const handleCancelCheckout = async (checkout: CheckoutData) => {
     const confirmed = window.confirm(
-      "Ao cancelar uma aquisição, todas as inscrições confirmadas associadas a ela serão invalidadas. Tem certeza que deseja continuar?"
+      "Ao cancelar uma aquisição, todas as inscrições associadas a ela serão invalidadas e a compra será excluída. Tem certeza que deseja continuar?"
     );
     if (!confirmed) return;
-    await updateCheckoutStatus(checkout.id, "deleted");
+    await deleteCheckout(checkout.id);
+    handleMenuClose();
   };
 
   const handleStatusChange = async (status: CheckoutStatus) => {
-    if (status === "deleted" || status === "refunded") {
+    if (status === "refunded") {
       const confirmed = window.confirm(
-        "Ao cancelar uma aquisição, todas as inscrições confirmadas associadas a ela serão invalidadas. Tem certeza que deseja continuar?"
-      );
-      if (!confirmed) return;
-    }
-    if (
-      status === "pending" &&
-      selectedCheckout?.status === "deleted" &&
-      !isPaymentByCommitment(selectedCheckout)
-    ) {
-      const confirmed = window.confirm(
-        "Ao reativar uma compra cancelada como pendente, todas as inscrições associadas a ela serão reativadas. Tem certeza que deseja continuar?"
-      );
-      if (!confirmed) return;
-    }
-    if (
-      status === "pending" &&
-      selectedCheckout?.status === "deleted" &&
-      isPaymentByCommitment(selectedCheckout)
-    ) {
-      const confirmed = window.confirm(
-        "Ao reativar uma compra por empenho, todas as inscrições associadas a ela se tornarão válidas novamente. Tem certeza que deseja continuar?"
-      );
-      if (!confirmed) return;
-    }
-    if (status === "completed" && selectedCheckout?.status === "deleted") {
-      const confirmed = window.confirm(
-        "Ao reativar uma compra cancelada de marcá-la como concluída, todas as inscrições associadas a ela serão reativadas. Tem certeza que deseja continuar?"
+        "Ao reembolsar, todas as inscrições confirmadas associadas a esta compra serão invalidadas. Tem certeza que deseja continuar?"
       );
       if (!confirmed) return;
     }
@@ -280,13 +257,6 @@ export default function CheckoutsTable() {
   };
 
   const getStatusDisplay = (checkout: CheckoutData) => {
-    if (checkout.status === "deleted") {
-      return {
-        text: "Cancelado",
-        color: "error" as const,
-        icon: <CancelIcon />,
-      };
-    }
     if (checkout.status === "refunded") {
       return {
         text: "Reembolsado",
@@ -294,18 +264,11 @@ export default function CheckoutsTable() {
         icon: <CancelIcon />,
       };
     }
-    if (isPaymentByCommitment(checkout)) {
-      const payment = (checkout.payment as CommitmentPayment) || undefined;
-      if (!payment) {
-        return {
-          text: "Empenho pendente",
-          color: "warning" as const,
-          icon: <PendingIcon />,
-        };
-      }
+    if (checkout.payment?.method === "empenho") {
+      const payment = checkout.payment as CheckoutPayment;
       if (
-        (payment.status === "pending" && payment.commitmentAttachment) ||
-        (payment.status === "committed" && payment.paymentAttachment)
+        (checkout.status === "pending" && payment.commitmentAttachment) ||
+        (checkout.status === "approved" && payment.paymentAttachment)
       ) {
         return {
           text: "Aguardando validação",
@@ -313,21 +276,21 @@ export default function CheckoutsTable() {
           icon: <WarningIcon />,
         };
       }
-      if (payment.status === "pending") {
+      if (checkout.status === "pending") {
         return {
           text: "Empenho pendente",
           color: "warning" as const,
           icon: <PendingIcon />,
         };
       }
-      if (payment.status === "committed") {
+      if (checkout.status === "approved") {
         return {
           text: "Empenhado",
           color: "info" as const,
           icon: <CheckCircleIcon />,
         };
       }
-      if (payment.status === "paid") {
+      if (checkout.status === "paid") {
         return {
           text: "Empenho pago",
           color: "success" as const,
@@ -342,9 +305,16 @@ export default function CheckoutsTable() {
         icon: <PendingIcon />,
       };
     }
-    if (checkout.status === "completed") {
+    if (checkout.status === "approved") {
       return {
-        text: "Concluído",
+        text: "Aprovado",
+        color: "info" as const,
+        icon: <CheckCircleIcon />,
+      };
+    }
+    if (checkout.status === "paid") {
+      return {
+        text: "Pago",
         color: "success" as const,
         icon: <CheckCircleIcon />,
       };
@@ -444,9 +414,9 @@ export default function CheckoutsTable() {
               <MenuItem value="valid">Válidas</MenuItem>
               <MenuItem value="all">Todas</MenuItem>
               <MenuItem value="pending">Pendentes</MenuItem>
-              <MenuItem value="completed">Concluídas</MenuItem>
+              <MenuItem value="approved">Aprovadas</MenuItem>
+              <MenuItem value="paid">Pagas</MenuItem>
               <MenuItem value="refunded">Reembolsadas</MenuItem>
-              <MenuItem value="deleted">Canceladas</MenuItem>
             </Select>
           </FormControl>
 
@@ -556,32 +526,29 @@ export default function CheckoutsTable() {
                         </IconButton>
                       </Tooltip>
 
-                      {isPaymentByCommitment(checkout) &&
-                      checkout.status !== "deleted" ? (
-                        <>
-                          <Button
+                      <Button
+                        size="small"
+                        variant="contained"
+                        startIcon={<ReceiptIcon />}
+                        onClick={() => handleOpenPaymentDialog(checkout)}
+                        color="secondary"
+                        sx={{ minWidth: "auto" }}
+                      >
+                        {checkout.payment?.method === "empenho"
+                          ? "Empenho"
+                          : "Pagamento"}
+                      </Button>
+                      {checkout.payment?.method === "empenho" ? (
+                        <Tooltip title="Cancelar aquisição">
+                          <IconButton
                             size="small"
-                            variant="contained"
-                            startIcon={<ReceiptIcon />}
-                            onClick={() => handleOpenCommitmentDialog(checkout)}
-                            color="secondary"
-                            sx={{ minWidth: "auto" }}
+                            onClick={() => handleCancelCheckout(checkout)}
+                            color="error"
+                            disabled={loadingCheckoutDelete}
                           >
-                            Empenho
-                          </Button>
-                          <Tooltip title="Cancelar aquisição">
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleDeleteCommitmentCheckout(checkout)
-                              }
-                              color="error"
-                              disabled={loadingCheckoutStatusUpdate}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
                       ) : (
                         <Tooltip title="Mais ações">
                           <IconButton
@@ -619,12 +586,12 @@ export default function CheckoutsTable() {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        {/* Marcar como pago / Cancelar reembolso / Reativar como pago - não mostrar se já for completed */}
+        {/* Marcar como pago - pagamento comum, não está pago */}
         {selectedCheckout &&
-          selectedCheckout.status !== "completed" &&
-          !isPaymentByCommitment(selectedCheckout) && (
+          selectedCheckout.status !== "paid" &&
+          selectedCheckout.payment?.method !== "empenho" && (
             <MenuItem
-              onClick={() => handleStatusChange("completed")}
+              onClick={() => handleStatusChange("paid")}
               disabled={loadingCheckoutStatusUpdate}
             >
               <ListItemIcon>
@@ -634,19 +601,16 @@ export default function CheckoutsTable() {
                   <CheckCircleIcon color="success" />
                 )}
               </ListItemIcon>
-              {selectedCheckout.status === "refunded"
-                ? "Cancelar reembolso"
-                : selectedCheckout.status === "deleted"
-                  ? "Reativar como pago"
-                  : "Marcar como pago"}
+              Marcar como pago
             </MenuItem>
           )}
 
-        {/* Reativar aquisição - só mostrar para pagamentos por empenho cancelados */}
-        {selectedCheckout?.status === "deleted" &&
-          isPaymentByCommitment(selectedCheckout) && (
+        {/* Aprovar (reconhecer intenção) - empenho pendente */}
+        {selectedCheckout &&
+          selectedCheckout.payment?.method === "empenho" &&
+          selectedCheckout.status === "pending" && (
             <MenuItem
-              onClick={() => handleStatusChange("pending")}
+              onClick={() => handleStatusChange("approved")}
               disabled={loadingCheckoutStatusUpdate}
             >
               <ListItemIcon>
@@ -656,15 +620,15 @@ export default function CheckoutsTable() {
                   <CheckCircleIcon color="success" />
                 )}
               </ListItemIcon>
-              Reativar
+              Aprovar intenção de pagamento
             </MenuItem>
           )}
 
-        {/* Marcar como pagamento pendente / Reativar como pendente - ocultar se status for refunded ou pending, ou se for pagamento por empenho */}
+        {/* Marcar como pagamento pendente - não empenho, não pendente nem reembolsado */}
         {selectedCheckout &&
           selectedCheckout.status !== "refunded" &&
           selectedCheckout.status !== "pending" &&
-          !isPaymentByCommitment(selectedCheckout) && (
+          selectedCheckout.payment?.method !== "empenho" && (
             <MenuItem
               onClick={() => handleStatusChange("pending")}
               disabled={loadingCheckoutStatusUpdate}
@@ -676,14 +640,13 @@ export default function CheckoutsTable() {
                   <PendingIcon color="warning" />
                 )}
               </ListItemIcon>
-              {selectedCheckout.status === "deleted"
-                ? "Reativar como pendente"
-                : "Marcar como pagamento pendente"}
+              Marcar como pagamento pendente
             </MenuItem>
           )}
 
-        {/* Reembolsar - apenas para compras completed */}
-        {selectedCheckout?.status === "completed" && (
+        {/* Reembolsar - para compras paid ou approved */}
+        {(selectedCheckout?.status === "paid" ||
+          selectedCheckout?.status === "approved") && (
           <MenuItem
             onClick={() => handleStatusChange("refunded")}
             disabled={loadingCheckoutStatusUpdate}
@@ -699,14 +662,14 @@ export default function CheckoutsTable() {
           </MenuItem>
         )}
 
-        {/* Cancelar compra - apenas para compras pending */}
+        {/* Cancelar compra - exclusão real, apenas para pending */}
         {selectedCheckout?.status === "pending" && (
           <MenuItem
-            onClick={() => handleStatusChange("deleted")}
-            disabled={loadingCheckoutStatusUpdate}
+            onClick={() => handleCancelCheckout(selectedCheckout)}
+            disabled={loadingCheckoutDelete}
           >
             <ListItemIcon>
-              {loadingCheckoutStatusUpdate ? (
+              {loadingCheckoutDelete ? (
                 <CircularProgress size={20} />
               ) : (
                 <CancelIcon color="error" />
@@ -729,18 +692,18 @@ export default function CheckoutsTable() {
         loadingTotalValueUpdate={loadingTotalValueUpdate}
       />
 
-      {/* Dialog de gerenciamento de empenho */}
-      {selectedCheckoutForCommitment && (
-        <Commitment
+      {/* Dialog de gerenciamento de pagamento */}
+      {selectedCheckoutForPayment && (
+        <Payment
           checkout={
             eventCheckouts.find(
-              (c) => c.id === selectedCheckoutForCommitment.id
-            ) || selectedCheckoutForCommitment
+              (c) => c.id === selectedCheckoutForPayment.id
+            ) || selectedCheckoutForPayment
           }
           eventId={selectedEvent?.id || ""}
           isAdmin={true}
-          open={commitmentDialogOpen}
-          onClose={handleCommitmentDialogClose}
+          open={paymentDialogOpen}
+          onClose={handlePaymentDialogClose}
         />
       )}
     </Box>

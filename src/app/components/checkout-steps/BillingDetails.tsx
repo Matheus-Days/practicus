@@ -20,7 +20,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { PatternFormat } from "react-number-format";
-import { useCheckout } from "../../contexts/CheckoutContext";
+import { useBuyer } from "../../contexts/BuyerContext";
 import {
   BillingDetailsPF,
   BillingDetailsPJ,
@@ -51,7 +51,7 @@ export default function BillingDetails() {
     setCurrentStep,
     event,
     isEventClosed,
-  } = useCheckout();
+  } = useBuyer();
 
   // Estado para controlar o snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -116,7 +116,7 @@ export default function BillingDetails() {
     legalEntity
   );
 
-  const hasExistingCheckout = checkout && checkout.status !== "deleted";
+  const hasCheckout = !!checkout;
   const isReadOnly = isEventClosed;
 
   // Carregar estados ao montar o componente
@@ -219,7 +219,7 @@ export default function BillingDetails() {
 
   const handleCreateCheckout = async () => {
     try {
-      if (hasExistingCheckout) {
+      if (hasCheckout) {
         // Atualiza checkout existente
         await updateCheckout({
           checkoutType: "acquire",
@@ -1047,7 +1047,7 @@ export default function BillingDetails() {
           }}
         >
           {/* Botão Voltar - apenas quando já existe um checkout */}
-          {hasExistingCheckout && (
+          {hasCheckout && (
             <Button
               variant="outlined"
               size="large"
@@ -1076,7 +1076,7 @@ export default function BillingDetails() {
           >
             {loading
               ? "Processando..."
-              : hasExistingCheckout
+              : hasCheckout
                 ? "Atualizar dados da compra"
                 : "Avançar"}
           </Button>
