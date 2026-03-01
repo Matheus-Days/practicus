@@ -191,7 +191,7 @@ export const useRegistrationAPI = () => {
 
       return await response.json();
     },
-    [makeAuthenticatedRequest]
+    [firestore, makeAuthenticatedRequest]
   );
 
   // UPDATE - Atualizar inscrição por ID (para admin/fluxos avançados)

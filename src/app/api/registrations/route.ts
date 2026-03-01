@@ -91,7 +91,6 @@ export async function POST(request: NextRequest) {
     const validationResult = await canActivateRegistration(
       checkoutDoc,
       registrationDoc,
-      isAdmin,
       firestore
     );
 
