@@ -1,4 +1,4 @@
-import { useCheckout } from "../contexts/CheckoutContext";
+import { useBuyer } from "../contexts/BuyerContext";
 
 export interface VoucherCalculations {
   totalRegistrations: number;
@@ -12,9 +12,10 @@ export interface VoucherCalculations {
  * Centraliza a lógica de cálculo de registrations disponíveis, utilizadas e totais
  */
 export function useVoucherCalculations(): VoucherCalculations {
-  const { checkoutRegistrations, checkout } = useCheckout();
+  const { checkoutRegistrations, checkout } = useBuyer();
 
-  const registrationsAmount = checkout?.amount || 0;
+  const registrationsAmount =
+    checkout?.amount ?? (checkout?.checkoutType === "acquire" ? 1 : 0);
   const complimentary = checkout?.complimentary || 0;
   const maxRegistrations = complimentary + registrationsAmount;
 
@@ -29,7 +30,7 @@ export function useVoucherCalculations(): VoucherCalculations {
     (reg) => (reg.status === "ok" || reg.status === "pending") && !reg.isMyRegistration
   ).length;
 
-  const availableRegistrations = totalRegistrations - usedRegistrations;
+  const availableRegistrations = Math.max(0, totalRegistrations - usedRegistrations);
 
   return {
     totalRegistrations,

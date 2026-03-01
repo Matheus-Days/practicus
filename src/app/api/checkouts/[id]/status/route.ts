@@ -16,7 +16,6 @@ import {
 } from "../../checkout.types";
 import { RegistrationDocument } from "../../../registrations/registration.types";
 import { VoucherDocument } from "../../../voucher/voucher.types";
-import { isPaymentByCommitment } from "../../utils";
 
 // PATCH /api/checkouts/[id]/status - Alterar status da compra (apenas admin)
 export async function PATCH(
@@ -55,9 +54,9 @@ export async function PATCH(
     // Validar se o status é válido
     const validStatuses: CheckoutStatus[] = [
       "pending",
-      "completed",
+      "approved",
+      "paid",
       "refunded",
-      "deleted",
     ];
     if (!validStatuses.includes(body.status)) {
       return createErrorResponse(
@@ -74,9 +73,13 @@ export async function PATCH(
 
     const checkoutData = checkoutDoc.data() as CheckoutDocument;
 
-    if (isPaymentByCommitment(checkoutData) && body.status === "completed") {
+    if (
+      checkoutData.payment?.method === "empenho" &&
+      checkoutData.status === "pending" &&
+      body.status === "paid"
+    ) {
       return createErrorResponse(
-        "Não é possível marcar uma compra por empenho como concluída diretamente.",
+        "Não é possível marcar uma compra por empenho como paga diretamente. Aprove primeiro a intenção de pagamento.",
         400
       );
     }
@@ -100,14 +103,16 @@ export async function PATCH(
       const registrationData = doc.data() as RegistrationDocument;
       const newStatus = getRegistrationStatusFromCheckoutStatusChange(
         body.status,
-        registrationData.status,
-        isPaymentByCommitment(checkoutData)
+        registrationData.status
       );
       batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
     });
 
-    // Criar voucher se a compra estiver sendo marcada como concluída e não tiver voucher
-    if (body.status === "completed" && !checkoutData.voucher) {
+    // Criar voucher quando status for paid ou approved e não tiver voucher
+    if (
+      (body.status === "paid" || body.status === "approved") &&
+      !checkoutData.voucher
+    ) {
       const voucherDoc: VoucherDocument = {
         active: true,
         checkoutId: id,

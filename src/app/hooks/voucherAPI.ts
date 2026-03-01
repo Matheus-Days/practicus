@@ -1,6 +1,12 @@
 import { useCallback } from "react";
 import { useFirebase } from "./firebase";
-import { CreateVoucherCheckoutRequest, CreateVoucherCheckoutResponse, ValidateVoucherResponse, VoucherActivateRequest, VoucherDocument } from "../api/voucher/voucher.types";
+import {
+  CreateVoucherCheckoutRequest,
+  CreateVoucherCheckoutResponse,
+  ValidateVoucherResponse,
+  VoucherActivateRequest,
+  VoucherDocument,
+} from "../api/voucher/voucher.types";
 import { doc, getDoc } from "firebase/firestore";
 
 export type VoucherData = VoucherDocument & {
@@ -45,18 +51,25 @@ export const useVoucherAPI = () => {
   );
 
   const createVoucherCheckout = useCallback(
-    async (voucherId: string, checkoutData: CreateVoucherCheckoutRequest): Promise<CreateVoucherCheckoutResponse> => {
-      const response = await makeAuthenticatedRequest(`/api/voucher/${voucherId}/registrate`, {
-        method: "POST",
-        body: JSON.stringify(checkoutData),
-      });
+    async (
+      voucherId: string,
+      checkoutData: CreateVoucherCheckoutRequest
+    ): Promise<CreateVoucherCheckoutResponse> => {
+      const response = await makeAuthenticatedRequest(
+        `/api/voucher/${voucherId}/registrate`,
+        {
+          method: "POST",
+          body: JSON.stringify(checkoutData),
+        }
+      );
 
       if (!response.ok) {
         throw new Error((await response.json()).error);
       }
 
       return await response.json();
-    }, [makeAuthenticatedRequest]
+    },
+    [makeAuthenticatedRequest]
   );
 
   const getVoucher = useCallback(
@@ -77,7 +90,7 @@ export const useVoucherAPI = () => {
 
   const validateVoucher = useCallback(
     async (voucherId: string): Promise<ValidateVoucherResponse> => {
-      const response = await makeAuthenticatedRequest(`/api/voucher/${voucherId}/validate`, {
+      const response = await fetch(`/api/voucher/${voucherId}/validate`, {
         method: "GET",
       });
 
@@ -86,7 +99,7 @@ export const useVoucherAPI = () => {
       }
 
       return await response.json();
-    }, [makeAuthenticatedRequest]
+    }, []
   );
 
   return {

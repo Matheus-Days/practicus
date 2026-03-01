@@ -6,7 +6,6 @@ import {
   extractCreateCheckoutDataFromRequestBody,
   createCheckoutDocument,
   createCheckoutDocumentId,
-  isPaymentByCommitment,
 } from "./utils";
 import { CreateCheckoutRequest } from "./checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
@@ -61,9 +60,9 @@ export async function POST(request: NextRequest) {
       .collection("checkouts")
       .doc(checkoutDocumentId)
       .get();
-    if (checkoutDoc.exists && checkoutDoc.data()?.status !== "deleted") {
+    if (checkoutDoc.exists) {
       return createErrorResponse(
-        "Uma outra aquisição de inscrições já existe para esse email.",
+        "Uma outra aquisição de inscrições já existe para esse evento.",
         400
       );
     }
@@ -76,16 +75,44 @@ export async function POST(request: NextRequest) {
       return createErrorResponse("Evento não encontrado.", 404);
     }
     const eventDoc = event.data() as EventDocument;
+    if (eventDoc.status !== "open") {
+      return createErrorResponse(
+        "Este evento não está aberto para novas compras de inscrição.",
+        403
+      );
+    }
+
+    const attendeeRegistrationsSnapshot = await firestore
+      .collection("registrations")
+      .where("eventId", "==", checkoutData.eventId)
+      .where("attendeeUserId", "==", authenticatedUser.uid)
+      .where("status", "in", ["ok", "pending"])
+      .get();
+
+    const hasActiveVoucherRegistration = attendeeRegistrationsSnapshot.docs.some(
+      (docSnap) => {
+        const registration = docSnap.data() as { checkoutId?: string };
+        return !registration.checkoutId;
+      }
+    );
+    if (hasActiveVoucherRegistration) {
+      return createErrorResponse(
+        "Você já possui inscrição ativa neste evento via voucher. A compra de nova aquisição nesta conta está bloqueada.",
+        409
+      );
+    }
+
     checkoutDocument.totalValue = calculateTotalPurchasePrice(
       eventDoc,
       checkoutDocument
     );
+    checkoutDocument.payment.value = checkoutDocument.totalValue ?? 0;
 
     await checkoutDoc.ref.set(checkoutDocument);
 
     let finalCheckoutDocument = { ...checkoutDocument };
 
-    if (isPaymentByCommitment(checkoutDocument)) {
+    if (checkoutDocument.payment.method === "empenho") {
       const voucherDoc: VoucherDocument = {
         active: true,
         checkoutId: checkoutDocumentId,

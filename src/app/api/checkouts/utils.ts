@@ -12,7 +12,7 @@ export function validateCreateCheckoutRequest(data: any): boolean {
 
   if (
     !data.checkoutType ||
-    !["acquire", "voucher"].includes(data.checkoutType)
+    !["acquire", "admin"].includes(data.checkoutType)
   ) {
     return false;
   }
@@ -86,11 +86,20 @@ export function createCheckoutDocument(
   data: CreateCheckoutRequest
 ): CheckoutDocument {
   const dateNow = new Date();
+  const isCommitment =
+    data.billingDetails &&
+    "paymentByCommitment" in data.billingDetails &&
+    data.billingDetails.paymentByCommitment;
+  const payment: CheckoutDocument["payment"] = {
+    method: isCommitment ? "empenho" : "card",
+    value: 0,
+  };
   return {
     ...data,
     createdAt: dateNow,
     updatedAt: dateNow,
     status: "pending",
+    payment,
   };
 }
 
@@ -99,13 +108,5 @@ export function createCheckoutDocumentId(
   userUid: string
 ): string {
   return `${eventId}_${userUid}`;
-}
-
-export function isPaymentByCommitment(checkout: CheckoutDocument): boolean {
-  if (!checkout.billingDetails) return false;
-  if ('paymentByCommitment' in checkout.billingDetails) {
-    return checkout.billingDetails.paymentByCommitment;
-  }
-  return false;
 }
 //#endregion

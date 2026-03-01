@@ -2,7 +2,6 @@ import { CheckoutData } from "../types/checkout";
 import { RegistrationData } from "../hooks/registrationAPI";
 import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
 import { RegistrationType } from "../components/admin/RegistrationsTable";
-import { isPaymentByCommitment } from "../api/checkouts/utils";
 import { EventData } from "../types/events";
 import { Timestamp } from "firebase-admin/firestore";
 
@@ -62,10 +61,12 @@ export const getCheckoutStatusDisplay = (status: string) => {
   switch (status) {
     case "pending":
       return "Pendente";
-    case "completed":
-      return "Concluído";
-    case "deleted":
-      return "Cancelado";
+    case "approved":
+      return "Aprovado";
+    case "paid":
+      return "Pago";
+    case "refunded":
+      return "Reembolsado";
     default:
       return "Desconhecido";
   }
@@ -119,7 +120,7 @@ export const formatCheckoutForExport = (
 
     "Tipo de pagamento": isAdmin
       ? ""
-      : isPaymentByCommitment(checkout)
+      : checkout.payment.method === "empenho"
         ? "Empenho"
         : "Comum",
 

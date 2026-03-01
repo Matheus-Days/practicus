@@ -3,7 +3,6 @@ import { CheckoutDocument } from "../checkouts/checkout.types";
 import { VoucherDocument } from "./voucher.types";
 import { RegistrationDocument } from "../registrations/registration.types";
 import { EventDocument } from "../../types/events";
-import { isPaymentByCommitment } from "../checkouts/utils";
 
 export type ValidateVoucherResult =
   | {
@@ -36,14 +35,7 @@ export async function validateVoucher(
     .get();
   const buyerCheckoutData = buyerCheckoutDoc.data() as CheckoutDocument;
 
-  if (!buyerCheckoutData) {
-    return {
-      valid: false,
-      message: "Comprador não encontrado. Entre em contato com o suporte.",
-    };
-  }
-
-  if (buyerCheckoutData.status === "deleted") {
+  if (!buyerCheckoutDoc.exists || !buyerCheckoutData) {
     return {
       valid: false,
       message:
@@ -51,18 +43,14 @@ export async function validateVoucher(
     };
   }
 
-  const isValidStatus = isPaymentByCommitment(buyerCheckoutData)
-    ? buyerCheckoutData.status === "completed" ||
-      buyerCheckoutData.status === "pending"
-    : buyerCheckoutData.status === "completed";
-
-  if (!isValidStatus) {
+  if (buyerCheckoutData.status === "refunded") {
     return {
       valid: false,
       message:
-        "Voucher inválido. Compra de inscrições incompleta. Entre em contato com o responsável pela aquisição.",
+        "Voucher inválido. Entre em contato com o responsável pela aquisição.",
     };
   }
+
 
   const eventDoc = await firestore
     .collection("events")
@@ -87,7 +75,7 @@ export async function validateVoucher(
   if (eventData.status === "canceled") {
     return {
       valid: false,
-      message: "Evento cancelado e não está mais disponível para inscrições.",
+      message: "Evento cancelado e não está disponível para inscrições.",
     };
   }
 

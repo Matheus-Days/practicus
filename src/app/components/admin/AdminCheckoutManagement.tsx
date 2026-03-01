@@ -218,16 +218,9 @@ export default function AdminCheckoutManagement() {
   };
 
   if (!adminCheckout) {
-    return (
-      <Card>
-        <CardContent>
-          <Typography variant="body1" color="textSecondary" textAlign="center">
-            Nenhuma aquisição de administrador encontrada para este evento.
-          </Typography>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
+
 
   return (
     <>
