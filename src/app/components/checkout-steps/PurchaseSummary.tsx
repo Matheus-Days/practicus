@@ -301,7 +301,6 @@ export default function PurchaseSummary() {
       {/* Payment */}
       <Payment
         checkout={checkout}
-        eventId={checkout.eventId}
         open={commitmentOpen}
         onClose={() => setCommitmentOpen(false)}
       />

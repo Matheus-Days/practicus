@@ -102,7 +102,7 @@ export const formatCheckoutForExport = (
     "Valor total calculado": isAdmin
       ? ""
       : checkout.amount
-        ? calculateTotalPurchasePrice(eventData, checkout) / 100
+        ? calculateTotalPurchasePrice(checkout) / 100
         : "",
     "Valor total faturado": checkout.totalValue ? checkout.totalValue / 100 : 0,
     "Inscrições adquiridas": isAdmin ? "" : checkout.amount || 0,

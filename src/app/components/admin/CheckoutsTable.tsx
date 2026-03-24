@@ -685,7 +685,6 @@ export default function CheckoutsTable() {
         open={checkoutDialogOpen}
         onClose={handleCheckoutDialogClose}
         checkout={selectedCheckoutForDialog || undefined}
-        eventData={selectedEvent || undefined}
         onUpdateComplimentaryTickets={updateComplimentaryTickets}
         loadingComplimentaryUpdate={loadingComplimentaryUpdate}
         onUpdateTotalValue={updateTotalValue}
@@ -700,7 +699,6 @@ export default function CheckoutsTable() {
               (c) => c.id === selectedCheckoutForPayment.id
             ) || selectedCheckoutForPayment
           }
-          eventId={selectedEvent?.id || ""}
           isAdmin={true}
           open={paymentDialogOpen}
           onClose={handlePaymentDialogClose}

@@ -58,23 +58,10 @@ export async function PUT(
 
     let totalValue = checkoutDoc.totalValue; // inicialmente o valor anterior do checkout
     if (updateData.amount) {
-      // se a quantidade de tickets foi alterada
-      const event = await firestore
-        .collection("events")
-        .doc(checkoutDoc.eventId)
-        .get();
-      if (!event.exists) {
-        return createErrorResponse("Evento não encontrado.", 404);
-      }
-      const eventDoc = event.data() as EventDocument;
-      const oldCalculatedTotalValue = calculateTotalPurchasePrice(
-        eventDoc,
-        checkoutDoc
-      ); // obtém o valor total calculado anterior do checkout
+      const oldCalculatedTotalValue = calculateTotalPurchasePrice(checkoutDoc);
       if (oldCalculatedTotalValue === totalValue) {
-        // sendo o calculado antigo igual ao total antigo, sabemos que o totalValue não foi sobrescrito pelo admin, então podemos atualizar o valor total automaticamente
-        checkoutDoc.amount = updateData.amount; // atualiza a quantidade de tickets no checkout para calcular o novo valor total
-        totalValue = calculateTotalPurchasePrice(eventDoc, checkoutDoc);
+        checkoutDoc.amount = updateData.amount;
+        totalValue = calculateTotalPurchasePrice(checkoutDoc);
       }
     }
 

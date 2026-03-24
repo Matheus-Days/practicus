@@ -1,3 +1,5 @@
+import type { PriceBreakpoint } from "../../types/events";
+
 export type CheckoutType = "acquire" | "admin";
 
 export type LegalEntity = "pf" | "pj";
@@ -67,6 +69,11 @@ export type CheckoutDocument = {
   payment: Payment;
   /** Total value of the checkout in cents */
   totalValue?: number;
+  /**
+   * Copy of event.priceBreakpoints at the time of checkout creation.
+   * Ensures consistent calculations and display after policy changes in the event.
+   */
+  priceBreakpointsAtCheckout?: PriceBreakpoint[];
 };
 
 /** Checkout document archived in deletedCheckouts when a purchase is cancelled (same fields as CheckoutDocument + deletedAt). */

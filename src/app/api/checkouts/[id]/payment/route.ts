@@ -13,7 +13,6 @@ import {
   DeleteCommitmentAttachmentRequest,
   Payment,
 } from "../../checkout.types";
-import { EventData } from "../../../../types/events";
 import { calculateTotalPurchasePrice } from "../../../../../lib/checkout-utils";
 
 async function getAuthenticatedUser(request: NextRequest): Promise<DecodedIdToken> {
@@ -115,13 +114,7 @@ export async function POST(
       );
     }
 
-    const eventRef = firestore.collection("events").doc(checkout.eventId);
-    const eventDoc = await eventRef.get();
-    if (!eventDoc.exists) {
-      return createErrorResponse("Evento não encontrado", 404);
-    }
-    const event = eventDoc.data() as EventData;
-    const paymentValue = calculateTotalPurchasePrice(event, checkout);
+    const paymentValue = calculateTotalPurchasePrice(checkout);
 
     const commitmentAttachment = await uploadAttachmentToStorage(
       checkoutId,

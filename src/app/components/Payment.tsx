@@ -27,16 +27,13 @@ import {
 } from "@mui/icons-material";
 import { Payment as PaymentType } from "../api/checkouts/checkout.types";
 import { calculateTotalPurchasePrice } from "../../lib/checkout-utils";
-import { EventData } from "../types/events";
 import { useFirebase } from "../hooks/firebase";
-import { doc, getDoc } from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage";
 import { usePaymentAPI } from "../hooks/paymentAPI";
 import { CheckoutData } from "../types/checkout";
 
 interface PaymentProps {
   checkout: CheckoutData;
-  eventId: string;
   isAdmin?: boolean;
   open: boolean;
   onClose: () => void;
@@ -44,12 +41,11 @@ interface PaymentProps {
 
 export default function Payment({
   checkout,
-  eventId,
   isAdmin,
   open,
   onClose,
 }: PaymentProps) {
-  const { firestore, storage } = useFirebase();
+  const { storage } = useFirebase();
   const isCommitmentPayment = checkout.payment.method === "empenho";
   const {
     sendCommitmentReceipt,
@@ -66,7 +62,6 @@ export default function Payment({
     paymentAttachment: undefined,
   });
 
-  const [eventData, setEventData] = useState<EventData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,22 +75,6 @@ export default function Payment({
   const commitmentFileInputRef = useRef<HTMLInputElement>(null);
   const paymentFileInputRef = useRef<HTMLInputElement>(null);
   const invoiceFileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const loadEventData = async () => {
-      if (eventId) {
-        const eventRef = doc(firestore, "events", eventId);
-        const eventDoc = await getDoc(eventRef);
-        if (eventDoc.exists()) {
-          setEventData({
-            id: eventDoc.id,
-            ...eventDoc.data(),
-          } as EventData);
-        }
-      }
-    };
-    loadEventData();
-  }, [eventId, firestore]);
 
   useEffect(() => {
     if (checkout?.payment) {
@@ -183,8 +162,8 @@ export default function Payment({
       return commitmentData.value;
     }
 
-    if (checkout && eventData) {
-      return calculateTotalPurchasePrice(eventData, checkout);
+    if (checkout) {
+      return calculateTotalPurchasePrice(checkout);
     }
 
     return 0;

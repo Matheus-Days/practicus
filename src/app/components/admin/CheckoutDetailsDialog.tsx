@@ -29,7 +29,6 @@ import {
 import { CheckoutData } from '../../types/checkout';
 import { calculateTotalPurchasePrice } from '@/lib/checkout-utils';
 import { BillingDetailsPF, BillingDetailsPJ } from '../../api/checkouts/checkout.types';
-import { EventDocument } from '../../types/events';
 import { useVoucherPDF } from '../../hooks/useVoucherPDF';
 import { formatCNPJ, formatOrganizationName } from '../../utils/export-utils';
 import { formatCEP } from '../../utils/cep-utils';
@@ -40,7 +39,6 @@ interface CheckoutDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   checkout?: CheckoutData;
-  eventData?: EventDocument;
   onUpdateComplimentaryTickets?: (checkout: CheckoutData, val: number) => Promise<void>;
   loadingComplimentaryUpdate?: boolean;
   onUpdateTotalValue?: (checkout: CheckoutData, val: number) => Promise<void>;
@@ -161,7 +159,6 @@ export default function CheckoutDetailsDialog({
   open,
   onClose,
   checkout,
-  eventData,
   onUpdateComplimentaryTickets,
   loadingComplimentaryUpdate = false,
   onUpdateTotalValue,
@@ -496,8 +493,8 @@ export default function CheckoutDetailsDialog({
                       Valor total calculado:
                     </Typography>
                     <Typography variant="h6" gutterBottom>
-                      {checkout.amount && eventData
-                        ? formatCurrency(calculateTotalPurchasePrice(eventData, checkout))
+                      {checkout.amount
+                        ? formatCurrency(calculateTotalPurchasePrice(checkout))
                         : "-"}
                     </Typography>
                     

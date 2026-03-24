@@ -102,10 +102,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    checkoutDocument.totalValue = calculateTotalPurchasePrice(
-      eventDoc,
-      checkoutDocument
-    );
+    if (eventDoc.priceBreakpoints?.length) {
+      checkoutDocument.priceBreakpointsAtCheckout = [
+        ...eventDoc.priceBreakpoints,
+      ]
+        .sort((a, b) => a.minQuantity - b.minQuantity)
+        .map((bp) => ({ ...bp }));
+    }
+
+    checkoutDocument.totalValue = calculateTotalPurchasePrice(checkoutDocument);
     checkoutDocument.payment.value = checkoutDocument.totalValue ?? 0;
 
     await checkoutDoc.ref.set(checkoutDocument);

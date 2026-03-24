@@ -31,7 +31,10 @@ import { validateCNPJ } from "../../utils/cnpj-utils";
 import { validatePhone } from "../../utils/phone-utils";
 import { validateCEP } from "../../utils/cep-utils";
 import { useCEP } from "../../hooks/useCEP";
-import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
+import {
+  calculateTotalPurchasePrice,
+  calculateTotalPurchasePriceFromBreakpoints,
+} from "@/lib/checkout-utils";
 import { formatCurrency } from "../../utils/export-utils";
 
 export default function BillingDetails() {
@@ -449,9 +452,15 @@ export default function BillingDetails() {
             >
               {event && localRegistrationsAmount > 0
                 ? formatCurrency(
-                    calculateTotalPurchasePrice(event, {
-                      amount: localRegistrationsAmount,
-                    } as CheckoutDocument) / localRegistrationsAmount
+                    (checkout
+                      ? calculateTotalPurchasePrice({
+                          ...checkout,
+                          amount: localRegistrationsAmount,
+                        })
+                      : calculateTotalPurchasePriceFromBreakpoints(
+                          event.priceBreakpoints,
+                          localRegistrationsAmount
+                        )) / localRegistrationsAmount
                   )
                 : "-"}
             </Typography>
@@ -481,9 +490,15 @@ export default function BillingDetails() {
             >
               {event
                 ? formatCurrency(
-                    calculateTotalPurchasePrice(event, {
-                      amount: localRegistrationsAmount,
-                    } as CheckoutDocument)
+                    checkout
+                      ? calculateTotalPurchasePrice({
+                          ...checkout,
+                          amount: localRegistrationsAmount,
+                        })
+                      : calculateTotalPurchasePriceFromBreakpoints(
+                          event.priceBreakpoints,
+                          localRegistrationsAmount
+                        )
                   )
                 : "-"}
             </Typography>

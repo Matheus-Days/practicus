@@ -678,7 +678,6 @@ export default function RegistrationsTable() {
         open={checkoutDialogOpen}
         onClose={handleCheckoutDialogClose}
         checkout={selectedCheckout || undefined}
-        eventData={selectedEvent || undefined}
         onUpdateComplimentaryTickets={updateComplimentaryTickets}
         loadingComplimentaryUpdate={loadingComplimentaryUpdate}
         onUpdateTotalValue={updateTotalValue}
