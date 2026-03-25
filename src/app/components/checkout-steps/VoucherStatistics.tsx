@@ -2,12 +2,11 @@
 
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import { ConfirmationNumber as TicketIcon } from "@mui/icons-material";
-import { useCheckout } from "../../contexts/CheckoutContext";
+import { useBuyer } from "../../contexts/BuyerContext";
 import { useVoucherCalculations } from "../../hooks/useVoucherCalculations";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function VoucherStatistics() {
-  const { checkout } = useCheckout();
+  const { checkout } = useBuyer();
   const {
     totalRegistrations,
     usedRegistrations,
@@ -16,11 +15,7 @@ export default function VoucherStatistics() {
   } = useVoucherCalculations();
 
   // Não mostrar o componente se não há checkout ou se é um checkout de voucher
-  if (
-    !checkout ||
-    checkout.checkoutType === "voucher" ||
-    (checkout.status === "pending" && !isPaymentByCommitment(checkout))
-  ) {
+  if (!checkout) {
     return null;
   }
 
@@ -40,21 +35,26 @@ export default function VoucherStatistics() {
 
         {hasOwnValidRegistration && (
           <Typography variant="body2" color="text.secondary" mb={3}>
-            Você tem uma inscrição válida para si, logo o número de vouchers é igual ao número de inscrições adquiridas menos 1.
+            Você tem uma inscrição válida para si, logo o número de vouchers é
+            igual ao número de inscrições adquiridas menos 1.
           </Typography>
         )}
 
-        <Box sx={{ 
-          display: "flex", 
-          flexWrap: "wrap", 
-          gap: 2,
-          flexDirection: { xs: "column", sm: "row" }
-        }}>
-          <Box sx={{ 
-            flex: { xs: "0 0 64px", sm: "1 1 200px" }, 
-            minWidth: { xs: "100%", sm: "200px" },
-            textAlign: { xs: "center", sm: "left" }
-          }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 2,
+            flexDirection: { xs: "column", sm: "row" },
+          }}
+        >
+          <Box
+            sx={{
+              flex: { xs: "0 0 64px", sm: "1 1 200px" },
+              minWidth: { xs: "100%", sm: "200px" },
+              textAlign: { xs: "center", sm: "left" },
+            }}
+          >
             <Typography variant="subtitle2" color="text.secondary">
               Total de vouchers
             </Typography>
@@ -62,11 +62,13 @@ export default function VoucherStatistics() {
               {totalRegistrations}
             </Typography>
           </Box>
-          <Box sx={{ 
-            flex: { xs: "0 0 64px", sm: "1 1 200px" }, 
-            minWidth: { xs: "100%", sm: "200px" },
-            textAlign: { xs: "center", sm: "left" }
-          }}>
+          <Box
+            sx={{
+              flex: { xs: "0 0 64px", sm: "1 1 200px" },
+              minWidth: { xs: "100%", sm: "200px" },
+              textAlign: { xs: "center", sm: "left" },
+            }}
+          >
             <Typography variant="subtitle2" color="text.secondary">
               Vouchers utilizados
             </Typography>
@@ -74,11 +76,13 @@ export default function VoucherStatistics() {
               {usedRegistrations}
             </Typography>
           </Box>
-          <Box sx={{ 
-            flex: { xs: "0 0 64px", sm: "1 1 200px" }, 
-            minWidth: { xs: "100%", sm: "200px" },
-            textAlign: { xs: "center", sm: "left" }
-          }}>
+          <Box
+            sx={{
+              flex: { xs: "0 0 64px", sm: "1 1 200px" },
+              minWidth: { xs: "100%", sm: "200px" },
+              textAlign: { xs: "center", sm: "left" },
+            }}
+          >
             <Typography variant="subtitle2" color="text.secondary">
               Vouchers disponíveis
             </Typography>

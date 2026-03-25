@@ -29,22 +29,20 @@ import {
   formatCurrency,
   formatOrganizationName,
 } from "../../utils/export-utils";
-import { useCheckout } from "../../contexts/CheckoutContext";
-import Commitment from "../Commitment";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
+import { useBuyer } from "../../contexts/BuyerContext";
+import Payment from "../Payment";
 import { formatCNPJ } from "../../utils/cnpj-utils";
 
 export default function PurchaseSummary() {
   const {
     registrationsAmount,
     legalEntity,
-    registrateMyself,
     billingDetails,
     checkout,
     setCurrentStep,
     deleteCheckout,
     isEventClosed,
-  } = useCheckout();
+  } = useBuyer();
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [commitmentOpen, setCommitmentOpen] = useState(false);
@@ -156,8 +154,7 @@ export default function PurchaseSummary() {
             </Box>
 
             {legalEntity === "pj" &&
-              billingDetails &&
-              (billingDetails as BillingDetailsPJ).paymentByCommitment && (
+              checkout.payment.method === "empenho" && (
                 <Box
                   sx={{
                     flex: { xs: "0 0 46px", sm: "1 1 100%" },
@@ -267,36 +264,22 @@ export default function PurchaseSummary() {
               </>
             )}
 
-            {/* Botão de pagamento baseado no tipo de pagamento */}
-            {isPaymentByCommitment(checkout) && (
-              <Button
-                variant="contained"
-                startIcon={<AccountBalanceIcon />}
-                onClick={() => setCommitmentOpen(true)}
-                sx={{
-                  width: { xs: "100%", sm: "auto" },
-                  minWidth: { sm: "auto" },
-                }}
-              >
-                Gerenciar empenho
-              </Button>
-            )}
-            {!isPaymentByCommitment(checkout) &&
-              checkout.status === "pending" && (
-                <Button
-                  variant="contained"
-                  startIcon={<PaymentIcon />}
-                  onClick={handleGoToPayment}
-                  sx={{
-                    width: { xs: "100%", sm: "auto" },
-                    minWidth: { sm: "auto" },
-                  }}
-                >
-                  Efetuar Pagamento
-                </Button>
-              )}
+            {/* Botão de gerenciamento de pagamento */}
+            <Button
+              variant="contained"
+              startIcon={<AccountBalanceIcon />}
+              onClick={() => setCommitmentOpen(true)}
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { sm: "auto" },
+              }}
+            >
+              {checkout.payment.method === "empenho"
+                ? "Gerenciar empenho"
+                : "Efetuar pagamento"}
+            </Button>
 
-            {checkout?.status === "completed" && (
+            {checkout?.status === "paid" && (
               <Button
                 variant="outlined"
                 color="error"
@@ -314,10 +297,9 @@ export default function PurchaseSummary() {
         </CardContent>
       </Card>
 
-      {/* Commitment */}
-      <Commitment
+      {/* Payment */}
+      <Payment
         checkout={checkout}
-        eventId={checkout.eventId}
         open={commitmentOpen}
         onClose={() => setCommitmentOpen(false)}
       />

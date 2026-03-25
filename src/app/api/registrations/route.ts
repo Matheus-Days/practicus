@@ -6,7 +6,6 @@ import { validateAuth } from "../../../lib/auth-utils";
 import {
   canActivateRegistration,
   extractCreateRegistrationDataFromRequestBody,
-  generateRegistrationDocumentId,
   validateCreateRegistration,
 } from "./utils";
 import {
@@ -20,7 +19,6 @@ import {
   isUserAdmin,
 } from "../utils";
 import { CheckoutDocument, CheckoutStatus } from "../checkouts/checkout.types";
-import { isPaymentByCommitment } from "../checkouts/utils";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -48,34 +46,52 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (authenticatedUser.uid !== data.userId) {
-      isAdmin = await isUserAdmin(authenticatedUser, firestore);
-      if (!isAdmin) {
-        return createErrorResponse(
-          "Usuário não tem permissão para criar inscrição",
-          403
-        );
-      }
+    if (!data.checkoutId) {
+      return createErrorResponse(
+        "checkoutId é obrigatório para criar inscrição",
+        400
+      );
     }
 
     const checkoutDoc = await firestore
       .collection("checkouts")
       .doc(data.checkoutId)
       .get();
-    const checkout = checkoutDoc.data() as CheckoutDocument;
-    const registrationDoc = generateRegistrationDocument(data, checkout);
 
-    const registrationDocId = generateRegistrationDocumentId(
-      data.eventId,
-      data.userId
+    if (!checkoutDoc.exists) {
+      return createErrorResponse("Compra da inscrição não encontrada", 404);
+    }
+
+    const checkout = checkoutDoc.data() as CheckoutDocument;
+
+    // Permissão:
+    // - admin pode criar para qualquer checkout
+    // - buyer (dono do checkout) pode criar inscrições para si ou para terceiros (sem attendeeUserId)
+    isAdmin = await isUserAdmin(authenticatedUser, firestore);
+    const isCheckoutOwner = checkout.userId === authenticatedUser.uid;
+    if (!isAdmin && !isCheckoutOwner) {
+      return createErrorResponse(
+        "Usuário não tem permissão para criar inscrição neste checkout",
+        403
+      );
+    }
+
+    const createdByRole = isAdmin ? ("admin" as const) : ("buyer" as const);
+    const createdByUserId = authenticatedUser.uid;
+
+    const registrationDoc = generateRegistrationDocument(
+      data,
+      checkout,
+      createdByRole,
+      createdByUserId
     );
+
+    const registrationDocId = crypto.randomUUID();
 
     const validationResult = await canActivateRegistration(
       checkoutDoc,
       registrationDoc,
-      isAdmin,
-      firestore,
-      registrationDocId
+      firestore
     );
 
     if (!validationResult.canActivate) {
@@ -111,13 +127,30 @@ export async function POST(request: NextRequest) {
 
 function generateRegistrationDocument(
   data: CreateRegistrationRequest,
-  checkout: CheckoutDocument
+  checkout: CheckoutDocument,
+  createdByRole: "buyer" | "admin",
+  createdByUserId: string
 ): RegistrationDocument {
   return {
-    ...data,
+    schemaVersion: 2,
+    createdByRole,
+    createdByUserId,
+    eventId: data.eventId,
+    checkoutId: data.checkoutId,
+    attendeeUserId: data.attendeeUserId,
+    cpf: data.cpf,
+    credentialName: data.credentialName,
+    email: data.email,
+    fullName: data.fullName,
+    howDidYouHearAboutUs: data.howDidYouHearAboutUs,
+    howDidYouHearAboutUsOther: data.howDidYouHearAboutUsOther,
+    isPhoneWhatsapp: data.isPhoneWhatsapp,
+    occupation: data.occupation,
+    phone: data.phone,
+    useImage: data.useImage,
     createdAt: new Date(),
     status:
-      checkout.status === "completed" || isPaymentByCommitment(checkout)
+      checkout.status === "paid" || checkout.status === "approved"
         ? "ok"
         : "pending",
   };

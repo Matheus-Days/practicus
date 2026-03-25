@@ -41,7 +41,6 @@ import CheckoutDetailsDialog from "./CheckoutDetailsDialog";
 import { useXlsxExport } from "../../hooks/useXlsxExport";
 import { formatRegistrationForExport, formatOrganizationName } from "../../utils/export-utils";
 import { CheckoutData } from "../../types/checkout";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
 import { useRegistrationPDF } from "../../hooks/useRegistrationPDF";
 
 export type RegistrationType = "commom" | "commitment" | "complimentary";
@@ -84,7 +83,7 @@ export default function RegistrationsTable() {
       let registrationType: RegistrationType;
       if (regCheckout?.checkoutType === "admin")
         registrationType = "complimentary";
-      else if (regCheckout && isPaymentByCommitment(regCheckout))
+      else if (regCheckout && regCheckout.payment.method === "empenho")
         registrationType = "commitment";
       else registrationType = "commom";
 
@@ -149,8 +148,8 @@ export default function RegistrationsTable() {
 
     if (!checkout) return false;
 
-    // Não pode ativar se o checkout for deleted ou refunded
-    if (checkout.status === "deleted" || checkout.status === "refunded") {
+    // Não pode ativar se o checkout for refunded
+    if (checkout.status === "refunded") {
       return false;
     }
 
@@ -173,10 +172,10 @@ export default function RegistrationsTable() {
       return false;
     }
 
-    // Não pode desativar se o checkout for deleted ou refunded
+    // Não pode desativar se o checkout for refunded
     if (
       checkout &&
-      (checkout.status === "deleted" || checkout.status === "refunded")
+      checkout.status === "refunded"
     ) {
       return false;
     }
@@ -679,7 +678,6 @@ export default function RegistrationsTable() {
         open={checkoutDialogOpen}
         onClose={handleCheckoutDialogClose}
         checkout={selectedCheckout || undefined}
-        eventData={selectedEvent || undefined}
         onUpdateComplimentaryTickets={updateComplimentaryTickets}
         loadingComplimentaryUpdate={loadingComplimentaryUpdate}
         onUpdateTotalValue={updateTotalValue}

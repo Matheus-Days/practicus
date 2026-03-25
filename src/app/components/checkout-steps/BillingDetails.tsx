@@ -20,7 +20,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { PatternFormat } from "react-number-format";
-import { useCheckout } from "../../contexts/CheckoutContext";
+import { useBuyer } from "../../contexts/BuyerContext";
 import {
   BillingDetailsPF,
   BillingDetailsPJ,
@@ -31,7 +31,10 @@ import { validateCNPJ } from "../../utils/cnpj-utils";
 import { validatePhone } from "../../utils/phone-utils";
 import { validateCEP } from "../../utils/cep-utils";
 import { useCEP } from "../../hooks/useCEP";
-import { calculateTotalPurchasePrice } from "@/lib/checkout-utils";
+import {
+  calculateTotalPurchasePrice,
+  calculateTotalPurchasePriceFromBreakpoints,
+} from "@/lib/checkout-utils";
 import { formatCurrency } from "../../utils/export-utils";
 
 export default function BillingDetails() {
@@ -43,6 +46,8 @@ export default function BillingDetails() {
     legalEntity,
     billingDetails,
     setLegalEntity,
+    paymentByCommitment,
+    setPaymentByCommitment,
     createCheckout,
     updateCheckout,
     checkout,
@@ -51,7 +56,7 @@ export default function BillingDetails() {
     setCurrentStep,
     event,
     isEventClosed,
-  } = useCheckout();
+  } = useBuyer();
 
   // Estado para controlar o snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -106,7 +111,6 @@ export default function BillingDetails() {
     responsibleName: "",
     responsiblePhone: "",
     responsibleEmail: "",
-    paymentByCommitment: false,
   });
 
   const [localRegistrationsAmount, setLocalRegistrationsAmount] = useState(
@@ -116,7 +120,7 @@ export default function BillingDetails() {
     legalEntity
   );
 
-  const hasExistingCheckout = checkout && checkout.status !== "deleted";
+  const hasCheckout = !!checkout;
   const isReadOnly = isEventClosed;
 
   // Carregar estados ao montar o componente
@@ -147,10 +151,12 @@ export default function BillingDetails() {
         responsibleName: pj.responsibleName || "",
         responsiblePhone: pj.responsiblePhone || "",
         responsibleEmail: pj.responsibleEmail || "",
-        paymentByCommitment: pj.paymentByCommitment || false,
       });
+      if (checkout) {
+        setPaymentByCommitment(checkout.payment?.method === "empenho");
+      }
     }
-  }, [legalEntity, billingDetails]);
+  }, [legalEntity, billingDetails, checkout, setPaymentByCommitment]);
 
   useEffect(() => {
     if (localLegalEntity === "pf") {
@@ -166,8 +172,8 @@ export default function BillingDetails() {
         responsibleName: "",
         responsiblePhone: "",
         responsibleEmail: "",
-        paymentByCommitment: false,
       });
+      setPaymentByCommitment(false);
       setCnpjError(null);
       setPhoneOrgError(null);
       setPhoneRespError(null);
@@ -183,8 +189,9 @@ export default function BillingDetails() {
       });
       setPhonePFError(null);
       setPhonePFFormat("(##) #####-####");
+      setPaymentByCommitment(false);
     }
-  }, [localLegalEntity, clearCEP, clearMunicipalities]);
+  }, [localLegalEntity, clearCEP, clearMunicipalities, setPaymentByCommitment]);
 
   useEffect(() => {
     setLocalRegistrationsAmount(registrationsAmount || 1);
@@ -219,7 +226,7 @@ export default function BillingDetails() {
 
   const handleCreateCheckout = async () => {
     try {
-      if (hasExistingCheckout) {
+      if (hasCheckout) {
         // Atualiza checkout existente
         await updateCheckout({
           checkoutType: "acquire",
@@ -227,6 +234,9 @@ export default function BillingDetails() {
             localLegalEntity === "pf" ? billingDetailsPF : billingDetailsPJ,
           amount: localRegistrationsAmount,
           legalEntity: localLegalEntity || undefined,
+          ...(localLegalEntity === "pj"
+            ? { paymentByCommitment }
+            : {}),
         });
 
         // Mostra snackbar de sucesso para atualização
@@ -449,9 +459,15 @@ export default function BillingDetails() {
             >
               {event && localRegistrationsAmount > 0
                 ? formatCurrency(
-                    calculateTotalPurchasePrice(event, {
-                      amount: localRegistrationsAmount,
-                    } as CheckoutDocument) / localRegistrationsAmount
+                    (checkout
+                      ? calculateTotalPurchasePrice({
+                          ...checkout,
+                          amount: localRegistrationsAmount,
+                        })
+                      : calculateTotalPurchasePriceFromBreakpoints(
+                          event.priceBreakpoints,
+                          localRegistrationsAmount
+                        )) / localRegistrationsAmount
                   )
                 : "-"}
             </Typography>
@@ -481,9 +497,15 @@ export default function BillingDetails() {
             >
               {event
                 ? formatCurrency(
-                    calculateTotalPurchasePrice(event, {
-                      amount: localRegistrationsAmount,
-                    } as CheckoutDocument)
+                    checkout
+                      ? calculateTotalPurchasePrice({
+                          ...checkout,
+                          amount: localRegistrationsAmount,
+                        })
+                      : calculateTotalPurchasePriceFromBreakpoints(
+                          event.priceBreakpoints,
+                          localRegistrationsAmount
+                        )
                   )
                 : "-"}
             </Typography>
@@ -986,14 +1008,10 @@ export default function BillingDetails() {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={billingDetailsPJ.paymentByCommitment || false}
+                        checked={paymentByCommitment}
                         disabled={isReadOnly}
                         onChange={(e) => {
-                          const checked = e.target.checked;
-                          handleBillingDetailsPJChange(
-                            "paymentByCommitment",
-                            checked
-                          );
+                          setPaymentByCommitment(e.target.checked);
                         }}
                         sx={{
                           "&.Mui-checked": {
@@ -1047,7 +1065,7 @@ export default function BillingDetails() {
           }}
         >
           {/* Botão Voltar - apenas quando já existe um checkout */}
-          {hasExistingCheckout && (
+          {hasCheckout && (
             <Button
               variant="outlined"
               size="large"
@@ -1076,7 +1094,7 @@ export default function BillingDetails() {
           >
             {loading
               ? "Processando..."
-              : hasExistingCheckout
+              : hasCheckout
                 ? "Atualizar dados da compra"
                 : "Avançar"}
           </Button>

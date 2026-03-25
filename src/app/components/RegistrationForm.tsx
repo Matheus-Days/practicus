@@ -13,7 +13,6 @@ import {
   Autocomplete,
   Typography,
 } from "@mui/material";
-import { useCheckout } from "../contexts/CheckoutContext";
 import { RegistrationFormData } from "../api/registrations/registration.types";
 import {
   HOW_DID_YOU_HEAR_ABOUT_US_OPTIONS,
@@ -46,8 +45,6 @@ export default function RegistrationForm({
   onDataChange,
   onValidationChange,
 }: RegistrationFormProps) {
-  const { user } = useCheckout();
-
   const [registration, setRegistration] = useState<
     Partial<RegistrationFormData>
   >({

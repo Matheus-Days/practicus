@@ -7,7 +7,6 @@ import {
   Typography,
   Box,
   LinearProgress,
-  Chip,
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -16,14 +15,12 @@ import {
   Description as DescriptionIcon,
   Payments as PaymentsIcon,
   ConfirmationNumber as VoucherIcon,
-  LocalActivity as LocalActivityIcon,
   Pending as PendingIcon,
   AttachMoney as MoneyIcon,
   EventAvailable as EventAvailableIcon,
   EventBusy as EventBusyIcon,
 } from "@mui/icons-material";
 import { useAdminContext } from "../../contexts/AdminContext";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 export default function EventDashboard() {
   const {
@@ -54,7 +51,7 @@ export default function EventDashboard() {
     // 1. Informações de venda
     const totalTickets = selectedEvent.maxParticipants || 0;
     const issuedTickets = eventCheckouts
-      .filter(c => c.status === "pending" || c.status === "completed")
+      .filter(c => c.status !== "refunded")
       .reduce((sum, checkout) => sum + (checkout.amount || 0) + (checkout.complimentary || 0), 0);
     const availableTickets = Math.max(0, totalTickets - issuedTickets);
 
@@ -66,22 +63,22 @@ export default function EventDashboard() {
 
     // 3. Informações de pagamento
     const paidTickets = eventCheckouts
-      .filter(c => c.status === "completed")
+      .filter(c => c.status === "paid" || c.status === "approved")
       .reduce((sum, checkout) => sum + (checkout.amount || 0), 0);
-    
+
     const pendingPaymentTickets = eventCheckouts
-      .filter(c => c.status === "pending" && !isPaymentByCommitment(c))
+      .filter(c => c.status === "pending" && c.payment?.method == "empenho")
       .reduce((sum, checkout) => sum + (checkout.amount || 0), 0);
-    
+
     const pendingCommitmentTickets = eventCheckouts
-      .filter(c => isPaymentByCommitment(c) && c.status === "pending")
+      .filter(c => c.payment?.method === "empenho" && c.status === "pending")
       .reduce((sum, checkout) => sum + (checkout.amount || 0), 0);
 
     // 4. Informações de cortesias
     const adminCheckout = eventCheckouts.find(c => c.checkoutType === "admin");
     const adminComplimentaryTickets = adminCheckout?.complimentary || 0;
     const adminRegistrations = eventRegistrations.filter(
-      r => r.checkoutId === adminCheckout?.id
+      r => r.checkoutId === adminCheckout?.id && r.status === "ok"
     ).length;
     const pendingAdminRegistrations = Math.max(0, adminComplimentaryTickets - adminRegistrations);
 

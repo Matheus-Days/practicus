@@ -22,28 +22,18 @@ export async function isUserAdmin(
 }
 
 /**
- * This function is used to get the new status of a registration based on the new status of the checkout and the current status of the registration.
- *
- * The rules are (from top to bottom, first match wins):
- * - If the current registration status (`currRegistrationStatus`) is ``invalid``, it should remain ``invalid`` no matter the checkout status change
- * - If the checkout (`newCheckoutStatus`) is ``deleted`` or ``refunded``, its registrations should become ``invalid``
- * - If the checkout (`newCheckoutStatus`) is ``completed``, its registrations should become ``ok``, unless the current registration status is ``cancelled``
- * - If the checkout (`newCheckoutStatus`) is ``pending`` but has commitment payment (``isCommitmentCheckout``), its registrations should become ``ok``, unless the current registration status is ``cancelled``, in which case it should remain ``cancelled``
- * - If the checkout (`newCheckoutStatus`) is ``pending`` and has regular payment, its registrations should become ``pending``, unless the current registration status is ``cancelled``, in which case it should remain ``cancelled``
- *
- * @param newCheckoutStatus - The new status of the checkout
- * @param currRegistrationStatus - The current status of the registration
- * @returns The new status of the registration
+ * Returns the new registration status when the checkout status changes.
+ * Rules: invalid stays invalid; refunded → invalid; approved/paid → ok (unless cancelled); pending → pending (unless cancelled).
  */
 export function getRegistrationStatusFromCheckoutStatusChange(
   newCheckoutStatus: CheckoutStatus,
   currRegistrationStatus: RegistrationStatus,
-  isCommitmentCheckout = false,
 ): RegistrationStatus {
   if (currRegistrationStatus === "invalid") return "invalid";
-  if (newCheckoutStatus === "deleted" || newCheckoutStatus === "refunded") return "invalid";
-  if (newCheckoutStatus === "completed") return currRegistrationStatus === "cancelled" ? "cancelled" : "ok";
-  if (newCheckoutStatus === "pending" && isCommitmentCheckout) return currRegistrationStatus === "cancelled" ? "cancelled" : "ok";
-  if (newCheckoutStatus === "pending" && !isCommitmentCheckout) return currRegistrationStatus === "cancelled" ? "cancelled" : "pending";
+  if (newCheckoutStatus === "refunded") return "invalid";
+  if (newCheckoutStatus === "approved" || newCheckoutStatus === "paid")
+    return currRegistrationStatus === "cancelled" ? "cancelled" : "ok";
+  if (newCheckoutStatus === "pending")
+    return currRegistrationStatus === "cancelled" ? "cancelled" : "pending";
   return "invalid";
 }

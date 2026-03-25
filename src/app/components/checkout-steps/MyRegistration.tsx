@@ -12,6 +12,10 @@ import {
   Alert,
   Snackbar,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Person as PersonIcon,
@@ -23,25 +27,28 @@ import {
   Share as ShareIcon,
 } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
-import { useCheckout } from "../../contexts/CheckoutContext";
+import { useBuyer } from "../../contexts/BuyerContext";
 import { RegistrationStatus } from "../../api/registrations/registration.types";
 import { formatCPF } from "../../utils/export-utils";
 import { useRegistrationPDF } from "../../hooks/useRegistrationPDF";
 import { useShare } from "../../hooks/useShare";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
+import RegistrationForm from "../RegistrationForm";
+import { RegistrationFormData } from "../../api/registrations/registration.types";
 
 export default function MyRegistration() {
   const {
     deleteCheckout,
     registration,
-    registrateMyself,
-    checkoutType,
-    setCurrentStep,
     updateRegistrationStatus,
     checkout,
     checkoutRegistrations,
     registrationsAmount,
-  } = useCheckout();
+    formData,
+    updateFormData,
+    createRegistration,
+    updateRegistration,
+    loading,
+  } = useBuyer();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<
@@ -51,6 +58,10 @@ export default function MyRegistration() {
   const [isCancellingRegistration, setIsCancellingRegistration] =
     useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const { generateRegistrationPDF, setup } = useRegistrationPDF();
   const { canShare, share } = useShare();
@@ -78,10 +89,10 @@ export default function MyRegistration() {
         throw new Error("Checkout não encontrado");
       }
 
-
-      const newStatus: RegistrationStatus = isPaymentByCommitment(checkout)
-        ? "ok"
-        : (checkout.status === "pending" ? "pending" : "ok");
+      const newStatus: RegistrationStatus =
+        checkout.status === "paid" || checkout.status === "approved"
+          ? "ok"
+          : "pending";
 
       await updateRegistrationStatus(registration.id, newStatus);
 
@@ -120,13 +131,8 @@ export default function MyRegistration() {
   const canActivateMyRegistration = () => {
     if (!registration || !checkout) return false;
 
-    // Não pode ativar a inscrição se checkout for do tipo voucher
-    if (checkout.checkoutType === "voucher") {
-      return false;
-    }
-
     // Não pode ativar se o checkout for deleted ou refunded
-    if (checkout.status === "deleted" || checkout.status === "refunded") {
+    if (checkout.status === "refunded") {
       return false;
     }
 
@@ -151,10 +157,7 @@ export default function MyRegistration() {
     }
 
     // Não pode desativar se o checkout for deleted ou refunded
-    if (
-      checkout &&
-      (checkout.status === "deleted" || checkout.status === "refunded")
-    ) {
+    if (checkout && checkout.status === "refunded") {
       return false;
     }
 
@@ -168,7 +171,7 @@ export default function MyRegistration() {
       case "ok":
         return "Ativa";
       case "pending":
-        return "Pendente";
+        return "Aguardando pagamento";
       default:
         return "Inválida";
     }
@@ -269,6 +272,39 @@ export default function MyRegistration() {
     setSnackbarOpen(true);
   };
 
+  const openEditDialog = () => {
+    setEditError(null);
+    setIsFormValid(false);
+    setEditOpen(true);
+  };
+
+  const handleSaveRegistration = async () => {
+    try {
+      setEditError(null);
+
+      const data = formData as RegistrationFormData;
+      const processed: RegistrationFormData = {
+        ...data,
+        fullName: data.fullName?.toUpperCase() || "",
+        credentialName: data.credentialName?.toUpperCase() || "",
+        occupation: data.occupation?.toUpperCase() || "",
+        howDidYouHearAboutUs: data.howDidYouHearAboutUs?.toUpperCase() || "",
+        howDidYouHearAboutUsOther:
+          data.howDidYouHearAboutUsOther?.toUpperCase() || "",
+      };
+
+      if (registration) {
+        await updateRegistration(processed);
+      } else {
+        await createRegistration(processed);
+      }
+
+      setEditOpen(false);
+    } catch (e) {
+      setEditError(e instanceof Error ? e.message : "Erro ao salvar inscrição");
+    }
+  };
+
   if (!checkout || checkout.checkoutType === "admin") return null;
 
   return (
@@ -364,7 +400,7 @@ export default function MyRegistration() {
                 <Button
                   variant="outlined"
                   startIcon={<EditIcon />}
-                  onClick={() => setCurrentStep("registration-form")}
+                  onClick={openEditDialog}
                   sx={{
                     width: { xs: "100%", sm: "auto" },
                     minWidth: { sm: "auto" },
@@ -444,60 +480,30 @@ export default function MyRegistration() {
                   </Tooltip>
                 ) : null}
               </Stack>
-              {checkout && checkout.checkoutType === "voucher" && (
-                <Stack
-                  direction="column"
-                  sx={{ flexWrap: "wrap", gap: 1, mt: 2 }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    *Quer se inscrever de outra forma que não com voucher?
-                    Pressione o botão abaixo para deletar esta inscrição e
-                    escolher outra opção:
-                  </Typography>
-                  <Box>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      startIcon={
-                        isDeletingVoucher ? (
-                          <CircularProgress size={20} color="inherit" />
-                        ) : (
-                          <DeleteIcon />
-                        )
-                      }
-                      onClick={handleDeleteVoucherCheckout}
-                      disabled={isDeletingVoucher}
-                      sx={{
-                        width: { xs: "100%", sm: "auto" },
-                        minWidth: { sm: "auto" },
-                      }}
-                    >
-                      {isDeletingVoucher ? "Deletando..." : "Deletar inscrição"}
-                    </Button>
-                  </Box>
-                </Stack>
-              )}
             </>
           ) : (
             <Box sx={{ textAlign: "center", py: 3 }}>
-              {checkout && checkout.status === "completed" && (
-                <Typography variant="body1" color="text.secondary">
-                  Sua vaga no evento está garantida, mas você ainda não
-                  preencheu seus dados de inscrição.
-                </Typography>
-              )}
+              {checkout &&
+                (checkout.status === "paid" ||
+                  checkout.status === "approved") && (
+                  <Typography variant="body1" color="text.secondary">
+                    Você mesmo(a) vai participar deste evento? <br />
+                    Clique no botão abaixo para preencher os dados da sua
+                    própria inscrição.
+                  </Typography>
+                )}
               {checkout && checkout.status === "pending" && (
                 <Typography variant="body1" color="text.secondary">
-                  O pagamento ou aprovação de sua vaga no evento ainda está
-                  pendente,
-                  <br /> porém você já pode preencher seus dados de inscrição.
+                  Você mesmo(a) vai participar deste evento? <br />
+                  Mesmo com pagamento pendente você já pode preencher seus dados
+                  de inscrição.
                 </Typography>
               )}
               <div className="my-4"></div>
               <Button
                 variant="contained"
                 startIcon={<PersonIcon />}
-                onClick={() => setCurrentStep("registration-form")}
+                onClick={openEditDialog}
                 sx={{
                   width: { xs: "100%", sm: "auto" },
                   minWidth: { sm: "auto" },
@@ -505,10 +511,55 @@ export default function MyRegistration() {
               >
                 Preencher minha inscrição
               </Button>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                Para inscrever outras pessoas, use o botão{" "}
+                <strong>&quot;Nova inscrição&quot;</strong> na seção “Inscrições
+                realizadas”.
+              </Typography>
             </Box>
           )}
         </CardContent>
       </Card>
+
+      <Dialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {registration
+            ? "Editar meus dados de inscrição"
+            : "Preencher minha inscrição"}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            {editError ? <Alert severity="error">{editError}</Alert> : null}
+            <RegistrationForm
+              initialData={formData || {}}
+              onDataChange={updateFormData}
+              onValidationChange={setIsFormValid}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setEditOpen(false)}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveRegistration}
+            disabled={loading || !isFormValid}
+            startIcon={loading ? <CircularProgress size={18} /> : undefined}
+          >
+            {loading ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbarOpen}

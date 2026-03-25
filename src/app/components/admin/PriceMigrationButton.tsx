@@ -11,7 +11,7 @@ export default function PriceMigrationButton() {
   const { selectedEvent, showNotification } = useAdminContext();
   const [migrating, setMigrating] = useState(false);
 
-  const handleMigrateTotalValue = async () => {
+  const handleMigratePriceSnapshot = async () => {
     if (!selectedEvent) {
       showNotification("Nenhum evento selecionado", "warning");
       return;
@@ -25,7 +25,7 @@ export default function PriceMigrationButton() {
         throw new Error("Usuário não autenticado");
       }
 
-      const response = await fetch("/api/checkouts/migrate-total-value", {
+      const response = await fetch("/api/checkouts/migrate-price-breakpoints", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,7 +42,7 @@ export default function PriceMigrationButton() {
 
       showNotification(
         data.message ||
-          `Migração concluída! ${data.updated} checkouts atualizados.`,
+          `Migração concluída: ${data.updated} checkouts receberam snapshot de preços.`,
         "success"
       );
     } catch (error) {
@@ -51,7 +51,7 @@ export default function PriceMigrationButton() {
           ? error.message
           : "Erro desconhecido ao executar migração";
       showNotification(errorMessage, "error");
-      console.error("Error migrating total value:", error);
+      console.error("Error migrating price breakpoints:", error);
     } finally {
       setMigrating(false);
     }
@@ -65,11 +65,11 @@ export default function PriceMigrationButton() {
     <Button
       color="inherit"
       startIcon={<RefreshIcon />}
-      onClick={handleMigrateTotalValue}
+      onClick={handleMigratePriceSnapshot}
       disabled={migrating}
       sx={{ textTransform: "none" }}
     >
-      {migrating ? "Migrando..." : "Migrar totalValue"}
+      {migrating ? "Migrando..." : "Migrar snapshot de preços"}
     </Button>
   );
 }

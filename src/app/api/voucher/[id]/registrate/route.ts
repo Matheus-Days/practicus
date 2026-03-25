@@ -12,7 +12,6 @@ import { createErrorResponse, createSuccessResponse } from "../../../utils";
 import { CheckoutDocument } from "../../../checkouts/checkout.types";
 import { DecodedIdToken } from "firebase-admin/auth";
 import { validateAuth } from "../../../../../lib/auth-utils";
-import { createCheckoutDocumentId, isPaymentByCommitment } from "../../../checkouts/utils";
 import {
   RegistrationDocument,
   RegistrationStatus,
@@ -34,6 +33,12 @@ export async function POST(
 
   const { id } = params;
   const body = (await request.json()) as CreateVoucherCheckoutRequest;
+  if (body.userId !== authenticatedUser.uid) {
+    return createErrorResponse(
+      "Usuário não tem permissão para usar este voucher",
+      403
+    );
+  }
 
   const voucherDoc = await firestore.collection("vouchers").doc(id).get();
   const voucherData = voucherDoc.data() as VoucherDocument;
@@ -54,67 +59,65 @@ export async function POST(
     return createErrorResponse(validateVoucherResult.message, 403);
   }
 
-  const checkoutDocId: string = createCheckoutDocumentId(
-    body.eventId,
-    authenticatedUser.uid
-  );
-  let checkout: CheckoutDocument;
   let registration: RegistrationDocument;
-
-  try {
-    checkout = {
-      checkoutType: "voucher",
-      createdAt: new Date(),
-      eventId: body.eventId,
-      status: "completed",
-      userId: authenticatedUser.uid,
-    };
-
-    const checkoutDocRef = firestore.collection("checkouts").doc(checkoutDocId);
-
-    const checkoutDoc = await checkoutDocRef.get();
-    if (checkoutDoc.exists && checkoutDoc.data()?.status !== "deleted") {
-      return createErrorResponse(
-        "Uma outra inscrição (checkout) já existe para esse email.",
-        400
-      );
-    }
-
-    await checkoutDocRef.set(checkout);
-  } catch (error) {
-    return createErrorResponse("Erro ao criar inscrição (checkout)", 500);
-  }
+  const registrationId = crypto.randomUUID();
 
   try {
     const buyerCheckoutDoc = await firestore
       .collection("checkouts")
       .doc(voucherData.checkoutId)
       .get();
+    if (!buyerCheckoutDoc.exists) {
+      return createErrorResponse(
+        "Compra vinculada ao voucher não encontrada",
+        404
+      );
+    }
     const buyerCheckoutData = buyerCheckoutDoc.data() as CheckoutDocument;
 
-    registration = {
-      checkoutId: voucherData.checkoutId, // refers to the buyers checkout
-      createdAt: new Date(),
-      eventId: body.eventId,
-      status: getRegistrationStatus(buyerCheckoutData),
-      userId: authenticatedUser.uid,
+    const processedRegistration = {
       ...body.registration,
+      fullName:
+        body.registration.fullName?.toUpperCase?.() ||
+        body.registration.fullName,
+      credentialName:
+        body.registration.credentialName?.toUpperCase?.() ||
+        body.registration.credentialName,
+      occupation:
+        body.registration.occupation?.toUpperCase?.() ||
+        body.registration.occupation,
+      howDidYouHearAboutUs:
+        body.registration.howDidYouHearAboutUs?.toUpperCase?.() ||
+        body.registration.howDidYouHearAboutUs,
+      howDidYouHearAboutUsOther:
+        body.registration.howDidYouHearAboutUsOther?.toUpperCase?.() ||
+        body.registration.howDidYouHearAboutUsOther,
     };
 
-    const registrationDocRef = firestore
-      .collection("registrations")
-      .doc(checkoutDocId);
+    registration = {
+      schemaVersion: 2,
+      eventId: body.eventId,
+      checkoutId: voucherData.checkoutId,
+      attendeeUserId: authenticatedUser.uid,
+      createdByUserId: authenticatedUser.uid,
+      createdByRole: "attendee",
+      createdAt: new Date(),
+      status: getRegistrationStatus(buyerCheckoutData),
+      ...processedRegistration,
+    };
 
-    await registrationDocRef.set(registration);
+    await firestore
+      .collection("registrations")
+      .doc(registrationId)
+      .set(registration);
   } catch (error) {
+    console.error(error);
     return createErrorResponse("Erro ao criar inscrição", 500);
   }
 
   return createSuccessResponse<CreateVoucherCheckoutResponse>(
     {
-      checkoutId: checkoutDocId,
-      checkout,
-      registrationId: checkoutDocId,
+      registrationId,
       registration,
     },
     200
@@ -122,14 +125,17 @@ export async function POST(
 }
 
 function getRegistrationStatus(
-  buyerCheckoutData: CheckoutDocument,
+  buyerCheckoutData: CheckoutDocument
 ): RegistrationStatus {
-  const isCommitmentCheckout = isPaymentByCommitment(buyerCheckoutData);
-  if (buyerCheckoutData.status === "completed") {
+  if (
+    buyerCheckoutData.checkoutType === "admin" ||
+    buyerCheckoutData.status === "paid" ||
+    buyerCheckoutData.status === "approved"
+  ) {
     return "ok";
-  } else if (buyerCheckoutData.status === "pending") {
-    return isCommitmentCheckout ? "ok" : "pending";
-  } else {
-    return "invalid";
   }
+  if (buyerCheckoutData.status === "pending") {
+    return "pending";
+  }
+  return "invalid";
 }

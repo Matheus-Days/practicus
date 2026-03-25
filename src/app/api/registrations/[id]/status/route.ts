@@ -10,8 +10,8 @@ import {
   validateUpdateRegistrationStatus,
   extractUpdateRegistrationStatusDataFromRequestBody,
 } from "../../utils";
-import { createErrorResponse, isUserAdmin } from "../../../utils";
 import { CheckoutDocument } from "../../../checkouts/checkout.types";
+import { createErrorResponse, isUserAdmin } from "../../../utils";
 
 export async function PATCH(
   request: NextRequest,
@@ -54,44 +54,54 @@ export async function PATCH(
 
     const registration = registrationDoc.data() as RegistrationDocument;
 
-    // Se o usuário não for o dono da inscrição, verificar se é admin
     const userIsRegistrationOwner =
-      registration.userId === authenticatedUser.uid;
-    let checkout: CheckoutDocument | null = null;
+      registration.attendeeUserId === authenticatedUser.uid;
 
-    if (!userIsRegistrationOwner) {
-      const checkoutDoc = await firestore
-        .collection("checkouts")
-        .doc(registration.checkoutId)
-        .get();
-
-      if (!checkoutDoc.exists) {
-        return createErrorResponse("Compra da inscrição não encontrada", 404);
+    isAdmin = await isUserAdmin(authenticatedUser, firestore);
+    // Para status que dependem de capacidade, precisamos do checkout.
+    if (!registration.checkoutId) {
+      // Sem checkout, somente dono/admin podem alterar status.
+      if (!userIsRegistrationOwner) {
+        if (!isAdmin) {
+          return createErrorResponse(
+            "Usuário não tem permissão para atualizar esta inscrição",
+            403
+          );
+        }
       }
-
-      checkout = checkoutDoc.data() as CheckoutDocument;
-
-      isAdmin = await isUserAdmin(authenticatedUser, firestore);
-      if (!isAdmin && checkout.userId !== authenticatedUser.uid)
-        return createErrorResponse(
-          "Usuário não tem permissão para ativar a inscrição",
-          403
-        );
+      await firestore.collection("registrations").doc(id).update({ status });
+      return NextResponse.json({ message: "Situação da inscrição atualizada com sucesso" });
     }
 
     const checkoutDoc = await firestore
       .collection("checkouts")
       .doc(registration.checkoutId)
       .get();
+    if (!checkoutDoc.exists) {
+      return createErrorResponse("Compra da inscrição não encontrada", 404);
+    }
+    const checkout = checkoutDoc.data() as CheckoutDocument;
+
+    // Permissões:
+    // - participante (attendeeUserId) pode atualizar o status da própria inscrição
+    // - comprador (checkout.userId) pode atualizar o status da inscrição do seu checkout
+    // - admin pode tudo
+    if (!userIsRegistrationOwner && checkout.userId !== authenticatedUser.uid) {
+      isAdmin = await isUserAdmin(authenticatedUser, firestore);
+      if (!isAdmin) {
+        return createErrorResponse(
+          "Usuário não tem permissão para atualizar esta inscrição",
+          403
+        );
+      }
+    }
 
     // Ao tentar ativar uma inscrição, verificar se a compra está válida e se ainda há vagas disponíveis
     if (status === "ok") {
       const validationResult = await canActivateRegistration(
         checkoutDoc,
         registration,
-        isAdmin,
-        firestore,
-        id
+        firestore
       );
 
       if (!validationResult.canActivate) {
@@ -107,5 +117,5 @@ export async function PATCH(
     return createErrorResponse("Erro ao atualizar status da inscrição", 500);
   }
 
-  return NextResponse.json({ message: "Status atualizado com sucesso" });
+  return NextResponse.json({ message: "Situação da inscrição atualizada com sucesso" });
 }
