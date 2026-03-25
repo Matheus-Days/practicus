@@ -46,6 +46,8 @@ export default function BillingDetails() {
     legalEntity,
     billingDetails,
     setLegalEntity,
+    paymentByCommitment,
+    setPaymentByCommitment,
     createCheckout,
     updateCheckout,
     checkout,
@@ -109,7 +111,6 @@ export default function BillingDetails() {
     responsibleName: "",
     responsiblePhone: "",
     responsibleEmail: "",
-    paymentByCommitment: false,
   });
 
   const [localRegistrationsAmount, setLocalRegistrationsAmount] = useState(
@@ -150,10 +151,12 @@ export default function BillingDetails() {
         responsibleName: pj.responsibleName || "",
         responsiblePhone: pj.responsiblePhone || "",
         responsibleEmail: pj.responsibleEmail || "",
-        paymentByCommitment: pj.paymentByCommitment || false,
       });
+      if (checkout) {
+        setPaymentByCommitment(checkout.payment?.method === "empenho");
+      }
     }
-  }, [legalEntity, billingDetails]);
+  }, [legalEntity, billingDetails, checkout, setPaymentByCommitment]);
 
   useEffect(() => {
     if (localLegalEntity === "pf") {
@@ -169,8 +172,8 @@ export default function BillingDetails() {
         responsibleName: "",
         responsiblePhone: "",
         responsibleEmail: "",
-        paymentByCommitment: false,
       });
+      setPaymentByCommitment(false);
       setCnpjError(null);
       setPhoneOrgError(null);
       setPhoneRespError(null);
@@ -186,8 +189,9 @@ export default function BillingDetails() {
       });
       setPhonePFError(null);
       setPhonePFFormat("(##) #####-####");
+      setPaymentByCommitment(false);
     }
-  }, [localLegalEntity, clearCEP, clearMunicipalities]);
+  }, [localLegalEntity, clearCEP, clearMunicipalities, setPaymentByCommitment]);
 
   useEffect(() => {
     setLocalRegistrationsAmount(registrationsAmount || 1);
@@ -230,6 +234,9 @@ export default function BillingDetails() {
             localLegalEntity === "pf" ? billingDetailsPF : billingDetailsPJ,
           amount: localRegistrationsAmount,
           legalEntity: localLegalEntity || undefined,
+          ...(localLegalEntity === "pj"
+            ? { paymentByCommitment }
+            : {}),
         });
 
         // Mostra snackbar de sucesso para atualização
@@ -1001,14 +1008,10 @@ export default function BillingDetails() {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={billingDetailsPJ.paymentByCommitment || false}
+                        checked={paymentByCommitment}
                         disabled={isReadOnly}
                         onChange={(e) => {
-                          const checked = e.target.checked;
-                          handleBillingDetailsPJChange(
-                            "paymentByCommitment",
-                            checked
-                          );
+                          setPaymentByCommitment(e.target.checked);
                         }}
                         sx={{
                           "&.Mui-checked": {

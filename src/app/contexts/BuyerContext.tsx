@@ -99,6 +99,7 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
   const [registrationsAmount, setRegistrationsAmount] = useState<number>(1);
   const [registrateMyself, setRegistrateMyself] = useState<boolean>(false);
   const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
+  const [paymentByCommitment, setPaymentByCommitment] = useState(false);
   const [formData, setFormData] = useState<Partial<RegistrationFormData>>({});
   const [event, setEvent] = useState<EventData | null>(null);
 
@@ -111,6 +112,10 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
     setRegistrationsAmount(checkoutDoc.amount || 1);
     setRegistrateMyself(checkoutDoc.registrateMyself || false);
     setLegalEntity(checkoutDoc.legalEntity || null);
+    setPaymentByCommitment(
+      checkoutDoc.legalEntity === "pj" &&
+        checkoutDoc.payment?.method === "empenho"
+    );
     setVoucher(checkoutDoc.voucher || null);
     setCheckoutType(checkoutDoc.checkoutType || null);
 
@@ -313,6 +318,9 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
     if (legalEntity) checkoutData.legalEntity = legalEntity;
     if (processedBillingDetails) checkoutData.billingDetails = processedBillingDetails;
     if (registrateMyself) checkoutData.registrateMyself = registrateMyself;
+    if (legalEntity === "pj") {
+      checkoutData.paymentByCommitment = paymentByCommitment;
+    }
 
     try {
       setLoading(true);
@@ -500,6 +508,7 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
     setBillingDetails(null);
     setRegistrationsAmount(1);
     setRegistrateMyself(false);
+    setPaymentByCommitment(false);
     setVoucher(null);
     setVoucherData(null);
   };
@@ -540,6 +549,7 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
     registrationsAmount,
     registrateMyself,
     legalEntity,
+    paymentByCommitment,
     voucher,
     voucherData,
     voucherLoading,
@@ -548,6 +558,7 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
     setRegistrationsAmount,
     setRegistrateMyself,
     setLegalEntity,
+    setPaymentByCommitment,
     setVoucher,
     setCheckoutType,
     createCheckout,

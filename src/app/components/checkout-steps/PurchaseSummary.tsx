@@ -154,8 +154,7 @@ export default function PurchaseSummary() {
             </Box>
 
             {legalEntity === "pj" &&
-              billingDetails &&
-              (billingDetails as BillingDetailsPJ).paymentByCommitment && (
+              checkout.payment.method === "empenho" && (
                 <Box
                   sx={{
                     flex: { xs: "0 0 46px", sm: "1 1 100%" },

@@ -1,6 +1,7 @@
 import {
   CheckoutDocument,
   CreateCheckoutRequest,
+  LegalEntity,
   UpdateCheckoutRequest,
 } from "./checkout.types";
 
@@ -10,10 +11,7 @@ export function validateCreateCheckoutRequest(data: any): boolean {
     return false;
   }
 
-  if (
-    !data.checkoutType ||
-    !["acquire", "admin"].includes(data.checkoutType)
-  ) {
+  if (!data.checkoutType || !["acquire", "admin"].includes(data.checkoutType)) {
     return false;
   }
 
@@ -48,6 +46,7 @@ export function extractCreateCheckoutDataFromRequestBody(
     amount,
     voucher,
     registrateMyself,
+    paymentByCommitment,
   } = body as CreateCheckoutRequest;
   return {
     eventId,
@@ -58,6 +57,7 @@ export function extractCreateCheckoutDataFromRequestBody(
     amount,
     voucher,
     registrateMyself,
+    paymentByCommitment,
   };
 }
 
@@ -71,6 +71,7 @@ export function extractUpdateCheckoutDataFromRequestBody(
     checkoutType,
     legalEntity,
     registrateMyself,
+    paymentByCommitment,
   } = body as UpdateCheckoutRequest;
   return {
     amount,
@@ -79,23 +80,79 @@ export function extractUpdateCheckoutDataFromRequestBody(
     checkoutType,
     legalEntity,
     registrateMyself,
+    paymentByCommitment,
   };
+}
+
+/** Define `payment.method` a partir do parâmetro de raiz (criação). */
+export function paymentMethodFromCommitmentRequest(
+  legalEntity: LegalEntity | undefined,
+  paymentByCommitment: boolean | undefined
+): CheckoutDocument["payment"]["method"] {
+  if (legalEntity === "pj" && paymentByCommitment === true) {
+    return "empenho";
+  }
+  return "card";
+}
+
+/**
+ * PUT: retorna o novo `payment.method` quando há sinal explícito de empenho ou mudança para PF;
+ * `null` = não alterar método.
+ */
+export function resolvePutPaymentMethod(
+  checkoutDoc: CheckoutDocument,
+  updateData: UpdateCheckoutRequest
+): CheckoutDocument["payment"]["method"] | null {
+  const touchesCommitmentRelevant =
+    updateData.billingDetails !== undefined ||
+    updateData.legalEntity !== undefined ||
+    updateData.paymentByCommitment !== undefined;
+
+  if (!touchesCommitmentRelevant) {
+    return null;
+  }
+
+  const effectiveLegal: LegalEntity | undefined =
+    updateData.legalEntity ?? checkoutDoc.legalEntity;
+
+  if (effectiveLegal === "pf") {
+    return "card";
+  }
+
+  let flag: boolean | undefined = updateData.paymentByCommitment;
+  if (
+    flag === undefined &&
+    updateData.billingDetails &&
+    "paymentByCommitment" in updateData.billingDetails &&
+    typeof (updateData.billingDetails as { paymentByCommitment?: boolean })
+      .paymentByCommitment === "boolean"
+  ) {
+    flag = (updateData.billingDetails as { paymentByCommitment: boolean })
+      .paymentByCommitment;
+  }
+
+  if (flag !== undefined) {
+    return paymentMethodFromCommitmentRequest("pj", flag);
+  }
+
+  return null;
 }
 
 export function createCheckoutDocument(
   data: CreateCheckoutRequest
 ): CheckoutDocument {
   const dateNow = new Date();
-  const isCommitment =
-    data.billingDetails &&
-    "paymentByCommitment" in data.billingDetails &&
-    data.billingDetails.paymentByCommitment;
+  const { paymentByCommitment, voucher: _clientVoucher, ...restData } = data;
   const payment: CheckoutDocument["payment"] = {
-    method: isCommitment ? "empenho" : "card",
+    method: paymentMethodFromCommitmentRequest(
+      data.legalEntity,
+      paymentByCommitment
+    ),
     value: 0,
   };
   return {
-    ...data,
+    ...restData,
+    billingDetails: data.billingDetails,
     createdAt: dateNow,
     updatedAt: dateNow,
     status: "pending",

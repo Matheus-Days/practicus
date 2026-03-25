@@ -42,6 +42,7 @@ export interface CheckoutContextType {
   registrationsAmount: number;
   registrateMyself: boolean;
   legalEntity: LegalEntity | null;
+  paymentByCommitment: boolean;
   voucher: string | null;
   voucherData: VoucherData | null;
   voucherLoading: boolean;
@@ -53,6 +54,7 @@ export interface CheckoutContextType {
   setRegistrationsAmount: (amount: number) => void;
   setRegistrateMyself: (registrateMyself: boolean) => void;
   setLegalEntity: (legalEntity: LegalEntity | null) => void;
+  setPaymentByCommitment: (value: boolean) => void;
   setVoucher: (voucher: string | null) => void;
   setCheckoutType: (checkoutType: CheckoutType | null) => void;
   // Funções de checkout

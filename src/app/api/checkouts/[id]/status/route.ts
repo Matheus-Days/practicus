@@ -108,7 +108,8 @@ export async function PATCH(
       batch.update(doc.ref, { status: newStatus, updatedAt: new Date() });
     });
 
-    // Criar voucher quando status for paid ou approved e não tiver voucher
+    // Legado + idempotência: compras antigas podiam existir sem voucher até
+    // paid/approved. Novos checkouts já recebem voucher no POST /api/checkouts.
     if (
       (body.status === "paid" || body.status === "approved") &&
       !checkoutData.voucher

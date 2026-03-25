@@ -28,7 +28,6 @@ export type BillingDetailsPJ = {
   responsibleName: string;
   responsiblePhone: string;
   responsibleEmail: string;
-  paymentByCommitment: boolean;
 };
 
 export type Attachment = {
@@ -92,7 +91,9 @@ export type CreateCheckoutRequest = Pick<
   | "amount"
   | "voucher"
   | "registrateMyself"
->;
+> & {
+  paymentByCommitment?: boolean;
+};
 
 export type UpdateCheckoutRequest = Partial<
   Pick<
@@ -104,7 +105,9 @@ export type UpdateCheckoutRequest = Partial<
     | "voucher"
     | "registrateMyself"
   >
->;
+> & {
+  paymentByCommitment?: boolean;
+};
 
 export type CheckoutResponse = {
   documentId: string;

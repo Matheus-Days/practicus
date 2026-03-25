@@ -34,7 +34,7 @@ export default function CheckoutStatus() {
           icon: <PendingIcon color="warning" />,
           description: onlyRegistrateMylself
             ? "Aguardando confirmação do pagamento."
-            : "O voucher para as inscrições será liberado após a aprovação do pagamento.",
+            : "Aguardando confirmação do pagamento. O código do voucher já está disponível abaixo para você compartilhar.",
         };
       case "approved":
       case "paid":

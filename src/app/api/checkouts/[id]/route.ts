@@ -4,6 +4,7 @@ import { validateAuth } from "@/lib/auth-utils";
 import {
   validateUpdateCheckoutRequest,
   extractUpdateCheckoutDataFromRequestBody,
+  resolvePutPaymentMethod,
 } from "../utils";
 import {
   CheckoutDocument,
@@ -65,15 +66,36 @@ export async function PUT(
       }
     }
 
-    await firestore
-      .collection("checkouts")
-      .doc(id)
-      .update({
-        ...updateData,
-        totalValue,
-        status: "pending",
-        updatedAt: new Date(),
-      } as Partial<CheckoutDocument>);
+    const {
+      paymentByCommitment: _paymentByCommitment,
+      billingDetails: rawBillingUpdate,
+      ...updateRest
+    } = updateData;
+
+    const firestoreUpdate: Partial<CheckoutDocument> = {
+      ...updateRest,
+      totalValue,
+      status: "pending",
+      updatedAt: new Date(),
+    };
+
+    if (rawBillingUpdate !== undefined) {
+      const mergedBilling = {
+        ...(checkoutDoc.billingDetails ?? {}),
+        ...rawBillingUpdate,
+      } as CheckoutDocument["billingDetails"];
+      firestoreUpdate.billingDetails = mergedBilling;
+    }
+
+    const newPaymentMethod = resolvePutPaymentMethod(checkoutDoc, updateData);
+    if (newPaymentMethod !== null) {
+      firestoreUpdate.payment = {
+        ...checkoutDoc.payment,
+        method: newPaymentMethod,
+      };
+    }
+
+    await firestore.collection("checkouts").doc(id).update(firestoreUpdate);
 
     return createSuccessResponse({
       documentId: id,
