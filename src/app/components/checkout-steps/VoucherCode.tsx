@@ -18,9 +18,8 @@ import {
   ContentCopy as CopyIcon,
   Share as ShareIcon,
 } from "@mui/icons-material";
-import { useCheckout } from "../../contexts/CheckoutContext";
+import { useBuyer } from "../../contexts/BuyerContext";
 import { useVoucherPDF } from "../../hooks/useVoucherPDF";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 interface VoucherCodeProps {
   voucher: string;
@@ -28,7 +27,7 @@ interface VoucherCodeProps {
 
 export default function VoucherCode({ voucher }: VoucherCodeProps) {
   const { voucherData, voucherLoading, toggleVoucherActiveStatus, checkout } =
-    useCheckout();
+    useBuyer();
   const { generateVoucherPDF, isLoading: pdfLoading } = useVoucherPDF();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -142,7 +141,8 @@ export default function VoucherCode({ voucher }: VoucherCodeProps) {
     setSnackbarOpen(true);
   };
 
-  if (checkout?.status === "pending" && !isPaymentByCommitment(checkout)) {
+  // Não mostrar o voucher se o checkout foi reembolsado
+  if (checkout?.status === "refunded") {
     return null;
   }
 

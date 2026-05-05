@@ -1,31 +1,13 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/prismicio';
-import HeadingBadge from '@/app/components/HeadingBadge';
-import BoundedMain from '@/app/components/BoundedMain';
-import PageBanner from '@/app/components/PageBanner';
-import Checkouts from '../../components/Checkouts';
 
 type Params = { uid: string };
 
 export default async function Page({ params }: { params: Params }) {
-  const client = createClient();
-  const page = await client
-    .getByUID('evento', params.uid)
-    .catch(() => notFound());
-  return (
-    <BoundedMain>
-      <HeadingBadge as="h1" className="mb-3">Inscreva-se</HeadingBadge>
-      <PageBanner
-        smImageField={page.data.imagem_ilustrativa['Tela estreita']}
-        lgImageField={page.data.imagem_ilustrativa.Banner}
-        titleField={page.data.nome_do_evento}
-      />
-      <div className="flex flex-col items-center mt-8">
-        <Checkouts eventId={params.uid} />
-      </div>
-    </BoundedMain>
-  );
+  // Rota legada -> nova rota do fluxo de attendee.
+  // Mantemos server-side redirect para preservar links antigos.
+  redirect(`/evento/${params.uid}/inscricao`);
 }
 
 export async function generateMetadata({

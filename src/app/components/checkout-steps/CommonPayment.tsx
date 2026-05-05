@@ -6,10 +6,10 @@ import {
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
 import { PrismicNextLink } from "@prismicio/next";
-import { useCheckout } from "../../contexts/CheckoutContext";
+import { useBuyer } from "../../contexts/BuyerContext";
 
 export default function CommonPayment() {
-  const { setCurrentStep } = useCheckout();
+  const { setCurrentStep } = useBuyer();
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Typography

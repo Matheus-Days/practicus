@@ -1,12 +1,14 @@
-export type CheckoutType = "acquire" | "voucher" | "admin";
+import type { PriceBreakpoint } from "../../types/events";
+
+export type CheckoutType = "acquire" | "admin";
 
 export type LegalEntity = "pf" | "pj";
 
 export type CheckoutStatus =
-  | "pending" // Checkout created, but not finalized
-  | "completed" // Checkout finalized (payment approved and registration created if `registrateMyself` is true or checkoutType is "voucher")
-  | "refunded" // Checkout canceled and payment refunded
-  | "deleted"; // Checkout marked as deleted (we do not actually delete the document)
+  | "pending" // Awaiting payment; associated registrations have registration status pending
+  | "approved" // Admin recognized validity of payment intention (e.g. commitment); registrations ok
+  | "paid" // Admin recognized full payment; registrations ok
+  | "refunded"; // Payment refunded or checkout cancelled; no new voucher registrations; existing registrations become invalid
 
 export type BillingDetailsPF = {
   email: string;
@@ -26,7 +28,6 @@ export type BillingDetailsPJ = {
   responsibleName: string;
   responsiblePhone: string;
   responsibleEmail: string;
-  paymentByCommitment: boolean;
 };
 
 export type Attachment = {
@@ -36,23 +37,17 @@ export type Attachment = {
   uploadedAt: Date;
 };
 
-export type CommitmentPayment = {
-  method: "empenho";
-  status: "pending" | "committed" | "paid";
+export type Payment = {
+  method: "card" | "boleto" | "pix" | "empenho";
   value: number;
+  /** Only for commitment payment */
   commitmentAttachment?: Attachment;
+  /** For both commitment and common payment */
   paymentAttachment?: Attachment;
-};
-
-export type CommomPayment = {
-  method: "card" | "boleto" | "pix";
-  status: "pending" | "paid" | "refunded";
-  value: number;
+  /** For both; uploaded by Practicus team */
   receiptAttachment?: Attachment;
   externalData?: object;
 };
-
-export type Payment = CommitmentPayment | CommomPayment;
 
 export type CheckoutDocument = {
   checkoutType: CheckoutType;
@@ -70,9 +65,19 @@ export type CheckoutDocument = {
   registrateMyself?: boolean;
   updatedAt?: Date;
   voucher?: string;
-  payment?: Payment;
+  payment: Payment;
   /** Total value of the checkout in cents */
   totalValue?: number;
+  /**
+   * Copy of event.priceBreakpoints at the time of checkout creation.
+   * Ensures consistent calculations and display after policy changes in the event.
+   */
+  priceBreakpointsAtCheckout?: PriceBreakpoint[];
+};
+
+/** Checkout document archived in deletedCheckouts when a purchase is cancelled (same fields as CheckoutDocument + deletedAt). */
+export type DeletedCheckoutDocument = CheckoutDocument & {
+  deletedAt: Date;
 };
 
 //#region Types for API requests/responses
@@ -86,7 +91,9 @@ export type CreateCheckoutRequest = Pick<
   | "amount"
   | "voucher"
   | "registrateMyself"
->;
+> & {
+  paymentByCommitment?: boolean;
+};
 
 export type UpdateCheckoutRequest = Partial<
   Pick<
@@ -98,7 +105,9 @@ export type UpdateCheckoutRequest = Partial<
     | "voucher"
     | "registrateMyself"
   >
->;
+> & {
+  paymentByCommitment?: boolean;
+};
 
 export type CheckoutResponse = {
   documentId: string;
@@ -110,7 +119,5 @@ export type UpdateCheckoutStatusRequest = Pick<CheckoutDocument, "status">;
 export type DeleteCommitmentAttachmentRequest = {
   attachmentType: "commitment" | "payment";
 };
-
-export type UpdateCommitmentStatusRequest = Pick<CommitmentPayment, "status">;
 
 //#endregion

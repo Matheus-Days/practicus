@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { Auth } from "firebase/auth";
 import {
   Box,
@@ -31,6 +35,44 @@ export default function EmailPasswordLogin({
   const [message, setMessage] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
 
+  const handleForgotPassword = async () => {
+    setMessage("");
+    if (!email.trim()) {
+      const msg = "Informe seu email para receber o link de redefinição de senha.";
+      setMessage(msg);
+      onError?.(msg);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await sendPasswordResetEmail(auth, email.trim());
+      const msg = "Enviamos um email para redefinir sua senha. Verifique sua caixa de entrada (e spam).";
+      setMessage(msg);
+    } catch (error: any) {
+      console.error("Error sending password reset email:", error);
+
+      let errorMessage = "Erro ao enviar email de redefinição de senha";
+      switch (error.code) {
+        case "auth/invalid-email":
+          errorMessage = "Email inválido";
+          break;
+        case "auth/user-not-found":
+          errorMessage = "Usuário não encontrado";
+          break;
+        case "auth/too-many-requests":
+          errorMessage = "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+          break;
+        default:
+          errorMessage = error.message || errorMessage;
+      }
+      setMessage(errorMessage);
+      onError?.(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -38,10 +80,10 @@ export default function EmailPasswordLogin({
 
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
         setMessage("Conta criada com sucesso!");
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, email.trim(), password.trim());
         setMessage("Login realizado com sucesso!");
       }
       
@@ -135,6 +177,22 @@ export default function EmailPasswordLogin({
             ? "Criar conta"
             : "Entrar"}
         </Button>
+
+        {!isSignUp && (
+          <Box textAlign="center">
+            <Typography variant="body2" color="text.secondary">
+              <Link
+                component="button"
+                type="button"
+                onClick={handleForgotPassword}
+                sx={{ textTransform: "none", cursor: "pointer" }}
+                disabled={loading}
+              >
+                Esqueci minha senha
+              </Link>
+            </Typography>
+          </Box>
+        )}
 
         <Box textAlign="center">
           <Typography variant="body2" color="text.secondary">

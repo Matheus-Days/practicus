@@ -12,7 +12,6 @@ import { FieldContainer } from "@/app/components/FieldContainer";
 import PageField from "@/app/components/PageField";
 import { MdCheckCircle, MdError, MdPerson, MdBadge } from "react-icons/md";
 import { CheckoutDocument } from "../../api/checkouts/checkout.types";
-import { isPaymentByCommitment } from "../../api/checkouts/utils";
 
 type Params = { eventId: string };
 type SearchParams = { code?: string };
@@ -56,7 +55,8 @@ async function validateRegistration(
       .doc(registration.checkoutId)
       .get();
     const responsibleCheckoutData = responsibleCheckout.data() as CheckoutDocument;
-    const isFromCommitment = isPaymentByCommitment(responsibleCheckoutData);
+    const isFromCommitment =
+      responsibleCheckoutData.payment?.method === "empenho";
 
     // Validar status
     const isValid =

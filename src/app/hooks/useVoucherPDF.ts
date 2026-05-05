@@ -131,7 +131,8 @@ export const useVoucherPDF = () => {
 
         const voucherCode = checkoutData.voucher || "Código não encontrado";
 
-        const inscricaoLink = `${hostname}/inscricao/${event.uid}?voucher=${voucherCode}`;
+        // URL canônica do fluxo de inscrição com voucher (AttendeeFlow lê searchParams.get('voucher'))
+        const inscricaoLink = `${hostname}/evento/${event.uid}/inscricao?voucher=${encodeURIComponent(voucherCode)}`;
         const contatoLink = `${hostname}/contato`;
 
         const docDefinition: TDocumentDefinitions = {
