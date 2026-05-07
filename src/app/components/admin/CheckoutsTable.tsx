@@ -53,6 +53,7 @@ import {
 export default function CheckoutsTable() {
   const {
     eventCheckouts,
+    eventRegistrations,
     loadingCheckouts,
     selectedEvent,
     updateCheckoutStatus,
@@ -137,6 +138,9 @@ export default function CheckoutsTable() {
         case "all":
           statusDisplay = "Todas";
           break;
+        case "pending_registrations":
+          statusDisplay = "Inscrições pendentes";
+          break;
         case "pending":
           statusDisplay = "Pendentes";
           break;
@@ -152,9 +156,16 @@ export default function CheckoutsTable() {
         default:
           statusDisplay = "Inválidas";
       }
+
+      // Excel: nome de aba (sheet) tem limite de 31 caracteres.
+      // Mantemos o `filename` completo, e encurtamos apenas o `sheetName`.
+      const sheetName =
+        statusFilter === "pending_registrations"
+          ? "Compras - Insc. pend."
+          : `Compras - ${statusDisplay}`.slice(0, 31);
       await exportToXlsx(exportData, {
-        filename: `aquisicoes-${statusDisplay}_${selectedEvent?.title || "evento"}_${new Date().toISOString().split("T")[0]}.xlsx`,
-        sheetName: `Aquisições - ${statusDisplay}`,
+        filename: `compras-${statusDisplay}_${selectedEvent?.title || "evento"}_${new Date().toISOString().split("T")[0]}.xlsx`,
+        sheetName,
       });
     } catch (error) {
       console.error("Erro ao exportar checkouts:", error);
@@ -176,6 +187,19 @@ export default function CheckoutsTable() {
         );
       return "Não informado";
     };
+
+    const registrationsCountByCheckoutId = eventRegistrations.reduce(
+      (acc, registration) => {
+        if (registration.status !== "ok" && registration.status !== "pending") {
+          return acc;
+        }
+        const checkoutId = registration.checkoutId;
+        if (!checkoutId) return acc;
+        acc.set(checkoutId, (acc.get(checkoutId) ?? 0) + 1);
+        return acc;
+      },
+      new Map<string, number>()
+    );
 
     // Função para obter o valor de ordenação de um checkout
     const getSortValue = (
@@ -213,6 +237,14 @@ export default function CheckoutsTable() {
       checkouts = checkouts.filter(
         (checkout) => checkout.status !== "refunded"
       );
+    } else if (statusFilter === "pending_registrations") {
+      checkouts = checkouts
+        .filter((checkout) => checkout.status !== "refunded")
+        .filter((checkout) => {
+          const maxTickets = (checkout.amount ?? 0) + (checkout.complimentary ?? 0);
+          const filled = registrationsCountByCheckoutId.get(checkout.id) ?? 0;
+          return maxTickets > filled;
+        });
     } else {
       checkouts = checkouts.filter(
         (checkout) => checkout.status === statusFilter
@@ -232,7 +264,7 @@ export default function CheckoutsTable() {
     }
 
     return checkouts;
-  }, [eventCheckouts, statusFilter, orderBy, order, user]);
+  }, [eventCheckouts, eventRegistrations, statusFilter, orderBy, order, user]);
 
   const handleCancelCheckout = async (checkout: CheckoutData) => {
     const confirmed = window.confirm(
@@ -413,6 +445,9 @@ export default function CheckoutsTable() {
             >
               <MenuItem value="valid">Válidas</MenuItem>
               <MenuItem value="all">Todas</MenuItem>
+              <MenuItem value="pending_registrations">
+                Inscrições pendentes
+              </MenuItem>
               <MenuItem value="pending">Pendentes</MenuItem>
               <MenuItem value="approved">Aprovadas</MenuItem>
               <MenuItem value="paid">Pagas</MenuItem>
@@ -572,10 +607,12 @@ export default function CheckoutsTable() {
         <Box textAlign="center" py={4}>
           <Typography variant="body1" color="textSecondary">
             {statusFilter === "all"
-              ? "Nenhuma aquisição encontrada para este evento."
+              ? "Nenhuma compra encontrada para este evento."
               : statusFilter === "valid"
-                ? "Nenhuma aquisição válida encontrada."
-                : `Nenhuma aquisição com situação selecionada foi encontrada.`}
+                ? "Nenhuma compra válida encontrada."
+                : statusFilter === "pending_registrations"
+                  ? "Nenhuma compra com inscrições pendentes foi encontrada."
+                : `Nenhuma compra com situação selecionada foi encontrada.`}
           </Typography>
         </Box>
       )}
