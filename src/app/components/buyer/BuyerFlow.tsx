@@ -8,6 +8,8 @@ import AuthCard from "@/app/components/AuthCard";
 import UserSessionBanner from "@/app/components/UserSessionBanner";
 import { BuyerProvider, useBuyer } from "@/app/contexts/BuyerContext";
 import CheckoutFlow from "@/app/components/checkout-steps/CheckoutFlow";
+import { LegalEntity } from "@/app/api/checkouts/checkout.types";
+import { useRouter } from "next/navigation";
 
 function BuyerFlowInner() {
   const { event } = useBuyer();
@@ -75,7 +77,43 @@ function BuyerFlowInner() {
   );
 }
 
-function BuyerFlowWithAuth({ eventId }: { eventId: string }) {
+function RouteCheckoutRedirect({
+  eventId,
+  routeLegalEntity,
+}: {
+  eventId: string;
+  routeLegalEntity?: LegalEntity;
+}) {
+  const router = useRouter();
+  const { checkout } = useBuyer();
+
+  useEffect(() => {
+    if (!routeLegalEntity) return;
+    if (!checkout) return;
+
+    // Safeguard: only admin checkouts don't have legalEntity, but to be sure we assume 'ph' when null
+    const effectiveCheckoutLegalEntity: LegalEntity = checkout.legalEntity ?? "pj";
+
+    if (effectiveCheckoutLegalEntity === routeLegalEntity) return;
+
+    const target =
+      effectiveCheckoutLegalEntity === "pf"
+        ? `/evento/${eventId}/compra-pf`
+        : `/evento/${eventId}/compra`;
+
+    router.replace(target);
+  }, [checkout, eventId, routeLegalEntity, router]);
+
+  return null;
+}
+
+function BuyerFlowWithAuth({
+  eventId,
+  routeLegalEntity,
+}: {
+  eventId: string;
+  routeLegalEntity?: LegalEntity;
+}) {
   const { auth } = useFirebase();
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -102,11 +140,12 @@ function BuyerFlowWithAuth({ eventId }: { eventId: string }) {
   }
 
   return (
-    <BuyerProvider user={user} eventId={eventId}>
+    <BuyerProvider user={user} eventId={eventId} routeLegalEntity={routeLegalEntity}>
       {/* Se autenticado, mostra o fluxo inteiro; senão, mostra o gate apropriado */}
       {user ? (
         <Stack spacing={2}>
           <UserSessionBanner auth={auth} user={user} label="Comprador" />
+          <RouteCheckoutRedirect eventId={eventId} routeLegalEntity={routeLegalEntity} />
           <CheckoutFlow />
         </Stack>
       ) : (
@@ -116,7 +155,13 @@ function BuyerFlowWithAuth({ eventId }: { eventId: string }) {
   );
 }
 
-export default function BuyerFlow({ eventId }: { eventId: string }) {
-  return <BuyerFlowWithAuth eventId={eventId} />;
+export default function BuyerFlow({
+  eventId,
+  routeLegalEntity,
+}: {
+  eventId: string;
+  routeLegalEntity?: LegalEntity;
+}) {
+  return <BuyerFlowWithAuth eventId={eventId} routeLegalEntity={routeLegalEntity} />;
 }
 

@@ -22,7 +22,7 @@ export default async function Page({ params }: { params: Params }) {
       />
 
       <div className="flex flex-col items-center mt-8 w-full">
-        <BuyerFlow eventId={params.uid} />
+        <BuyerFlow eventId={params.uid} routeLegalEntity="pj" />
       </div>
     </BoundedMain>
   );

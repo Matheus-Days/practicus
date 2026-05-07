@@ -22,6 +22,7 @@ export default function SelectType() {
     checkout, 
     registration,
     eventId,
+    routeLegalEntity,
   } = useBuyer();
 
   const hasValidCheckout = checkout !== null;
@@ -82,6 +83,10 @@ export default function SelectType() {
     }
   };
 
+  const legalEntityFeature = routeLegalEntity === "pf"
+    ? "Exclusivo para pessoa física"
+    : "Exclusivo para pessoa jurídica";
+
   const checkoutTypes: {
     color: ChipOwnProps["color"];
     features: string[];
@@ -95,7 +100,7 @@ export default function SelectType() {
       color: "primary",
       features: [
         "Adquira para si mesmo ou para outros",
-        "Pessoas físicas ou jurídicas",
+        legalEntityFeature,
         "Inscrições garantidas após aprovação",
       ],
     },
