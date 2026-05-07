@@ -53,7 +53,7 @@ export async function PUT(
 
     const checkoutRef = await firestore.collection("checkouts").doc(id).get();
     if (!checkoutRef.exists) {
-      return createErrorResponse("Aquisição não encontrada.", 404);
+      return createErrorResponse("Compra não encontrada.", 404);
     }
     const checkoutDoc = checkoutRef.data() as CheckoutDocument;
 

@@ -122,7 +122,7 @@ export default function CheckoutRegistrationsManagerDialog({ open, onClose, chec
             <Box>
               <Typography variant="h6">Inscrições desta compra</Typography>
               <Typography variant="body2" color="text.secondary">
-                ID da aquisição: <span style={{ fontFamily: "monospace" }}>{checkout.id}</span>
+                ID da compra: <span style={{ fontFamily: "monospace" }}>{checkout.id}</span>
               </Typography>
             </Box>
             <IconButton onClick={onClose}>
@@ -135,14 +135,13 @@ export default function CheckoutRegistrationsManagerDialog({ open, onClose, chec
           <Stack spacing={2}>
             <Alert severity="info">
               Aqui você pode <strong>cancelar</strong> e <strong>editar</strong> inscrições vinculadas a esta compra.
-              A criação de novas inscrições por admin será habilitada no passo de migração do modelo (V2).
             </Alert>
 
             <Divider />
 
             {registrations.length === 0 ? (
               <Typography variant="body2" color="text.secondary">
-                Nenhuma inscrição encontrada para esta aquisição.
+                Nenhuma inscrição encontrada para esta compra.
               </Typography>
             ) : (
               <Stack spacing={1.5}>

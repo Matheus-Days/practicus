@@ -52,8 +52,8 @@ export default function CheckoutStatus() {
           color: "error" as const,
           icon: <CancelIcon color="error" />,
           description: onlyRegistrateMylself
-            ? "Aquisição e inscrição cancelada. Se houve pagamento efetivado, o reembolso será avaliado."
-            : "Aquisição e inscrições por voucher canceladas. Se houve pagamento efetivado, o reembolso será avaliado.",
+            ? "Compra e inscrição cancelada. Se houve pagamento efetivado, o reembolso será avaliado."
+            : "Compra e inscrições por voucher canceladas. Se houve pagamento efetivado, o reembolso será avaliado.",
         };
       default:
         return {
@@ -140,7 +140,7 @@ export default function CheckoutStatus() {
             component="h2"
             sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem" } }}
           >
-            Situação da aquisição: <span className="uppercase">{statusInfo.label}</span>
+            Situação da compra: <span className="uppercase">{statusInfo.label}</span>
           </Typography>
         </Box>
         <Typography

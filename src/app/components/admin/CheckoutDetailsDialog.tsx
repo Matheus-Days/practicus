@@ -376,7 +376,7 @@ export default function CheckoutDetailsDialog({
       >
         <DialogTitle>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Detalhes da aquisição</Typography>
+            <Typography variant="h6">Detalhes da compra</Typography>
             <Button
               onClick={handleClose}
               startIcon={<CloseIcon />}
@@ -419,7 +419,7 @@ export default function CheckoutDetailsDialog({
               <Box mb={3} display="grid" gridTemplateColumns="1fr 1fr" gap={3} alignItems="flex-start">
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Situação da aquisição
+                    Situação da compra
                   </Typography>
                   <Chip
                     icon={getStatusDisplay(checkout.status).icon}
@@ -454,7 +454,7 @@ export default function CheckoutDetailsDialog({
                   </Typography>
                   <Box>
                     <Typography variant="body2" color="textSecondary">
-                      ID da aquisição:
+                      ID da compra:
                     </Typography>
                     <Box display="flex" alignItems="center" gap={1} mb={2}>
                       <Box

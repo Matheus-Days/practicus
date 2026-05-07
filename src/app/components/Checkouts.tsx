@@ -127,7 +127,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
               <AlertTitle>Inscrições encerradas</AlertTitle>
               <Typography variant="body2">
                 As inscrições para este evento estão encerradas. Você não pode mais realizar novas compras ou inscrições. 
-                No entanto, inscrições e aquisições já realizadas ainda podem ser acessadas e editadas.
+                No entanto, inscrições e compras já realizadas ainda podem ser acessadas e editadas.
               </Typography>
             </Alert>
           )}
@@ -173,7 +173,7 @@ export default function Checkouts({ eventId }: CheckoutsProps) {
             <AlertTitle>Inscrições encerradas</AlertTitle>
             <Typography variant="body2">
               As inscrições para este evento estão encerradas. Você não pode mais realizar novas compras ou inscrições.
-              No entanto, inscrições e aquisições já realizadas ainda podem ser acessadas e editadas.
+              No entanto, inscrições e compras já realizadas ainda podem ser acessadas e editadas.
             </Typography>
           </Alert>
         ) : null

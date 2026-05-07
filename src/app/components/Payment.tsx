@@ -408,7 +408,7 @@ export default function Payment({
                     </Box>
                   </Box>
 
-                  {/* Valor da aquisição */}
+                  {/* Valor da compra */}
                   <Box
                     sx={{
                       flex: 1,
@@ -423,7 +423,7 @@ export default function Payment({
                     <Typography variant="h6" gutterBottom>
                       {isCommitmentPayment
                         ? "Valor do empenho"
-                        : "Valor da aquisição"}
+                        : "Valor da compra"}
                     </Typography>
                     <Typography
                       variant="h5"
