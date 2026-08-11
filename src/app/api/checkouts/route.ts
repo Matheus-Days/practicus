@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       .get();
     if (checkoutDoc.exists) {
       return createErrorResponse(
-        "Uma outra aquisição de inscrições já existe para esse evento.",
+        "Uma outra compra de inscrições já existe para esse evento.",
         400
       );
     }
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     );
     if (hasActiveVoucherRegistration) {
       return createErrorResponse(
-        "Você já possui inscrição ativa neste evento via voucher. A compra de nova aquisição nesta conta está bloqueada.",
+        "Você já possui inscrição ativa neste evento via voucher. A criação de uma nova compra nesta conta está bloqueada.",
         409
       );
     }

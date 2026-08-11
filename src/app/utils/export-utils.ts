@@ -96,7 +96,7 @@ export const formatCheckoutForExport = (
   const isPF = checkout.legalEntity === "pf";
 
   return {
-    "ID da aquisição": checkout.id,
+    "ID da compra": checkout.id,
     "Tipo de pessoa": isAdmin ? "" : isPF ? "Física" : "Jurídica",
     Situação: isAdmin ? "" : getCheckoutStatusDisplay(checkout.status),
     "Valor total calculado": isAdmin
@@ -109,10 +109,10 @@ export const formatCheckoutForExport = (
     Cortesias: isAdmin ? "" : checkout.complimentary || 0,
     Voucher: isAdmin ? "" : checkout.voucher || "",
 
-    "Data de criação (aquisição)": isAdmin
+    "Data de criação (compra)": isAdmin
       ? ""
       : formatDate(checkout.createdAt),
-    "Última atualização (aquisição)": isAdmin
+    "Última atualização (compra)": isAdmin
       ? ""
       : checkout.updatedAt
         ? formatDate(checkout.updatedAt)

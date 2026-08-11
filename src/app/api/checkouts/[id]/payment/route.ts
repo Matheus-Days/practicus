@@ -91,7 +91,7 @@ export async function POST(
 
     const checkoutDoc = await getCheckoutDocument(checkoutId);
     if (!checkoutDoc) {
-      return createErrorResponse("Aquisição não encontrada", 404);
+      return createErrorResponse("Compra não encontrada", 404);
     }
     const checkout = checkoutDoc.data() as CheckoutDocument;
 
@@ -102,7 +102,7 @@ export async function POST(
 
     if (checkout.payment.method !== "empenho") {
       return createErrorResponse(
-        "Recibo de empenho só pode ser enviado para aquisições por empenho.",
+        "Recibo de empenho só pode ser enviado para compras por empenho.",
         400
       );
     }
@@ -168,7 +168,7 @@ export async function PATCH(
 
     const checkoutDoc = await getCheckoutDocument(checkoutId);
     if (!checkoutDoc) {
-      return createErrorResponse("Aquisição não encontrada", 404);
+      return createErrorResponse("Compra não encontrada", 404);
     }
     const checkout = checkoutDoc.data() as CheckoutDocument;
 
@@ -237,13 +237,13 @@ export async function PUT(
 
     const checkoutDoc = await getCheckoutDocument(checkoutId);
     if (!checkoutDoc) {
-      return createErrorResponse("Aquisição não encontrada", 404);
+      return createErrorResponse("Compra não encontrada", 404);
     }
     const checkout = checkoutDoc.data() as CheckoutDocument;
 
     if (checkout.status !== "paid") {
       return createErrorResponse(
-        "A nota fiscal só pode ser anexada quando a aquisição estiver com situação paga.",
+        "A nota fiscal só pode ser anexada quando a compra estiver com situação paga.",
         400
       );
     }
@@ -299,7 +299,7 @@ export async function DELETE(
 
     const checkoutDoc = await getCheckoutDocument(checkoutId);
     if (!checkoutDoc) {
-      return createErrorResponse("Aquisição não encontrada", 404);
+      return createErrorResponse("Compra não encontrada", 404);
     }
     const checkout = checkoutDoc.data() as CheckoutDocument;
 
@@ -311,7 +311,7 @@ export async function DELETE(
     if (attachmentType === "commitment") {
       if (checkout.payment.method !== "empenho") {
         return createErrorResponse(
-          "Recibo de empenho só existe para aquisições por empenho.",
+          "Recibo de empenho só existe para compras por empenho.",
           400
         );
       }

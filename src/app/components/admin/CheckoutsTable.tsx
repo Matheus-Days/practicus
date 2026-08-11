@@ -268,7 +268,7 @@ export default function CheckoutsTable() {
 
   const handleCancelCheckout = async (checkout: CheckoutData) => {
     const confirmed = window.confirm(
-      "Ao cancelar uma aquisição, todas as inscrições associadas a ela serão invalidadas e a compra será excluída. Tem certeza que deseja continuar?"
+      "Ao cancelar uma compra, todas as inscrições associadas a ela serão invalidadas e ela será excluída. Tem certeza que deseja continuar?"
     );
     if (!confirmed) return;
     await deleteCheckout(checkout.id);
@@ -431,7 +431,7 @@ export default function CheckoutsTable() {
         mb={2}
       >
         <Typography variant="h6">
-          Aquisições ({filteredCheckouts.length})
+          Compras ({filteredCheckouts.length})
         </Typography>
 
         <Box display="flex" gap={2} alignItems="center">
@@ -574,7 +574,7 @@ export default function CheckoutsTable() {
                           : "Pagamento"}
                       </Button>
                       {checkout.payment?.method === "empenho" ? (
-                        <Tooltip title="Cancelar aquisição">
+                        <Tooltip title="Cancelar compra">
                           <IconButton
                             size="small"
                             onClick={() => handleCancelCheckout(checkout)}

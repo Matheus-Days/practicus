@@ -61,14 +61,14 @@ export default function PurchaseSummary() {
     if (!checkout?.id) return;
 
     const confirm = window.confirm(
-      "Tem certeza que deseja cancelar a aquisição?"
+      "Tem certeza que deseja cancelar a compra?"
     );
     if (!confirm) return;
 
     try {
       await deleteCheckout();
     } catch (error) {
-      console.error("Erro ao cancelar aquisição:", error);
+      console.error("Erro ao cancelar compra:", error);
     }
   };
 
@@ -259,7 +259,7 @@ export default function PurchaseSummary() {
                     minWidth: { sm: "auto" },
                   }}
                 >
-                  Cancelar aquisição
+                  Cancelar compra
                 </Button>
               </>
             )}
@@ -314,7 +314,7 @@ export default function PurchaseSummary() {
         <DialogTitle>Solicitar cancelamento</DialogTitle>
         <DialogContent>
           <Typography variant="body1">
-            Para solicitar o cancelamento de aquisição de inscrições e
+            Para solicitar o cancelamento de compra de inscrições e
             reembolsos, entre em contato direto com a equipe Practicus através
             dos meios oficiais de comunicação disponíveis na página de contato.
           </Typography>

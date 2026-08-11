@@ -47,7 +47,7 @@ export async function validateVoucher(
     return {
       valid: false,
       message:
-        "Voucher inválido. Entre em contato com o responsável pela aquisição.",
+        "Voucher inválido. Entre em contato com o responsável pela compra.",
     };
   }
 

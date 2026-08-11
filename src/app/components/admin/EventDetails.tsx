@@ -89,7 +89,7 @@ export default function EventDetails() {
         <CardContent>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="event tabs">
-              <Tab label="Aquisições" {...a11yProps(0)} />
+              <Tab label="Compras" {...a11yProps(0)} />
               <Tab label="Inscrições" {...a11yProps(1)} />
             </Tabs>
           </Box>

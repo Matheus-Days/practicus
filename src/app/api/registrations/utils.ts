@@ -46,7 +46,7 @@ export async function canActivateRegistration(
     if (!registration.checkoutId) {
       return {
         canActivate: false,
-        error: "Inscrição não está vinculada a uma aquisição",
+        error: "Inscrição não está vinculada a uma compra",
         errorCode: 403,
       };
     }
@@ -55,7 +55,7 @@ export async function canActivateRegistration(
     if (!checkout.amount) {
       return {
         canActivate: false,
-        error: "Aquisição não possui um número de inscrições",
+        error: "Compra não possui um número de inscrições",
         errorCode: 403,
       };
     }

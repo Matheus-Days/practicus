@@ -590,7 +590,7 @@ export default function RegistrationsTable() {
                         </IconButton>
                       </Tooltip>
                       {registration.checkoutId && (
-                        <Tooltip title="Ver aquisição">
+                        <Tooltip title="Ver compra">
                           <IconButton
                             size="small"
                             onClick={() =>

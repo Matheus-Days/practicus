@@ -54,7 +54,7 @@ export default function RegistrationStatusCard({
           color: "default" as const,
           icon: <CancelIcon color="error" />,
           description:
-            "<b>O comprador cancelou a aquisição de ingressos para este evento.</b> Caso queira se inscrever de outra forma, delete esta inscrição primeiro e adquira ingressos para o evento.",
+            "<b>O comprador cancelou a compra de ingressos para este evento.</b> Caso queira se inscrever de outra forma, delete esta inscrição primeiro e adquira ingressos para o evento.",
         };
       default:
         return {

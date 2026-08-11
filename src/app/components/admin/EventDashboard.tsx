@@ -335,7 +335,7 @@ export default function EventDashboard() {
                   {computedData.paidTickets}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Aquisição marcada como &quot;paga&quot;
+                  Compra marcada como &quot;paga&quot;
                 </Typography>
               </CardContent>
             </Card>
@@ -351,7 +351,7 @@ export default function EventDashboard() {
                   {computedData.pendingPaymentTickets}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Aquisições com pagamento marcado como &quot;pendentes&quot;
+                  Compras com pagamento marcado como &quot;pendente&quot;
                 </Typography>
               </CardContent>
             </Card>
@@ -367,7 +367,7 @@ export default function EventDashboard() {
                   {computedData.pendingCommitmentTickets}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Aquisições com empenho pendente
+                  Compras com empenho pendente
                 </Typography>
               </CardContent>
             </Card>
