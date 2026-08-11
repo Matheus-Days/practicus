@@ -30,6 +30,9 @@ export interface CheckoutContextType {
   eventId: string;
   event: EventData | null;
   isEventClosed: boolean;
+  /** When set, the purchase route forces PF/PJ and the UI must not allow toggling. */
+  routeLegalEntity?: LegalEntity;
+  isLegalEntityLocked: boolean;
   checkout: CheckoutData | null;
   registration: RegistrationData | null;
   checkoutRegistrations: Array<RegistrationMinimal>;

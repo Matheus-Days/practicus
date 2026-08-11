@@ -5,6 +5,7 @@ export interface VoucherCalculations {
   usedRegistrations: number;
   availableRegistrations: number;
   hasOwnValidRegistration: boolean;
+  maxRegistrations: number;
 }
 
 /**
@@ -37,5 +38,6 @@ export function useVoucherCalculations(): VoucherCalculations {
     usedRegistrations,
     availableRegistrations,
     hasOwnValidRegistration,
+    maxRegistrations,
   };
 }

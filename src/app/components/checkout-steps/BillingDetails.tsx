@@ -56,6 +56,8 @@ export default function BillingDetails() {
     setCurrentStep,
     event,
     isEventClosed,
+    routeLegalEntity,
+    isLegalEntityLocked,
   } = useBuyer();
 
   // Estado para controlar o snackbar
@@ -119,6 +121,8 @@ export default function BillingDetails() {
   const [localLegalEntity, setLocalLegalEntity] = useState<LegalEntity | null>(
     legalEntity
   );
+
+  const effectiveLegalEntity: LegalEntity | null = routeLegalEntity ?? localLegalEntity;
 
   const hasCheckout = !!checkout;
   const isReadOnly = isEventClosed;
@@ -201,6 +205,11 @@ export default function BillingDetails() {
     setLocalLegalEntity(legalEntity);
   }, [legalEntity]);
 
+  useEffect(() => {
+    if (!routeLegalEntity) return;
+    setLocalLegalEntity(routeLegalEntity);
+  }, [routeLegalEntity]);
+
   const handleBillingDetailsPFChange = (
     field: keyof BillingDetailsPF,
     value: string
@@ -231,10 +240,10 @@ export default function BillingDetails() {
         await updateCheckout({
           checkoutType: "acquire",
           billingDetails:
-            localLegalEntity === "pf" ? billingDetailsPF : billingDetailsPJ,
+            effectiveLegalEntity === "pf" ? billingDetailsPF : billingDetailsPJ,
           amount: localRegistrationsAmount,
-          legalEntity: localLegalEntity || undefined,
-          ...(localLegalEntity === "pj"
+          legalEntity: effectiveLegalEntity || undefined,
+          ...(effectiveLegalEntity === "pj"
             ? { paymentByCommitment }
             : {}),
         });
@@ -307,7 +316,7 @@ export default function BillingDetails() {
       return false;
     }
 
-    if (localLegalEntity === "pf") {
+    if (effectiveLegalEntity === "pf") {
       // Validar telefone PF
       const phonePFValidation = validatePhone(billingDetailsPF.phone || "");
       if (billingDetailsPF.phone?.trim() && phonePFValidation) {
@@ -319,7 +328,7 @@ export default function BillingDetails() {
           billingDetailsPF.fullName?.trim() &&
           billingDetailsPF.phone?.trim()
       );
-    } else if (localLegalEntity === "pj") {
+    } else if (effectiveLegalEntity === "pj") {
       // Validar CNPJ
       const cnpjValidation = validateCNPJ(billingDetailsPJ.orgCnpj || "");
       if (billingDetailsPJ.orgCnpj?.trim() && cnpjValidation) {
@@ -512,27 +521,36 @@ export default function BillingDetails() {
           </Box>
         </Box>
 
-        {/* II. Seletor do tipo de pessoa */}
-        <FormControl fullWidth required>
-          <InputLabel>Tipo de pessoa</InputLabel>
-          <Select
-            value={localLegalEntity || ""}
+        {/* II. Tipo de pessoa (travado por rota) */}
+        {isLegalEntityLocked ? (
+          <TextField
+            fullWidth
             label="Tipo de pessoa"
-            size="medium"
-            disabled={isReadOnly}
-            onChange={(e) => {
-              const value = e.target.value as LegalEntity;
-              setLocalLegalEntity(value);
-              setLegalEntity(value);
-            }}
-          >
-            <MenuItem value="pf">Pessoa física</MenuItem>
-            <MenuItem value="pj">Pessoa jurídica</MenuItem>
-          </Select>
-        </FormControl>
+            value={routeLegalEntity === "pf" ? "Pessoa física" : "Pessoa jurídica"}
+            disabled
+          />
+        ) : (
+          <FormControl fullWidth required>
+            <InputLabel>Tipo de pessoa</InputLabel>
+            <Select
+              value={localLegalEntity || ""}
+              label="Tipo de pessoa"
+              size="medium"
+              disabled={isReadOnly}
+              onChange={(e) => {
+                const value = e.target.value as LegalEntity;
+                setLocalLegalEntity(value);
+                setLegalEntity(value);
+              }}
+            >
+              <MenuItem value="pf">Pessoa física</MenuItem>
+              <MenuItem value="pj">Pessoa jurídica</MenuItem>
+            </Select>
+          </FormControl>
+        )}
 
         {/* III. Campos de dados de cobrança */}
-        {localLegalEntity && (
+        {effectiveLegalEntity && (
           <>
             <Divider />
             <Typography variant="h6" component="h3" gutterBottom>
@@ -543,7 +561,7 @@ export default function BillingDetails() {
               de pagamento.
             </Typography>
 
-            {localLegalEntity === "pf" ? (
+            {effectiveLegalEntity === "pf" ? (
               // Campos para Pessoa Física
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <TextField

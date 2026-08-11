@@ -55,9 +55,15 @@ interface BuyerProviderProps {
   children: ReactNode;
   user: User | null;
   eventId: string;
+  routeLegalEntity?: LegalEntity;
 }
 
-export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
+export function BuyerProvider({
+  children,
+  user,
+  eventId,
+  routeLegalEntity,
+}: BuyerProviderProps) {
   const { firestore } = useFirebase();
   const {
     createCheckout: createCheckoutDocument,
@@ -98,10 +104,13 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
   >(null);
   const [registrationsAmount, setRegistrationsAmount] = useState<number>(1);
   const [registrateMyself, setRegistrateMyself] = useState<boolean>(false);
-  const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(null);
+  const [legalEntity, setLegalEntity] = useState<LegalEntity | null>(
+    routeLegalEntity ?? null
+  );
   const [paymentByCommitment, setPaymentByCommitment] = useState(false);
   const [formData, setFormData] = useState<Partial<RegistrationFormData>>({});
   const [event, setEvent] = useState<EventData | null>(null);
+  const isLegalEntityLocked = Boolean(routeLegalEntity);
 
   const fillBuyerContext = useCallback((checkoutId: string, checkoutDoc: CheckoutDocument) => {
     setCheckout({
@@ -292,12 +301,20 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
   );
 
   const createCheckout = async () => {
-    if (!user || !eventId || !checkoutType || !billingDetails || registrationsAmount <= 0) {
+    const effectiveLegalEntity = routeLegalEntity ?? legalEntity;
+    if (
+      !user ||
+      !eventId ||
+      !checkoutType ||
+      !billingDetails ||
+      registrationsAmount <= 0 ||
+      !effectiveLegalEntity
+    ) {
       throw new Error("Informações obrigatórias para criação de checkout faltando.");
     }
 
     const processedBillingDetails = billingDetails
-      ? legalEntity === "pf"
+      ? effectiveLegalEntity === "pf"
         ? { ...(billingDetails as BillingDetailsPF), fullName: (billingDetails as BillingDetailsPF).fullName?.toUpperCase() || "" }
         : {
             ...(billingDetails as BillingDetailsPJ),
@@ -315,10 +332,10 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
       amount: registrationsAmount,
     };
 
-    if (legalEntity) checkoutData.legalEntity = legalEntity;
+    checkoutData.legalEntity = effectiveLegalEntity;
     if (processedBillingDetails) checkoutData.billingDetails = processedBillingDetails;
     if (registrateMyself) checkoutData.registrateMyself = registrateMyself;
-    if (legalEntity === "pj") {
+    if (effectiveLegalEntity === "pj") {
       checkoutData.paymentByCommitment = paymentByCommitment;
     }
 
@@ -426,12 +443,18 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
       throw new Error("Checkout não encontrado para atualização");
     }
 
-    const processedUpdateData = { ...updateData };
+    const processedUpdateData: UpdateCheckoutRequest = { ...updateData };
+
+    if (routeLegalEntity) {
+      // UI is route-locked; never allow a different entity to be persisted from here.
+      processedUpdateData.legalEntity = routeLegalEntity;
+    }
     if (updateData.billingDetails) {
-      if (updateData.legalEntity === "pf") {
+      const effectiveLegal = routeLegalEntity ?? updateData.legalEntity;
+      if (effectiveLegal === "pf") {
         const pfDetails = updateData.billingDetails as BillingDetailsPF;
         processedUpdateData.billingDetails = { ...pfDetails, fullName: pfDetails.fullName?.toUpperCase() || "" };
-      } else if (updateData.legalEntity === "pj") {
+      } else if (effectiveLegal === "pj") {
         const pjDetails = updateData.billingDetails as BillingDetailsPJ;
         processedUpdateData.billingDetails = {
           ...pjDetails,
@@ -538,6 +561,8 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
     eventId,
     event,
     isEventClosed,
+    routeLegalEntity,
+    isLegalEntityLocked,
     checkout,
     registration,
     checkoutRegistrations,
@@ -557,7 +582,10 @@ export function BuyerProvider({ children, user, eventId }: BuyerProviderProps) {
     setBillingDetails,
     setRegistrationsAmount,
     setRegistrateMyself,
-    setLegalEntity,
+    setLegalEntity: (next) => {
+      if (routeLegalEntity) return;
+      setLegalEntity(next);
+    },
     setPaymentByCommitment,
     setVoucher,
     setCheckoutType,

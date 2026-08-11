@@ -34,6 +34,7 @@ import { formatCNPJ, formatOrganizationName } from '../../utils/export-utils';
 import { formatCEP } from '../../utils/cep-utils';
 import { formatPhone } from '../../utils/phone-utils';
 import CheckoutRegistrationsManagerDialog from './CheckoutRegistrationsManagerDialog';
+import { useAdminContext } from '@/app/contexts/AdminContext';
 
 interface CheckoutDetailsDialogProps {
   open: boolean;
@@ -164,6 +165,7 @@ export default function CheckoutDetailsDialog({
   onUpdateTotalValue,
   loadingTotalValueUpdate = false,
 }: CheckoutDetailsDialogProps) {
+  const { eventRegistrations } = useAdminContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -181,6 +183,15 @@ export default function CheckoutDetailsDialog({
 
   // Hook para geração de PDF
   const { generateVoucherPDF, isLoading: isGeneratingPDF, error: pdfError } = useVoucherPDF();
+
+  const checkoutRegistrationsCount = checkout
+    ? eventRegistrations.filter(
+        (r) => r.checkoutId === checkout.id && r.status !== 'invalid'
+      ).length
+    : 0;
+  const maxRegistrations = (checkout?.amount || 0) + (checkout?.complimentary || 0);
+  const pendingRegistrations = Math.max(0, maxRegistrations - checkoutRegistrationsCount);
+  const hasPendingRegistrations = pendingRegistrations !== 0;
 
   // Sincronizar valor de cortesias quando checkout mudar
   useEffect(() => {
@@ -483,10 +494,31 @@ export default function CheckoutDetailsDialog({
                     />
                     
                     <Typography variant="body2" color="textSecondary">
-                      Número de inscrições:
+                      Total de ingressos (comprados + cortesias):
                     </Typography>
                     <Typography variant="body1" gutterBottom>
-                      {checkout.amount || "Não informado"}
+                      {maxRegistrations || "Não informado"}
+                    </Typography>
+
+                    <Typography variant="body2" color="textSecondary">
+                      Inscrições realizadas:
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {checkoutRegistrationsCount}
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      color={hasPendingRegistrations ? "error" : "textSecondary"}
+                    >
+                      Inscrições pendentes:
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      gutterBottom
+                      color={hasPendingRegistrations ? "error" : undefined}
+                    >
+                      {pendingRegistrations}
                     </Typography>
                     
                     <Typography variant="body2" color="textSecondary">

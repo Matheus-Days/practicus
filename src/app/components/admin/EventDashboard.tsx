@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
   Typography,
   Box,
   LinearProgress,
+  TextField,
+  IconButton,
+  Stack,
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -19,8 +22,12 @@ import {
   AttachMoney as MoneyIcon,
   EventAvailable as EventAvailableIcon,
   EventBusy as EventBusyIcon,
+  ContentCopy as ContentCopyIcon,
+  Business as BusinessIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 import { useAdminContext } from "../../contexts/AdminContext";
+import { InputAdornment } from "@mui/material";
 
 export default function EventDashboard() {
   const {
@@ -29,7 +36,29 @@ export default function EventDashboard() {
     eventCheckouts,
     eventRegistrations,
     loadingDashboard,
+    showNotification,
   } = useAdminContext();
+
+  const eventIdForRoutes = selectedEvent?.id;
+  const pjPurchaseUrl = eventIdForRoutes
+    ? `${window.location.origin}/evento/${eventIdForRoutes}/compra`
+    : "";
+  const pfPurchaseUrl = eventIdForRoutes
+    ? `${window.location.origin}/evento/${eventIdForRoutes}/compra-pf`
+    : "";
+
+  const copyToClipboard = useCallback(
+    async (label: string, value: string) => {
+      try {
+        await navigator.clipboard.writeText(value);
+        showNotification(`${label} copiada!`, "success");
+      } catch (err) {
+        console.error("Erro ao copiar:", err);
+        showNotification("Não foi possível copiar a URL.", "error");
+      }
+    },
+    [showNotification]
+  );
 
   // Calcular informações computadas
   const computedData = useMemo(() => {
@@ -118,6 +147,78 @@ export default function EventDashboard() {
       <Typography variant="h5" gutterBottom>
         Painel do evento: {selectedEvent.title}
       </Typography>
+
+      <Card sx={{ maxWidth: "50%"}}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Links de compra para este evento
+          </Typography>
+
+          <Stack spacing={2}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr auto" },
+                gap: 1,
+                alignItems: "center",
+              }}
+            >
+              <TextField
+                label="PESSOA JURÍDICA"
+                value={pjPurchaseUrl}
+                fullWidth
+                size="small"
+                InputProps={{
+                  readOnly: true,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BusinessIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <IconButton
+                aria-label="Copiar URL de compra PJ"
+                onClick={() => copyToClipboard("URL de compra PJ", pjPurchaseUrl)}
+                disabled={!pjPurchaseUrl}
+              >
+                <ContentCopyIcon fontSize="small" />
+              </IconButton>
+            </Box>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr auto" },
+                gap: 1,
+                alignItems: "center",
+              }}
+            >
+              <TextField
+                label="PESSOA FÍSICA"
+                value={pfPurchaseUrl}
+                fullWidth
+                size="small"
+                InputProps={{
+                  readOnly: true,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <IconButton
+                aria-label="Copiar URL de compra PF"
+                onClick={() => copyToClipboard("URL de compra PF", pfPurchaseUrl)}
+                disabled={!pfPurchaseUrl}
+              >
+                <ContentCopyIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
 
       {/* 1. Informações de Venda */}
       <Box>
