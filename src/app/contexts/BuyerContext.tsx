@@ -110,6 +110,7 @@ export function BuyerProvider({
   const [paymentByCommitment, setPaymentByCommitment] = useState(false);
   const [formData, setFormData] = useState<Partial<RegistrationFormData>>({});
   const [event, setEvent] = useState<EventData | null>(null);
+  const prevUserUidRef = useRef<string | null>(null);
   const isLegalEntityLocked = Boolean(routeLegalEntity);
 
   const fillBuyerContext = useCallback((checkoutId: string, checkoutDoc: CheckoutDocument) => {
@@ -535,6 +536,27 @@ export function BuyerProvider({
     setVoucher(null);
     setVoucherData(null);
   };
+
+  useEffect(() => {
+    const previousUserUid = prevUserUidRef.current;
+    const currentUserUid = user?.uid ?? null;
+    prevUserUidRef.current = currentUserUid;
+
+    // Quando o usuário autenticado muda (logout, login ou troca de conta), limpar
+    // o estado do fluxo para não exibir checkout/etapa de um usuário anterior.
+    if (previousUserUid === currentUserUid) return;
+
+    setCheckout(null);
+    setRegistration(null);
+    setCurrentStep("select-type");
+    setCheckoutType(null);
+    setBillingDetails(null);
+    setRegistrationsAmount(1);
+    setRegistrateMyself(false);
+    setPaymentByCommitment(false);
+    setVoucher(null);
+    setVoucherData(null);
+  }, [user]);
 
   useEffect(() => {
     if (eventId) setupEventListener();
