@@ -158,6 +158,10 @@ export default function Payment({
   }, [commitmentData.receiptAttachment, storage]);
 
   const calculateCommitmentValue = () => {
+    if (checkout?.totalValue && checkout.totalValue > 0) {
+      return checkout.totalValue;
+    }
+
     if (commitmentData.value > 0) {
       return commitmentData.value;
     }
