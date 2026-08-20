@@ -70,8 +70,10 @@ export async function canActivateRegistration(
 
 
     const registrationsAmount = registrationsQuerySnapshot.docs.length;
+    const maxRegistrations =
+      (checkout.amount || 0) + (checkout.complimentary || 0);
 
-    if (registrationsAmount >= checkout.amount) {
+    if (registrationsAmount >= maxRegistrations) {
       return {
         canActivate: false,
         error: "Compra já atingiu o número máximo de inscrições ativas",

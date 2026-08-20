@@ -186,7 +186,9 @@ export default function CheckoutDetailsDialog({
 
   const checkoutRegistrationsCount = checkout
     ? eventRegistrations.filter(
-        (r) => r.checkoutId === checkout.id && r.status !== 'invalid'
+        (r) =>
+          r.checkoutId === checkout.id &&
+          (r.status === 'ok' || r.status === 'pending')
       ).length
     : 0;
   const maxRegistrations = (checkout?.amount || 0) + (checkout?.complimentary || 0);
